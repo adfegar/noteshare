@@ -12,6 +12,10 @@ type ApiError struct {
 	Error string
 }
 
+type APISuccess struct {
+	Success string
+}
+
 type APIFunc func(res http.ResponseWriter, req *http.Request) error
 
 // Function that parses an APIFunc function to a http.HandlerFunc function

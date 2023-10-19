@@ -40,6 +40,10 @@ func (tokenStorage *TokenStorage) Create(item interface{}) error {
 	database := database.GetInstance().GetDB()
 	result, err := database.Exec("INSERT INTO tokens (token_value, user_refer, kind) VALUES (?, ?, ?);", token.TokenValue, token.UserRefer, token.Kind)
 
+	if err != nil {
+		return err
+	}
+
 	// Set the token id to the database generated id
 	tokenId, idErr := result.LastInsertId()
 
@@ -49,7 +53,7 @@ func (tokenStorage *TokenStorage) Create(item interface{}) error {
 
 	token.ID = uint(tokenId)
 
-	return err
+	return nil
 }
 
 func (tokenStorage *TokenStorage) Update(item interface{}) error {

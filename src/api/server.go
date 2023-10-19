@@ -26,4 +26,6 @@ func (server *APIServer) Run() error {
 func initRoutes(router *mux.Router) {
 	handlers.InitUserRoutes(router)
 	handlers.InitAuthRoutes(router)
+	handlers.InitNoteRoutes(router)
+	handlers.InitRoomRoutes(router)
 }
