@@ -17,9 +17,9 @@ const (
 )
 
 type User struct {
-	ID        uint     `json:"id" db:"id"`
-	FirstName string   `json:"first_name" db:"first_name" validate:"required"`
-	Email     string   `json:"email" db:"email" validate:"required"`
+	ID        uint     `json:"id"`
+	FirstName string   `json:"first_name" validate:"required"`
+	Email     string   `json:"email"  validate:"required"`
 	Password  []byte   `json:"password" validate:"required"`
 	Role      UserRole `db:"role"`
 }

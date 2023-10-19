@@ -7,7 +7,8 @@ import (
 	"gocker-api/models"
 )
 
-const tokenTypeMismatchErr = "type must be token"
+const tokenTypeMismatchErr = "type must be *token"
+const tokenNotFoundErr = "token not found"
 
 type TokenStorage struct{}
 
@@ -20,7 +21,7 @@ func (tokenStorage *TokenStorage) Get(id int) (interface{}, error) {
 	if scanErr := result.Scan(&token.ID, &token.TokenValue, &token.UserRefer, &token.Kind); scanErr != nil {
 
 		if errors.Is(scanErr, sql.ErrNoRows) {
-			return nil, errors.New("token not found")
+			return nil, errors.New(tokenNotFoundErr)
 		}
 
 		return nil, scanErr
@@ -37,7 +38,16 @@ func (tokenStorage *TokenStorage) Create(item interface{}) error {
 	}
 
 	database := database.GetInstance().GetDB()
-	_, err := database.Exec("INSERT INTO tokens (token_value, user_refer, kind) VALUES (?, ?, ?);", token.TokenValue, token.UserRefer, token.Kind)
+	result, err := database.Exec("INSERT INTO tokens (token_value, user_refer, kind) VALUES (?, ?, ?);", token.TokenValue, token.UserRefer, token.Kind)
+
+	// Set the token id to the database generated id
+	tokenId, idErr := result.LastInsertId()
+
+	if idErr != nil {
+		return idErr
+	}
+
+	token.ID = uint(tokenId)
 
 	return err
 }
@@ -63,7 +73,7 @@ func (tokenStorage *TokenStorage) Update(item interface{}) error {
 	}
 
 	if rowsAffected == 0 {
-		return errors.New("token not found")
+		return errors.New(tokenNotFoundErr)
 	}
 
 	return nil
@@ -84,8 +94,7 @@ func (tokenStorage *TokenStorage) Delete(item interface{}) error {
 	}
 
 	if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
-		return errors.New("token not found")
+		return errors.New(tokenNotFoundErr)
 	}
-
 	return nil
 }

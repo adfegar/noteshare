@@ -31,6 +31,7 @@ func GetInstance() *Database {
 		if dbErr != nil {
 			log.Fatal(dbErr.Error())
 		}
+
 		if connErr := db.Ping(); connErr != nil {
 			log.Fatal(connErr)
 		}

@@ -12,7 +12,7 @@ import (
 
 type AuthenticationResponse struct {
 	TokenValue        string `json:"token"`
-	RefreshTokenValue string `json:"refresh-token"`
+	RefreshTokenValue string `json:"refresh_token"`
 }
 
 type TokenResponse struct {

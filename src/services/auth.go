@@ -17,7 +17,7 @@ type RefreshTokenRequest struct {
 }
 
 // Function that registers a new user to the API, returning access token and refresh token
-func RegisterUser(userBody UserBody) (accessToken models.Token, refreshToken models.Token, err error) {
+func RegisterUser(userBody UserBody) (accessToken *models.Token, refreshToken *models.Token, err error) {
 	// Save a new user into the database
 	user, parseErr := CreateUser(userBody)
 
@@ -34,7 +34,7 @@ func RegisterUser(userBody UserBody) (accessToken models.Token, refreshToken mod
 		return
 	}
 
-	accessToken = models.Token{
+	accessToken = &models.Token{
 		TokenValue: tokenString,
 		UserRefer:  user.ID,
 		Kind:       models.Access,
@@ -47,14 +47,14 @@ func RegisterUser(userBody UserBody) (accessToken models.Token, refreshToken mod
 		return
 	}
 
-	refreshToken = models.Token{
+	refreshToken = &models.Token{
 		TokenValue: refreshTokenString,
 		UserRefer:  user.ID,
 		Kind:       models.Refresh,
 	}
 
-	CreateToken(&accessToken)
-	CreateToken(&refreshToken)
+	accessToken, err = CreateToken(accessToken)
+	refreshToken, err = CreateToken(refreshToken)
 
 	return
 }
@@ -107,14 +107,14 @@ func AuthenticateUser(userAuth UserAuthenticateBody) (accessToken *models.Token,
 		Kind:       models.Refresh,
 	}
 
-	CreateToken(accessToken)
-	CreateToken(refreshToken)
+	accessToken, err = CreateToken(accessToken)
+	refreshToken, err = CreateToken(refreshToken)
 
 	return
 }
 
 // Function that refresh a user access token, providing him a new one
-func RefreshToken(request RefreshTokenRequest) (accessToken models.Token, err error) {
+func RefreshToken(request RefreshTokenRequest) (accessToken *models.Token, err error) {
 	// Check if refresh token is valid
 	if jwtErr := auth.ValidateToken(request.RefreshToken); jwtErr != nil {
 		err = jwtErr
@@ -135,6 +135,8 @@ func RefreshToken(request RefreshTokenRequest) (accessToken models.Token, err er
 		return
 	}
 
+	accessToken, err = GetTokenByUserAndKind(int(user.ID), models.Access)
+
 	//Get the user's bearer token and refresh it
 	newTokenString, tokenErr := auth.GenerateToken(*user, models.Access)
 
@@ -144,6 +146,7 @@ func RefreshToken(request RefreshTokenRequest) (accessToken models.Token, err er
 	}
 
 	accessToken.TokenValue = newTokenString
+	err = tokenStorage.Update(accessToken)
 
 	return
 }

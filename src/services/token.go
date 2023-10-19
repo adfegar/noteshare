@@ -29,13 +29,29 @@ func GetTokenByValue(tokenString string) (*models.Token, error) {
 	if scanErr := result.Scan(&token.ID, &token.TokenValue, &token.UserRefer, &token.Kind); scanErr != nil {
 
 		if errors.Is(scanErr, sql.ErrNoRows) {
-			return nil, errors.New("user not found")
+			return nil, errors.New("token not found")
 		}
 		return nil, scanErr
 	}
 
 	return &token, nil
 
+}
+
+func GetTokenByUserAndKind(userRefer int, kind models.TokenKind) (*models.Token, error) {
+	var token models.Token
+	database := database.GetInstance().GetDB()
+	result := database.QueryRow("SELECT * FROM tokens WHERE user_refer = ? AND kind = ? ;", userRefer, kind)
+
+	if scanErr := result.Scan(&token.ID, &token.TokenValue, &token.UserRefer, &token.Kind); scanErr != nil {
+
+		if errors.Is(scanErr, sql.ErrNoRows) {
+			return nil, errors.New("token not found")
+		}
+		return nil, scanErr
+	}
+
+	return &token, nil
 }
 
 // Function that saves a token to the database

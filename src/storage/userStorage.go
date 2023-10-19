@@ -10,6 +10,7 @@ import (
 type UserStorage struct{}
 
 const userTypeMismatchErr = "must be type user"
+const userNotFoundErr = "user not found"
 
 func (userStorage *UserStorage) Get(id int) (interface{}, error) {
 	var user models.User
@@ -20,7 +21,7 @@ func (userStorage *UserStorage) Get(id int) (interface{}, error) {
 	if scanErr := result.Scan(&user.ID, &user.FirstName, &user.Email, &user.Password, &user.Role); scanErr != nil {
 
 		if errors.Is(scanErr, sql.ErrNoRows) {
-			return nil, errors.New("user not found")
+			return nil, errors.New(userNotFoundErr)
 		}
 		return nil, scanErr
 	}
@@ -36,7 +37,16 @@ func (userStorage *UserStorage) Create(item interface{}) error {
 	}
 
 	database := database.GetInstance().GetDB()
-	_, err := database.Exec("INSERT INTO users (first_name, email, password, role) VALUES (?, ?, ?, ?);", user.FirstName, user.Email, user.Password, user.Role)
+	result, err := database.Exec("INSERT INTO users (first_name, email, password, role) VALUES (?, ?, ?, ?);", user.FirstName, user.Email, user.Password, user.Role)
+
+	// Set the user id to the database generated id
+	userId, idErr := result.LastInsertId()
+
+	if idErr != nil {
+		return idErr
+	}
+
+	user.ID = uint(userId)
 
 	return err
 }
@@ -56,7 +66,7 @@ func (userStorage *UserStorage) Update(item interface{}) error {
 	}
 
 	if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
-		return errors.New("user not found")
+		return errors.New(userNotFoundErr)
 	}
 
 	return nil
@@ -77,7 +87,7 @@ func (userStorage *UserStorage) Delete(item interface{}) error {
 	}
 
 	if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
-		return errors.New("user not found")
+		return errors.New(userNotFoundErr)
 	}
 	return nil
 }
