@@ -7,6 +7,7 @@ import (
 	"gocker-api/models"
 	"gocker-api/storage"
 	"os"
+	"strings"
 )
 
 type UserBody struct {
@@ -19,6 +20,11 @@ type UpdateUserBody struct {
 	FirstName string `json:"first_name"`
 	Email     string `json:"email"`
 	Password  string `json:"password"`
+}
+
+type UserRoomBody struct {
+	UserRefer uint `json:"user_id"`
+	RoomRefer uint `json:"room_id"`
 }
 
 var userStorage storage.Storage = &storage.UserStorage{}
@@ -134,4 +140,41 @@ func DeleteUser(id int) error {
 	}
 
 	return userStorage.Delete(user)
+}
+
+func AddUserToRoom(requestBody UserRoomBody) error {
+	// First check that the input user and room exist
+	if _, userNotFoundErr := GetUserById(int(requestBody.UserRefer)); userNotFoundErr != nil {
+		return userNotFoundErr
+	}
+
+	if _, roomNotFoundErr := GetRoomById(int(requestBody.RoomRefer)); roomNotFoundErr != nil {
+		return roomNotFoundErr
+	}
+
+	db := database.GetInstance().GetDB()
+	_, err := db.Exec("INSERT INTO users_rooms (user_id, room_id) VALUES (?, ?);", requestBody.UserRefer, requestBody.RoomRefer)
+
+	// Handle constraint fail (inserting a user again in the same room)
+	if strings.Contains(err.Error(), database.DB_Error_ConstraintFailed) {
+		return errors.New("user is already in the room")
+	}
+
+	return err
+}
+
+func DeleteUserFromRoom(requestBody UserRoomBody) error {
+	// First check that the input user and room exist
+	if _, userNotFoundErr := GetUserById(int(requestBody.UserRefer)); userNotFoundErr != nil {
+		return userNotFoundErr
+	}
+
+	if _, roomNotFoundErr := GetRoomById(int(requestBody.RoomRefer)); roomNotFoundErr != nil {
+		return roomNotFoundErr
+	}
+
+	db := database.GetInstance().GetDB()
+	_, err := db.Exec("DELETE FROM users_rooms WHERE user_id = ? AND room_id = ? ;", requestBody.UserRefer, requestBody.RoomRefer)
+
+	return err
 }

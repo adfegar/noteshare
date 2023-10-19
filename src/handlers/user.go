@@ -27,6 +27,8 @@ func InitUserRoutes(router *mux.Router) {
 	router.HandleFunc("/api/v1/users/{id}", utils.ParseToHandlerFunc(handleGetUser)).Methods("GET")
 	router.HandleFunc("/api/v1/users/{id}", utils.ParseToHandlerFunc(handleUpdateUser)).Methods("PUT")
 	router.HandleFunc("/api/v1/users/{id}", utils.ParseToHandlerFunc(handleDeleteUser)).Methods("DELETE")
+	router.HandleFunc("/api/v1/users/add-to-room", utils.ParseToHandlerFunc(handleAddUserToRoom)).Methods("POST")
+	router.HandleFunc("/api/v1/users/delete-from-room", utils.ParseToHandlerFunc(handleDeleteUserFromRoom)).Methods("POST")
 }
 
 func handleGetUsers(res http.ResponseWriter, req *http.Request) error {
@@ -115,4 +117,52 @@ func handleDeleteUser(res http.ResponseWriter, req *http.Request) error {
 	id, _ := strconv.Atoi(mux.Vars(req)["id"])
 
 	return services.DeleteUser(id)
+}
+
+func handleAddUserToRoom(res http.ResponseWriter, req *http.Request) error {
+	var requestBody services.UserRoomBody
+
+	if parseErr := utils.ReadJSON(req.Body, &requestBody); parseErr != nil {
+		if errors, ok := parseErr.(validator.ValidationErrors); ok {
+			validationErrors := make([]utils.ApiError, 0)
+
+			for _, validationErr := range errors {
+				validationErrors = append(validationErrors, utils.ApiError{Error: "Field " + validationErr.Field() + " must be provided"})
+			}
+
+			return utils.WriteJSON(res, 400, validationErrors)
+		} else {
+			return utils.WriteJSON(res, 400, utils.ApiError{Error: "not valid json."})
+		}
+	}
+
+	if err := services.AddUserToRoom(requestBody); err != nil {
+		return utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
+	}
+
+	return utils.WriteJSON(res, 201, utils.APISuccess{Success: "user added to room successfully"})
+}
+
+func handleDeleteUserFromRoom(res http.ResponseWriter, req *http.Request) error {
+	var requestBody services.UserRoomBody
+
+	if parseErr := utils.ReadJSON(req.Body, &requestBody); parseErr != nil {
+		if errors, ok := parseErr.(validator.ValidationErrors); ok {
+			validationErrors := make([]utils.ApiError, 0)
+
+			for _, validationErr := range errors {
+				validationErrors = append(validationErrors, utils.ApiError{Error: "Field " + validationErr.Field() + " must be provided"})
+			}
+
+			return utils.WriteJSON(res, 400, validationErrors)
+		} else {
+			return utils.WriteJSON(res, 400, utils.ApiError{Error: "not valid json."})
+		}
+	}
+
+	if err := services.DeleteUserFromRoom(requestBody); err != nil {
+		return utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
+	}
+
+	return utils.WriteJSON(res, 201, utils.APISuccess{Success: "user deleted from room successfully"})
 }
