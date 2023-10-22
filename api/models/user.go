@@ -17,11 +17,11 @@ const (
 )
 
 type User struct {
-	ID        uint     `json:"id"`
-	FirstName string   `json:"first_name" validate:"required"`
-	Email     string   `json:"email"  validate:"required"`
-	Password  []byte   `json:"password" validate:"required"`
-	Role      UserRole `db:"role"`
+	ID       uint     `json:"id"`
+	UserName string   `json:"username"`
+	Email    string   `json:"email"`
+	Password []byte   `json:"password"`
+	Role     UserRole `json:"role"`
 }
 
 // Function that encodes user's password using AES encryption.

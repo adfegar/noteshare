@@ -11,7 +11,7 @@ import (
 )
 
 type AuthenticationResponse struct {
-	TokenValue        string `json:"token"`
+	TokenValue        string `json:"access_token"`
 	RefreshTokenValue string `json:"refresh_token"`
 }
 

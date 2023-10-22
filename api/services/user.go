@@ -11,15 +11,15 @@ import (
 )
 
 type UserBody struct {
-	FirstName string `json:"first_name" validate:"required"`
-	Email     string `json:"email" validate:"required"`
-	Password  string `json:"password" validate:"required"`
+	UserName string `json:"username" validate:"required"`
+	Email    string `json:"email" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 type UpdateUserBody struct {
-	FirstName string `json:"first_name"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
+	UserName string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type UserRoomBody struct {
@@ -43,7 +43,7 @@ func GetAllUsers() ([]models.User, error) {
 	for results.Next() {
 		var user models.User
 
-		if scanErr := results.Scan(&user.ID, &user.FirstName, &user.Email, &user.Password, &user.Role); scanErr != nil {
+		if scanErr := results.Scan(&user.ID, &user.UserName, &user.Email, &user.Password, &user.Role); scanErr != nil {
 			return users, scanErr
 		}
 
@@ -70,8 +70,7 @@ func GetUserByEmail(email string) (*models.User, error) {
 	database := database.GetInstance().GetDB()
 	result := database.QueryRow("SELECT * FROM users WHERE email LIKE ? ;", email)
 
-	if scanErr := result.Scan(&user.ID, &user.FirstName, &user.Email, &user.Password, &user.Role); scanErr != nil {
-
+	if scanErr := result.Scan(&user.ID, &user.UserName, &user.Email, &user.Password, &user.Role); scanErr != nil {
 		if errors.Is(scanErr, sql.ErrNoRows) {
 			return nil, errors.New("user not found")
 		}
@@ -98,10 +97,10 @@ func CreateUser(userBody UserBody) (*models.User, error) {
 	}
 
 	user := &models.User{
-		FirstName: userBody.FirstName,
-		Email:     userBody.Email,
-		Password:  nil,
-		Role:      userRole,
+		UserName: userBody.UserName,
+		Email:    userBody.Email,
+		Password: nil,
+		Role:     userRole,
 	}
 
 	user.EncodePassword(userBody.Password)
@@ -117,8 +116,8 @@ func UpdateUser(id int, updatedUser UpdateUserBody) (*models.User, error) {
 		return nil, err
 	}
 
-	if updatedUser.FirstName != "" {
-		user.FirstName = updatedUser.FirstName
+	if updatedUser.UserName != "" {
+		user.UserName = updatedUser.UserName
 	}
 	if updatedUser.Email != "" {
 		user.Email = updatedUser.Email

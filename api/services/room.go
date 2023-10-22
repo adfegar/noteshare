@@ -50,6 +50,30 @@ func GetRoomById(id int) (*models.Room, error) {
 	return room.(*models.Room), nil
 }
 
+func GetUserRooms(userId int) ([]models.Room, error) {
+	var rooms []models.Room
+
+	database := database.GetInstance().GetDB()
+	results, err := database.Query("SELECT rooms.* FROM rooms JOIN users_rooms ON users_rooms.room_id = rooms.id WHERE users_rooms.user_id = ?;", userId)
+
+	if err != nil {
+		return rooms, err
+	}
+	defer results.Close()
+
+	for results.Next() {
+		var room models.Room
+
+		if scanErr := results.Scan(&room.ID, &room.Name); scanErr != nil {
+			return rooms, scanErr
+		}
+
+		rooms = append(rooms, room)
+	}
+
+	return rooms, nil
+}
+
 func CreateRoom(roomBody RoomBody) (*models.Room, error) {
 
 	room := &models.Room{

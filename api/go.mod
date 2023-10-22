@@ -3,12 +3,12 @@ module noteshare-api
 go 1.21.0
 
 require (
-	github.com/blockloop/scan v1.3.0
 	github.com/go-playground/validator/v10 v10.15.4
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gorilla/mux v1.8.0
 	github.com/joho/godotenv v1.5.1
 	github.com/libsql/libsql-client-go v0.0.0-20231009080222-ee74a605841b
+	github.com/rs/cors v1.10.1
 )
 
 require (

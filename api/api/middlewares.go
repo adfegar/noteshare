@@ -41,10 +41,10 @@ func AuthMiddleware(next http.Handler) http.Handler {
 func ValidateIdParam(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		idParam := mux.Vars(req)["id"]
+		idParam, present := mux.Vars(req)["id"]
 
 		//If there is not param, just execute the next function
-		if idParam != "" {
+		if present {
 			//If there is param check if it's a number.
 			if _, err := strconv.Atoi(idParam); err != nil {
 				utils.WriteJSON(res, 400, utils.ApiError{Error: "Id parameter must be a number."})

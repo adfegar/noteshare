@@ -18,7 +18,7 @@ func (userStorage *UserStorage) Get(id int) (interface{}, error) {
 
 	result := database.QueryRow("SELECT * FROM users where id = ? ;", id)
 
-	if scanErr := result.Scan(&user.ID, &user.FirstName, &user.Email, &user.Password, &user.Role); scanErr != nil {
+	if scanErr := result.Scan(&user.ID, &user.UserName, &user.Email, &user.Password, &user.Role); scanErr != nil {
 
 		if errors.Is(scanErr, sql.ErrNoRows) {
 			return nil, errors.New(userNotFoundErr)
@@ -37,7 +37,7 @@ func (userStorage *UserStorage) Create(item interface{}) error {
 	}
 
 	database := database.GetInstance().GetDB()
-	result, err := database.Exec("INSERT INTO users (first_name, email, password, role) VALUES (?, ?, ?, ?);", user.FirstName, user.Email, user.Password, user.Role)
+	result, err := database.Exec("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?);", user.UserName, user.Email, user.Password, user.Role)
 
 	// Set the user id to the database generated id
 	userId, idErr := result.LastInsertId()
@@ -58,8 +58,8 @@ func (userStorage *UserStorage) Update(item interface{}) error {
 		return errors.New(userTypeMismatchErr)
 	}
 	database := database.GetInstance().GetDB()
-	result, err := database.Exec("UPDATE users SET first_name = ?, email = ?, password = ?, role = ? WHERE id = ? ;",
-		user.FirstName, user.Email, user.Password, user.Role, user.ID)
+	result, err := database.Exec("UPDATE users SET username = ?, email = ?, password = ?, role = ? WHERE id = ? ;",
+		user.UserName, user.Email, user.Password, user.Role, user.ID)
 
 	if err != nil {
 		return err

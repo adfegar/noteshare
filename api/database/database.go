@@ -13,7 +13,7 @@ import (
 const (
 	// Database migration queries
 	createUsersTableQuery = "CREATE TABLE IF NOT EXISTS `users`" +
-		"(`id` integer,`first_name` text,`email` text,`password` blob,`role` integer,PRIMARY KEY (`id`));"
+		"(`id` integer,`username` text UNIQUE,`email` text UNIQUE,`password` blob,`role` integer,PRIMARY KEY (`id`));"
 
 	createTokensTableQuery = "CREATE TABLE IF NOT EXISTS `tokens`" +
 		"(`id` integer,`token_value` text,`user_refer` integer,`kind` integer," +

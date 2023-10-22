@@ -31,7 +31,6 @@ func ParseToHandlerFunc(f APIFunc) http.HandlerFunc {
 
 // Function that writes out a value with the specified code
 func WriteJSON(res http.ResponseWriter, status int, value any) error {
-
 	res.Header().Add("Content-Type", "application/json")
 	res.WriteHeader(status)
 

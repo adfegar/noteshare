@@ -52,6 +52,30 @@ func GetNoteById(id int) (*models.Note, error) {
 	return note.(*models.Note), nil
 }
 
+func GetUserNotes(userId int) ([]models.Note, error) {
+	var userNotes []models.Note
+
+	db := database.GetInstance().GetDB()
+	results, queryErr := db.Query("SELECT * FROM notes WHERE user_refer = ? ;", userId)
+
+	if queryErr != nil {
+		return userNotes, queryErr
+	}
+	defer results.Close()
+
+	for results.Next() {
+		var note models.Note
+
+		if scanErr := results.Scan(&note.ID, &note.Content, &note.UserRefer); scanErr != nil {
+			return userNotes, scanErr
+		}
+
+		userNotes = append(userNotes, note)
+	}
+
+	return userNotes, nil
+}
+
 func CreateNote(noteBody NoteBody) (*models.Note, error) {
 
 	note := &models.Note{

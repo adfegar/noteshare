@@ -18,16 +18,17 @@ type ResponseUser struct {
 }
 
 func CreateResponseUser(user models.User) ResponseUser {
-	return ResponseUser{ID: user.ID, FirstName: user.FirstName, Email: user.Email}
+	return ResponseUser{ID: user.ID, FirstName: user.UserName, Email: user.Email}
 }
 
 func InitUserRoutes(router *mux.Router) {
 	router.HandleFunc("/api/v1/users", utils.ParseToHandlerFunc(handleGetUsers)).Methods("GET")
 	router.HandleFunc("/api/v1/users", utils.ParseToHandlerFunc(handleCreateUser)).Methods("POST")
-	router.HandleFunc("/api/v1/users/{id}", utils.ParseToHandlerFunc(handleGetUser)).Methods("GET")
+	router.HandleFunc("/api/v1/users/{id:[0-9]+}", utils.ParseToHandlerFunc(handleGetUser)).Methods("GET")
+	router.HandleFunc("/api/v1/users/{email}", utils.ParseToHandlerFunc(handleGetUserByEmail)).Methods("GET")
+	router.HandleFunc("/api/v1/users/{id}/notes", utils.ParseToHandlerFunc(handleGetUserNotes)).Methods("GET")
 	router.HandleFunc("/api/v1/users/{id}", utils.ParseToHandlerFunc(handleUpdateUser)).Methods("PUT")
 	router.HandleFunc("/api/v1/users/{id}", utils.ParseToHandlerFunc(handleDeleteUser)).Methods("DELETE")
-	router.HandleFunc("/api/v1/users/{id}/tokens", utils.ParseToHandlerFunc(handleGetUserTokens)).Methods("GET")
 	router.HandleFunc("/api/v1/users/add-to-room", utils.ParseToHandlerFunc(handleAddUserToRoom)).Methods("POST")
 	router.HandleFunc("/api/v1/users/delete-from-room", utils.ParseToHandlerFunc(handleDeleteUserFromRoom)).Methods("POST")
 }
@@ -55,6 +56,18 @@ func handleGetUser(res http.ResponseWriter, req *http.Request) error {
 
 	if notFoundErr != nil {
 		return utils.WriteJSON(res, 404, utils.ApiError{Error: notFoundErr.Error()})
+	}
+
+	return utils.WriteJSON(res, 200, CreateResponseUser(*user))
+}
+
+func handleGetUserByEmail(res http.ResponseWriter, req *http.Request) error {
+	email := mux.Vars(req)["email"]
+
+	user, err := services.GetUserByEmail(email)
+
+	if err != nil {
+		return utils.WriteJSON(res, 404, utils.ApiError{Error: err.Error()})
 	}
 
 	return utils.WriteJSON(res, 200, CreateResponseUser(*user))
@@ -168,13 +181,26 @@ func handleDeleteUserFromRoom(res http.ResponseWriter, req *http.Request) error 
 	return utils.WriteJSON(res, 201, utils.APISuccess{Success: "user deleted from room successfully"})
 }
 
-func handleGetUserTokens(res http.ResponseWriter, req *http.Request) error {
+func handleGetUserNotes(res http.ResponseWriter, req *http.Request) error {
 	id, _ := strconv.Atoi(mux.Vars(req)["id"])
-	userTokens, err := services.GetUserTokens(id)
+
+	userNotes, err := services.GetUserNotes(id)
 
 	if err != nil {
-		return utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
+		return utils.WriteJSON(res, 404, utils.ApiError{Error: err.Error()})
 	}
 
-	return utils.WriteJSON(res, 200, userTokens)
+	return utils.WriteJSON(res, 200, userNotes)
+}
+
+func handleGetUserRooms(res http.ResponseWriter, req *http.Request) error {
+	id, _ := strconv.Atoi(mux.Vars(req)["id"])
+
+	userRooms, err := services.GetUserRooms(id)
+
+	if err != nil {
+		utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
+	}
+
+	return utils.WriteJSON(res, 200, userRooms)
 }

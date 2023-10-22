@@ -4,10 +4,8 @@
         "es2021": true
     },
     "extends": [
-        "plugin:react/recommended",
-        "standard"
-    ],
-    "overrides": [
+        "standard",
+        "plugin:react/recommended"
     ],
     "parserOptions": {
         "ecmaVersion": "latest",
@@ -17,5 +15,7 @@
         "react"
     ],
     "rules": {
+        "react/react-in-jsx-scope": "off",
+        "react/prop-types": "off"
     }
 }
