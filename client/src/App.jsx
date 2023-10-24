@@ -3,9 +3,7 @@ import './App.css'
 import { UserDataContext } from './contexts/userDataContext'
 import { useContext } from 'react'
 import { useUserNotes } from './hooks/useUserNotes'
-import { addUserNote } from './services/notes'
-import Cookies from 'js-cookie'
-
+import { ws } from './services/ws'
 function App () {
   const { userData } = useContext(UserDataContext)
   const { userNotes } = useUserNotes()
@@ -33,19 +31,31 @@ function App () {
                 onSubmit={(event) => {
                   event.preventDefault()
                   const formFields = Object.fromEntries(new FormData(event.target))
-                  const note = {
-                    content: formFields.content,
-                    user_id: Number(Cookies.get('userid'))
+                  const message = {
+                    action: 'join-room',
+                    message: formFields.message
                   }
-
-                  addUserNote(note).then(result => {
-                    result.text().then(error => console.log(error))
-                  })
+                  ws.send(JSON.stringify(message))
                 }}
             >
-                <input type='text' name='content'/>
+                <input type='text' name='message'/>
                 <button type='submit'/>
         </form>
+        <form
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  const formFields = Object.fromEntries(new FormData(event.target))
+                  const message = {
+                    action: 'send-message',
+                    message: formFields.message
+                  }
+                  ws.send(JSON.stringify(message))
+                }}
+            >
+                <input type='text' name='message'/>
+                <button type='submit'/>
+        </form>
+
             </article>
         </>
     )

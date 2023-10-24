@@ -2,20 +2,20 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"noteshare-ws/ws"
-
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	err := godotenv.Load()
+	server := ws.NewWsServer()
+	go server.Run()
 
-	if err != nil {
-		log.Fatal(err)
+	http.HandleFunc("/room", func(w http.ResponseWriter, r *http.Request) {
+		ws.ServeHTTP(server, w, r)
+	})
+	// start the web server
+	log.Println("Starting web server on :3000")
+	if err := http.ListenAndServe(":3000", nil); err != nil {
+		log.Fatal("ListenAndServe:", err)
 	}
-	server := &ws.WSServer{
-		ListenAddr: ":3000",
-	}
-	log.Printf("Server listening at %s...\n", server.ListenAddr)
-	log.Fatal(server.Run())
 }
