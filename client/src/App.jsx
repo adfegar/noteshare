@@ -3,7 +3,7 @@ import './App.css'
 import { UserDataContext } from './contexts/userDataContext'
 import { useContext } from 'react'
 import { useUserNotes } from './hooks/useUserNotes'
-import { ws } from './services/ws'
+import { joinRoom, sendMessage } from './services/ws'
 function App () {
   const { userData } = useContext(UserDataContext)
   const { userNotes } = useUserNotes()
@@ -31,25 +31,17 @@ function App () {
                 onSubmit={(event) => {
                   event.preventDefault()
                   const formFields = Object.fromEntries(new FormData(event.target))
-                  const message = {
-                    action: 'join-room',
-                    message: formFields.message
-                  }
-                  ws.send(JSON.stringify(message))
+                  joinRoom(formFields.room)
                 }}
             >
-                <input type='text' name='message'/>
+                <input type='text' name='room'/>
                 <button type='submit'/>
         </form>
         <form
                 onSubmit={(event) => {
                   event.preventDefault()
                   const formFields = Object.fromEntries(new FormData(event.target))
-                  const message = {
-                    action: 'send-message',
-                    message: formFields.message
-                  }
-                  ws.send(JSON.stringify(message))
+                  sendMessage(formFields.message)
                 }}
             >
                 <input type='text' name='message'/>
