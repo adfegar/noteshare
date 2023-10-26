@@ -2,14 +2,16 @@ import Cookies from 'js-cookie'
 import { API_PREFIX } from '../consts'
 
 export async function addUserNote (note) {
-  console.log(JSON.stringify(note))
   const addNoteResult = await fetch(`${API_PREFIX}/notes`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${Cookies.get('access-token')}`
     },
-    body: JSON.stringify(note)
+    body: JSON.stringify({
+      content: note.content,
+      user_id: Number(Cookies.get('userid'))
+    })
   })
 
   return addNoteResult

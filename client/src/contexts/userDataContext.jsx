@@ -1,24 +1,22 @@
-import { useState } from "react";
-import { createContext } from "react";
-import Cookies from "js-cookie"
+import { useState, createContext } from 'react'
+import Cookies from 'js-cookie'
 
 export const UserDataContext = createContext()
 
-export function UserDataProvider ({children}) {
-    const [userData, setUserData] = useState({
-        accessToken: Cookies.get("access-token"),
-        refreshToken: Cookies.get("refresh-token") 
-    })
+export function UserDataProvider ({ children }) {
+  const [userData, setUserData] = useState({
+    accessToken: Cookies.get('access-token'),
+    refreshToken: Cookies.get('refresh-token')
+  })
 
-    return (
+  return (
         <UserDataContext.Provider
                 value={{
-                    userData,
-                    setUserData
+                  userData,
+                  setUserData
                 }}
         >
             {children}
-       </UserDataContext.Provider> 
-    )
-
+       </UserDataContext.Provider>
+  )
 }

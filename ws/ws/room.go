@@ -8,13 +8,13 @@ type Room struct {
 	clients map[*Client]bool
 	join    chan *Client
 	leave   chan *Client
-	forward chan *Message
+	forward chan *Note
 	Name    string
 }
 
 func NewRoom(name string) *Room {
 	return &Room{
-		forward: make(chan *Message),
+		forward: make(chan *Note),
 		join:    make(chan *Client),
 		leave:   make(chan *Client),
 		clients: make(map[*Client]bool),

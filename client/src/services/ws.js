@@ -1,17 +1,5 @@
 import { WS_PREFIX } from '../consts'
-console.log(WS_PREFIX)
-const ws = new WebSocket(WS_PREFIX)
-
-ws.addEventListener('open', () => {
-  console.log('Connected to ws')
-})
-ws.addEventListener('close', () => {
-  console.log('Connection closed')
-})
-ws.addEventListener('message', (event) => {
-  const message = JSON.parse(event.data)
-  console.log(message.message)
-})
+export const ws = new WebSocket(WS_PREFIX)
 
 export function joinRoom (room) {
   const message = {
@@ -35,4 +23,13 @@ export function sendMessage (message) {
     message
   }
   ws.send(JSON.stringify(messageJSON))
+}
+
+export function disconnect () {
+  const disconnectMessage = {
+    action: 'disconnect',
+    message: ''
+  }
+  ws.send(JSON.stringify(disconnectMessage))
+  ws.close()
 }

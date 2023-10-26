@@ -1,12 +1,31 @@
 import { Navigate } from 'react-router-dom'
 import './App.css'
 import { UserDataContext } from './contexts/userDataContext'
-import { useContext } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useUserNotes } from './hooks/useUserNotes'
-import { joinRoom, sendMessage } from './services/ws'
+import { joinRoom, sendMessage, ws } from './services/ws'
+import { addUserNote } from './services/notes'
+
 function App () {
   const { userData } = useContext(UserDataContext)
   const { userNotes } = useUserNotes()
+  const [receivedNotes, setReceivedNotes] = useState([])
+
+  useEffect(() => {
+    ws.addEventListener('open', () => {
+      console.log('Connected to ws')
+    })
+    ws.addEventListener('close', () => {
+      console.log('Connection closed')
+    })
+    ws.addEventListener('message', (event) => {
+      const note = JSON.parse(event.data)
+      // generate a random id just for React key
+      note.id = crypto.randomUUID()
+      const updatedReceivedNotes = [...receivedNotes, note]
+      setReceivedNotes(updatedReceivedNotes)
+    })
+  }, [])
 
   if (!userData?.accessToken) {
     return (
@@ -19,10 +38,10 @@ function App () {
             <header>
             </header>
 
-            <article>
+            <article id='notesRoot'>
             {
-                (userNotes && userNotes.length > 0)
-                  ? userNotes.map(note =>
+                (userNotes.length > 0 || receivedNotes.length > 0)
+                  ? userNotes.concat(receivedNotes).map(note =>
                     <p key={note.id}>{note.content}</p>
                   )
                   : <p>{'No notes where found'}</p>
@@ -41,7 +60,11 @@ function App () {
                 onSubmit={(event) => {
                   event.preventDefault()
                   const formFields = Object.fromEntries(new FormData(event.target))
-                  sendMessage(formFields.message)
+                  const note = {
+                    content: formFields.message
+                  }
+                  sendMessage(note)
+                  addUserNote(note)
                 }}
             >
                 <input type='text' name='message'/>

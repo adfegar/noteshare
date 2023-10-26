@@ -51,9 +51,9 @@ func (server *WsServer) registerClient(client *Client) {
 }
 
 func (server *WsServer) unregisterClient(client *Client) {
-	log.Print(client)
 	log.Println(client.id.String() + " unregistered")
 	delete(server.Clients, client)
+	client = nil
 }
 
 func (server *WsServer) createRoom(name string) *Room {

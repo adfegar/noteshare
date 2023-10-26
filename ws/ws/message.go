@@ -11,12 +11,12 @@ const (
 	LeaveRoomAction   = "leave-room"
 	UserJoinedAction  = "user-join"
 	UserLeftAction    = "user-left"
-	RoomJoinedAction  = "room-joined"
+	DisconnectAction  = "disconnect"
 )
 
 type Message struct {
-	Message string `json:"message"`
-	Action  string `json:"action"`
+	Message interface{} `json:"message"` //message can be string or *Note
+	Action  string      `json:"action"`
 }
 
 func (message Message) encode() []byte {
@@ -29,13 +29,20 @@ func (message Message) encode() []byte {
 	return json
 }
 
-func unMarshalJSON(data []byte) *Message {
-	var m Message
-	err := json.Unmarshal(data, &m)
+func unMarshalMessage(data []byte) (*Message, error) {
+	var message Message
+	err := json.Unmarshal(data, &message)
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
+	}
+	// if message field is a struct map, parse it as a note
+	if noteMap, ok := message.Message.(map[string]interface{}); ok {
+		note := &Note{
+			Content: noteMap["content"].(string),
+		}
+		message.Message = note
 	}
 
-	return &m
+	return &message, nil
 }

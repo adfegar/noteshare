@@ -30,25 +30,30 @@ func NewClient(server *WsServer, socket *websocket.Conn) *Client {
 func (c *Client) read() {
 	defer c.socket.Close()
 	for {
-		_, msg, err := c.socket.ReadMessage()
+		_, messageBytes, err := c.socket.ReadMessage()
 		log.Println(c.id.String() + " Reading...")
-		log.Println(string(msg))
+		log.Println(string(messageBytes))
 
-		if err != nil {
-			return
-		}
-
-		message := unMarshalJSON(msg)
-
-		switch message.Action {
-		case JoinRoomAction:
-			c.joinRoom(message.Message)
-		case LeaveRoomAction:
+		if err != nil && websocket.IsCloseError(err, 1001) {
+			log.Println("Socket closed. Disconnecting client...")
 			c.leaveRoom()
-		case SendMessageAction:
-			c.sendMessage(message)
+			c.server.unregisterClient(c)
+			break
 		}
 
+		message, unMarshalErr := unMarshalMessage(messageBytes)
+
+		if unMarshalErr == nil {
+
+			switch message.Action {
+			case JoinRoomAction:
+				c.joinRoom(message.Message.(string))
+			case LeaveRoomAction:
+				c.leaveRoom()
+			case SendMessageAction:
+				c.sendMessage(message.Message.(*Note))
+			}
+		}
 	}
 }
 
@@ -61,7 +66,7 @@ func (c *Client) write() {
 
 		err := c.socket.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
-			return
+			log.Fatal(err)
 		}
 	}
 }
@@ -75,19 +80,21 @@ func (c *Client) joinRoom(name string) {
 
 	c.leaveRoom()
 	c.room = room
-	log.Println("Joining room")
 	c.room.join <- c
 }
 
 func (c *Client) leaveRoom() {
 	if c.room != nil {
-		log.Println("Leaving room")
 		c.room.leave <- c
 	}
 }
 
-func (c *Client) sendMessage(message *Message) {
+func (c *Client) sendMessage(note *Note) {
 	if c.room != nil {
-		c.room.forward <- message
+		c.room.forward <- note
 	}
+}
+
+func (c *Client) disconnect() {
+	c.server.unregisterClient(c)
 }

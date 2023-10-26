@@ -9,8 +9,10 @@ export function NoteList ({ userNotes }) {
   )
 }
 
-function Note ({ content }) {
+export function Note ({ content }) {
   return (
+      <article className="note">
         <p>{content}</p>
+      </article>
   )
 }
