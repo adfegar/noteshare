@@ -12,13 +12,13 @@ import (
 )
 
 type ResponseUser struct {
-	ID        uint   `json:"id"`
-	FirstName string `json:"first_name"`
-	Email     string `json:"email"`
+	ID       uint   `json:"id"`
+	UserName string `json:"username"`
+	Email    string `json:"email"`
 }
 
 func CreateResponseUser(user models.User) ResponseUser {
-	return ResponseUser{ID: user.ID, FirstName: user.UserName, Email: user.Email}
+	return ResponseUser{ID: user.ID, UserName: user.UserName, Email: user.Email}
 }
 
 func InitUserRoutes(router *mux.Router) {

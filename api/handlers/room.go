@@ -14,6 +14,7 @@ func InitRoomRoutes(router *mux.Router) {
 	router.HandleFunc("/api/v1/rooms", utils.ParseToHandlerFunc(handleGetAllRooms)).Methods("GET")
 	router.HandleFunc("/api/v1/rooms", utils.ParseToHandlerFunc(handleCreateRoom)).Methods("POST")
 	router.HandleFunc("/api/v1/rooms/{id}", utils.ParseToHandlerFunc(handleGetRoom)).Methods("GET")
+	router.HandleFunc("/api/v1/rooms/{id}/users", utils.ParseToHandlerFunc(handleGetRoomUsers)).Methods("GET")
 	router.HandleFunc("/api/v1/rooms/{id}", utils.ParseToHandlerFunc(handleUpdateRoom)).Methods("PUT")
 	router.HandleFunc("/api/v1/rooms/{id}", utils.ParseToHandlerFunc(handleDeleteRoom)).Methods("DELETE")
 }
@@ -38,6 +39,23 @@ func handleGetRoom(res http.ResponseWriter, req *http.Request) error {
 	}
 
 	return utils.WriteJSON(res, 200, room)
+}
+
+func handleGetRoomUsers(res http.ResponseWriter, req *http.Request) error {
+	id, _ := strconv.Atoi(mux.Vars(req)["id"])
+
+	users, err := services.GetRoomUsers(id)
+
+	if err != nil {
+		return utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
+	}
+	var responseUsers []ResponseUser
+
+	for _, user := range users {
+		responseUsers = append(responseUsers, CreateResponseUser(user))
+	}
+
+	return utils.WriteJSON(res, 200, responseUsers)
 }
 
 func handleCreateRoom(res http.ResponseWriter, req *http.Request) error {

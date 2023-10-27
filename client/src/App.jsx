@@ -1,31 +1,16 @@
 import { Navigate } from 'react-router-dom'
 import './App.css'
 import { UserDataContext } from './contexts/userDataContext'
-import { useContext, useEffect, useState } from 'react'
+import { useContext } from 'react'
 import { useUserNotes } from './hooks/useUserNotes'
-import { joinRoom, sendMessage, ws } from './services/ws'
 import { addUserNote } from './services/notes'
+import { useWS } from './hooks/useWS'
+import { NoteList } from './components/NoteList'
 
 function App () {
   const { userData } = useContext(UserDataContext)
   const { userNotes } = useUserNotes()
-  const [receivedNotes, setReceivedNotes] = useState([])
-
-  useEffect(() => {
-    ws.addEventListener('open', () => {
-      console.log('Connected to ws')
-    })
-    ws.addEventListener('close', () => {
-      console.log('Connection closed')
-    })
-    ws.addEventListener('message', (event) => {
-      const note = JSON.parse(event.data)
-      // generate a random id just for React key
-      note.id = crypto.randomUUID()
-      const updatedReceivedNotes = [...receivedNotes, note]
-      setReceivedNotes(updatedReceivedNotes)
-    })
-  }, [])
+  const { receivedNotes, joinRoom, sendMessage } = useWS()
 
   if (!userData?.accessToken) {
     return (
@@ -41,9 +26,7 @@ function App () {
             <article id='notesRoot'>
             {
                 (userNotes.length > 0 || receivedNotes.length > 0)
-                  ? userNotes.concat(receivedNotes).map(note =>
-                    <p key={note.id}>{note.content}</p>
-                  )
+                  ? <NoteList userNotes={userNotes.concat(receivedNotes)} />
                   : <p>{'No notes where found'}</p>
             }
             <form

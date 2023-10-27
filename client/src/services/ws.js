@@ -1,6 +1,19 @@
-import { WS_PREFIX } from '../consts'
-export const ws = new WebSocket(WS_PREFIX)
+/*
+const ws = new WebSocket(WS_PREFIX)
 
+ws.addEventListener('open', () => {
+  console.log('Connected to ws')
+})
+ws.addEventListener('close', () => {
+  console.log('Connection closed')
+})
+ws.addEventListener('message', (event) => {
+  const note = JSON.parse(event.data)
+  const newNoteElement = document.createElement('p')
+  newNoteElement.innerHTML = note.content
+  document.getElementById('notesRoot')
+    .appendChild(newNoteElement)
+})
 export function joinRoom (room) {
   const message = {
     action: 'join-room',
@@ -32,4 +45,4 @@ export function disconnect () {
   }
   ws.send(JSON.stringify(disconnectMessage))
   ws.close()
-}
+} */

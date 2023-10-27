@@ -80,6 +80,28 @@ func GetUserByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
+func GetRoomUsers(roomId int) ([]models.User, error) {
+	var users []models.User
+	database := database.GetInstance().GetDB()
+	result, queryErr := database.Query("SELECT users.* FROM users JOIN users_rooms ON users.id = users_rooms.user_id WHERE users_rooms.room_id = ? ;", roomId)
+
+	if queryErr != nil {
+		return users, queryErr
+	}
+	defer result.Close()
+
+	for result.Next() {
+		var user models.User
+
+		if scanErr := result.Scan(&user.ID, &user.UserName, &user.Email, &user.Password, &user.Role); scanErr != nil {
+			return users, scanErr
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
 func CreateUser(userBody UserBody) (*models.User, error) {
 
 	// first check that the user email has not already been registered

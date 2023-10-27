@@ -12,7 +12,7 @@ export function NoteList ({ userNotes }) {
 export function Note ({ content }) {
   return (
       <article className="note">
-        <p>{content}</p>
+        <p className="text-red-700">{content}</p>
       </article>
   )
 }
