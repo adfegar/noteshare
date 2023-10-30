@@ -25,7 +25,7 @@ const (
 		"PRIMARY KEY (`id`)," +
 		"CONSTRAINT `fk_users_notes` FOREIGN KEY (`user_refer`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE);"
 
-	createRoomsTableQuery = "CREATE TABLE IF NOT EXISTS `rooms` (`id` integer,`name` text, PRIMARY KEY (`id`));"
+	createRoomsTableQuery = "CREATE TABLE IF NOT EXISTS `rooms` (`id` integer,`name` text, `invite` text UNIQUE, PRIMARY KEY (`id`));"
 
 	createUsersRoomsTableQuery = "CREATE TABLE IF NOT EXISTS `users_rooms`" +
 		"(`id` integer,`user_id` integer, `room_id` integer," +

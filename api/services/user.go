@@ -23,7 +23,6 @@ type UpdateUserBody struct {
 }
 
 type UserRoomBody struct {
-	UserRefer uint `json:"user_id"`
 	RoomRefer uint `json:"room_id"`
 }
 
@@ -163,9 +162,9 @@ func DeleteUser(id int) error {
 	return userStorage.Delete(user)
 }
 
-func AddUserToRoom(requestBody UserRoomBody) error {
+func AddUserToRoom(userId int, requestBody UserRoomBody) error {
 	// First check that the input user and room exist
-	if _, userNotFoundErr := GetUserById(int(requestBody.UserRefer)); userNotFoundErr != nil {
+	if _, userNotFoundErr := GetUserById(userId); userNotFoundErr != nil {
 		return userNotFoundErr
 	}
 
@@ -174,7 +173,7 @@ func AddUserToRoom(requestBody UserRoomBody) error {
 	}
 
 	db := database.GetInstance().GetDB()
-	_, err := db.Exec("INSERT INTO users_rooms (user_id, room_id) VALUES (?, ?);", requestBody.UserRefer, requestBody.RoomRefer)
+	_, err := db.Exec("INSERT INTO users_rooms (user_id, room_id) VALUES (?, ?);", userId, requestBody.RoomRefer)
 
 	// Handle constraint fail (inserting a user again in the same room)
 	if strings.Contains(err.Error(), database.DB_Error_ConstraintFailed) {
@@ -184,9 +183,9 @@ func AddUserToRoom(requestBody UserRoomBody) error {
 	return err
 }
 
-func DeleteUserFromRoom(requestBody UserRoomBody) error {
+func DeleteUserFromRoom(userId int, requestBody UserRoomBody) error {
 	// First check that the input user and room exist
-	if _, userNotFoundErr := GetUserById(int(requestBody.UserRefer)); userNotFoundErr != nil {
+	if _, userNotFoundErr := GetUserById(userId); userNotFoundErr != nil {
 		return userNotFoundErr
 	}
 
@@ -195,7 +194,7 @@ func DeleteUserFromRoom(requestBody UserRoomBody) error {
 	}
 
 	db := database.GetInstance().GetDB()
-	_, err := db.Exec("DELETE FROM users_rooms WHERE user_id = ? AND room_id = ? ;", requestBody.UserRefer, requestBody.RoomRefer)
+	_, err := db.Exec("DELETE FROM users_rooms WHERE user_id = ? AND room_id = ? ;", userId, requestBody.RoomRefer)
 
 	return err
 }

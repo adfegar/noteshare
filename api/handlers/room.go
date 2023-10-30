@@ -13,7 +13,8 @@ import (
 func InitRoomRoutes(router *mux.Router) {
 	router.HandleFunc("/api/v1/rooms", utils.ParseToHandlerFunc(handleGetAllRooms)).Methods("GET")
 	router.HandleFunc("/api/v1/rooms", utils.ParseToHandlerFunc(handleCreateRoom)).Methods("POST")
-	router.HandleFunc("/api/v1/rooms/{id}", utils.ParseToHandlerFunc(handleGetRoom)).Methods("GET")
+	router.HandleFunc("/api/v1/rooms/{id:[0-9]+}", utils.ParseToHandlerFunc(handleGetRoom)).Methods("GET")
+	router.HandleFunc("/api/v1/rooms/{inviteCode}", utils.ParseToHandlerFunc(handleGetRoomByInvite)).Methods("GET")
 	router.HandleFunc("/api/v1/rooms/{id}/users", utils.ParseToHandlerFunc(handleGetRoomUsers)).Methods("GET")
 	router.HandleFunc("/api/v1/rooms/{id}", utils.ParseToHandlerFunc(handleUpdateRoom)).Methods("PUT")
 	router.HandleFunc("/api/v1/rooms/{id}", utils.ParseToHandlerFunc(handleDeleteRoom)).Methods("DELETE")
@@ -33,6 +34,17 @@ func handleGetRoom(res http.ResponseWriter, req *http.Request) error {
 	id, _ := strconv.Atoi(mux.Vars(req)["id"])
 
 	room, err := services.GetRoomById(id)
+
+	if err != nil {
+		return utils.WriteJSON(res, 404, utils.ApiError{Error: err.Error()})
+	}
+
+	return utils.WriteJSON(res, 200, room)
+}
+
+func handleGetRoomByInvite(res http.ResponseWriter, req *http.Request) error {
+	inviteCode, _ := mux.Vars(req)["inviteCode"]
+	room, err := services.GetRoomByInvite(inviteCode)
 
 	if err != nil {
 		return utils.WriteJSON(res, 404, utils.ApiError{Error: err.Error()})

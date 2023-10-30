@@ -38,21 +38,49 @@ func AuthMiddleware(next http.Handler) http.Handler {
 }
 
 // Middleware to check if the id parameter of an endpoint is a valid number.
-func ValidateIdParam(next http.Handler) http.Handler {
+func ValidatePathParams(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		idParam, present := mux.Vars(req)["id"]
+		idParam, idPresent := mux.Vars(req)["id"]
+		emailParam, emailPresent := mux.Vars(req)["email"]
+		inviteCodeParam, inviteCodePresent := mux.Vars(req)["inviteCode"]
 
 		//If there is not param, just execute the next function
-		if present {
-			//If there is param check if it's a number.
-			if _, err := strconv.Atoi(idParam); err != nil {
-				utils.WriteJSON(res, 400, utils.ApiError{Error: "Id parameter must be a number."})
-			} else {
-				next.ServeHTTP(res, req)
-			}
-		} else {
+		if !idPresent && !emailPresent && !inviteCodePresent {
 			next.ServeHTTP(res, req)
+		} else {
+			if idPresent {
+				//If there is param check if it's a number.
+				if _, err := strconv.Atoi(idParam); err != nil {
+					utils.WriteJSON(res, 400, utils.ApiError{Error: "Id parameter must be a number."})
+				} else {
+					next.ServeHTTP(res, req)
+				}
+			} else if emailPresent {
+				matchedEmail, err := regexp.MatchString(`^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$`, emailParam)
+
+				if err != nil {
+					utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
+				} else if !matchedEmail {
+					utils.WriteJSON(res, 400, utils.ApiError{Error: "wrong email format"})
+				} else {
+					next.ServeHTTP(res, req)
+				}
+
+			} else if inviteCodePresent {
+				matchedInviteCode, err := regexp.MatchString(
+					`^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$`,
+					inviteCodeParam,
+				)
+
+				if err != nil {
+					utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
+				} else if !matchedInviteCode {
+					utils.WriteJSON(res, 400, utils.ApiError{Error: "invite code not valid"})
+				} else {
+					next.ServeHTTP(res, req)
+				}
+			}
 		}
 
 	})

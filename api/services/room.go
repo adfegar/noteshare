@@ -1,13 +1,18 @@
 package services
 
 import (
+	"database/sql"
+	"errors"
 	"noteshare-api/database"
 	"noteshare-api/models"
 	"noteshare-api/storage"
+
+	"github.com/google/uuid"
 )
 
 type RoomBody struct {
-	Name string `json:"name" required:"true"`
+	Name   string `json:"name" required:"true"`
+	Invite string
 }
 
 type UpdateRoomBody struct {
@@ -30,7 +35,7 @@ func GetAllRooms() ([]models.Room, error) {
 	for results.Next() {
 		var room models.Room
 
-		if scanErr := results.Scan(&room.ID, &room.Name); scanErr != nil {
+		if scanErr := results.Scan(&room.ID, &room.Name, &room.Invite); scanErr != nil {
 			return rooms, scanErr
 		}
 
@@ -50,6 +55,22 @@ func GetRoomById(id int) (*models.Room, error) {
 	return room.(*models.Room), nil
 }
 
+func GetRoomByInvite(inviteCode string) (*models.Room, error) {
+	var room models.Room
+	database := database.GetInstance().GetDB()
+
+	result := database.QueryRow("SELECT * FROM rooms WHERE invite LIKE ? ;", inviteCode)
+
+	if scanErr := result.Scan(&room.ID, &room.Name, &room.Invite); scanErr != nil {
+		if errors.Is(scanErr, sql.ErrNoRows) {
+			return nil, errors.New("room not found")
+		}
+		return nil, scanErr
+	}
+
+	return &room, nil
+}
+
 func GetUserRooms(userId int) ([]models.Room, error) {
 	var rooms []models.Room
 
@@ -64,7 +85,7 @@ func GetUserRooms(userId int) ([]models.Room, error) {
 	for results.Next() {
 		var room models.Room
 
-		if scanErr := results.Scan(&room.ID, &room.Name); scanErr != nil {
+		if scanErr := results.Scan(&room.ID, &room.Name, &room.Invite); scanErr != nil {
 			return rooms, scanErr
 		}
 
@@ -77,7 +98,8 @@ func GetUserRooms(userId int) ([]models.Room, error) {
 func CreateRoom(roomBody RoomBody) (*models.Room, error) {
 
 	room := &models.Room{
-		Name: roomBody.Name,
+		Name:   roomBody.Name,
+		Invite: uuid.NewString(),
 	}
 
 	if err := roomStorage.Create(room); err != nil {

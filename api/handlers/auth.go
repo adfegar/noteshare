@@ -109,5 +109,5 @@ func handleRefreshToken(res http.ResponseWriter, req *http.Request) error {
 		return utils.WriteJSON(res, 400, utils.ApiError{Error: err.Error()})
 	}
 
-	return utils.WriteJSON(res, 201, TokenResponse{TokenValue: accessToken.TokenValue})
+	return utils.WriteJSON(res, 200, TokenResponse{TokenValue: accessToken.TokenValue})
 }

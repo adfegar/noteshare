@@ -92,7 +92,7 @@ func (tokenStorage *TokenStorage) Delete(item interface{}) error {
 	}
 
 	database := database.GetInstance().GetDB()
-	log.Printf("DELETE FROM tokens WHERE id = %d ;\n", token.ID)
+	log.Printf("DELETE FROM tokens WHERE id = %d ;", token.ID)
 	result, err := database.Exec("DELETE FROM tokens WHERE id = ? ;", token.ID)
 
 	if err != nil {

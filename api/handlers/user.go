@@ -29,8 +29,8 @@ func InitUserRoutes(router *mux.Router) {
 	router.HandleFunc("/api/v1/users/{id}/notes", utils.ParseToHandlerFunc(handleGetUserNotes)).Methods("GET")
 	router.HandleFunc("/api/v1/users/{id}", utils.ParseToHandlerFunc(handleUpdateUser)).Methods("PUT")
 	router.HandleFunc("/api/v1/users/{id}", utils.ParseToHandlerFunc(handleDeleteUser)).Methods("DELETE")
-	router.HandleFunc("/api/v1/users/add-to-room", utils.ParseToHandlerFunc(handleAddUserToRoom)).Methods("POST")
-	router.HandleFunc("/api/v1/users/delete-from-room", utils.ParseToHandlerFunc(handleDeleteUserFromRoom)).Methods("POST")
+	router.HandleFunc("/api/v1/users/{id}/add-to-room", utils.ParseToHandlerFunc(handleAddUserToRoom)).Methods("POST")
+	router.HandleFunc("/api/v1/users/{id}/delete-from-room", utils.ParseToHandlerFunc(handleDeleteUserFromRoom)).Methods("POST")
 }
 
 func handleGetUsers(res http.ResponseWriter, req *http.Request) error {
@@ -135,6 +135,7 @@ func handleDeleteUser(res http.ResponseWriter, req *http.Request) error {
 
 func handleAddUserToRoom(res http.ResponseWriter, req *http.Request) error {
 	var requestBody services.UserRoomBody
+	id, _ := strconv.Atoi(mux.Vars(req)["id"])
 
 	if parseErr := utils.ReadJSON(req.Body, &requestBody); parseErr != nil {
 		if errors, ok := parseErr.(validator.ValidationErrors); ok {
@@ -150,7 +151,7 @@ func handleAddUserToRoom(res http.ResponseWriter, req *http.Request) error {
 		}
 	}
 
-	if err := services.AddUserToRoom(requestBody); err != nil {
+	if err := services.AddUserToRoom(id, requestBody); err != nil {
 		return utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
 	}
 
@@ -159,6 +160,7 @@ func handleAddUserToRoom(res http.ResponseWriter, req *http.Request) error {
 
 func handleDeleteUserFromRoom(res http.ResponseWriter, req *http.Request) error {
 	var requestBody services.UserRoomBody
+	id, _ := strconv.Atoi(mux.Vars(req)["id"])
 
 	if parseErr := utils.ReadJSON(req.Body, &requestBody); parseErr != nil {
 		if errors, ok := parseErr.(validator.ValidationErrors); ok {
@@ -174,7 +176,7 @@ func handleDeleteUserFromRoom(res http.ResponseWriter, req *http.Request) error 
 		}
 	}
 
-	if err := services.DeleteUserFromRoom(requestBody); err != nil {
+	if err := services.DeleteUserFromRoom(id, requestBody); err != nil {
 		return utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
 	}
 
