@@ -39,7 +39,7 @@ func (tokenStorage *TokenStorage) Create(item interface{}) error {
 	}
 
 	database := database.GetInstance().GetDB()
-	result, err := database.Exec("INSERT INTO tokens (token_value, user_refer, kind) VALUES (?, ?, ?);", token.TokenValue, token.UserRefer, token.Kind)
+	result, err := database.Exec("INSERT INTO tokens (token_value, user_id, kind) VALUES (?, ?, ?);", token.TokenValue, token.UserRefer, token.Kind)
 
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func (tokenStorage *TokenStorage) Update(item interface{}) error {
 	}
 
 	database := database.GetInstance().GetDB()
-	result, err := database.Exec("UPDATE tokens SET token_value = ?, user_refer = ?, kind = ? WHERE id = ? ;",
+	result, err := database.Exec("UPDATE tokens SET token_value = ?, user_id = ?, kind = ? WHERE id = ? ;",
 		token.TokenValue, token.UserRefer, token.Kind, token.ID)
 
 	if err != nil {

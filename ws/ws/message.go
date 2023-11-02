@@ -40,6 +40,7 @@ func unMarshalMessage(data []byte) (*Message, error) {
 	if noteMap, ok := message.Message.(map[string]interface{}); ok {
 		note := &Note{
 			Content: noteMap["content"].(string),
+			Color:   noteMap["color"].(string),
 		}
 		message.Message = note
 	}

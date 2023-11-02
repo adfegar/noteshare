@@ -1,18 +1,35 @@
 export function NoteList ({ userNotes }) {
   return (
-    (userNotes && userNotes.length > 0)
-      ? userNotes.map(note =>
-            <Note key={note.id} content={note.content}/>
-      )
-      : <p>{'No notes where found'}</p>
-
+      <section className='grid grid-cols-4 gap-5 pt-20'>
+      {
+          (userNotes && userNotes.length > 0)
+            ? userNotes.map(note =>
+              <Note key={note.id} note={note}/>
+            )
+            : <p>{'No notes where found'}</p>
+      }
+    </section>
   )
 }
 
-export function Note ({ content }) {
+export const NoteColors = {
+  BLUE: '#c2d9ff',
+  PINK: '#f8bdeb',
+  PURPLE: '#d0bfff',
+  GREEN: '#cdfad5',
+  YELLOW: '#f6fdc3',
+  ORANGE: '#ffcf96',
+  RED: '#ff8080'
+}
+
+function Note ({ note }) {
   return (
-      <article className="note">
-        <p className="text-red-700">{content}</p>
+      <article
+        style={{ backgroundColor: note.color }}
+        className={'flex flex-col p-21 border border-solid border-black rounded'}
+      >
+        <p className=''>{note.content}</p>
+        <span className='text-end'>{note.creator}</span>
       </article>
   )
 }

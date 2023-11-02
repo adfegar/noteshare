@@ -7,13 +7,15 @@ import (
 )
 
 type NoteBody struct {
-	Content   string `json:"content" validate:"required"`
+	Content   string `json:"content"`
+	Color     string `json:"color"`
 	UserRefer uint   `json:"user_id" validate:"required"`
+	RoomRefer uint   `json:"room_id" validate:"required"`
 }
 
 type UpdateNoteBody struct {
-	Content   string `json:"content"`
-	UserRefer uint   `json:"user_id"`
+	Content string `json:"content"`
+	Color   string `json:"color"`
 }
 
 var noteStorage storage.Storage = &storage.NoteStorage{}
@@ -32,7 +34,7 @@ func GetAllNotes() ([]models.Note, error) {
 	for results.Next() {
 		var note models.Note
 
-		if scanErr := results.Scan(&note.ID, &note.Content, &note.UserRefer); scanErr != nil {
+		if scanErr := results.Scan(&note.ID, &note.Content, &note.Color, &note.UserRefer, &note.RoomRefer); scanErr != nil {
 			return notes, scanErr
 		}
 
@@ -56,7 +58,7 @@ func GetUserNotes(userId int) ([]models.Note, error) {
 	var userNotes []models.Note
 
 	db := database.GetInstance().GetDB()
-	results, queryErr := db.Query("SELECT * FROM notes WHERE user_refer = ? ;", userId)
+	results, queryErr := db.Query("SELECT * FROM notes WHERE user_id = ? ;", userId)
 
 	if queryErr != nil {
 		return userNotes, queryErr
@@ -66,7 +68,7 @@ func GetUserNotes(userId int) ([]models.Note, error) {
 	for results.Next() {
 		var note models.Note
 
-		if scanErr := results.Scan(&note.ID, &note.Content, &note.UserRefer); scanErr != nil {
+		if scanErr := results.Scan(&note.ID, &note.Content, &note.Color, &note.UserRefer, &note.RoomRefer); scanErr != nil {
 			return userNotes, scanErr
 		}
 
@@ -80,7 +82,9 @@ func CreateNote(noteBody NoteBody) (*models.Note, error) {
 
 	note := &models.Note{
 		Content:   noteBody.Content,
+		Color:     noteBody.Color,
 		UserRefer: noteBody.UserRefer,
+		RoomRefer: noteBody.RoomRefer,
 	}
 
 	if err := noteStorage.Create(note); err != nil {
@@ -99,6 +103,10 @@ func UpdateNote(id int, noteBody UpdateNoteBody) (*models.Note, error) {
 
 	if noteBody.Content != "" {
 		note.Content = noteBody.Content
+	}
+
+	if noteBody.Color != "" {
+		note.Color = noteBody.Color
 	}
 
 	updateErr := noteStorage.Update(note)

@@ -16,11 +16,10 @@ export function Login () {
                     <h1>Log in</h1>
                 </header>
 
-                <article>
+                <article className='flex-col'>
                     <form
                         onSubmit={(event) => {
                           event.preventDefault()
-
                           const formFields = Object.fromEntries(new FormData(event.target))
                           authenticateUser(formFields).then(result => {
                             if (result.ok) {

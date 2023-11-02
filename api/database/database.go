@@ -16,14 +16,15 @@ const (
 		"(`id` integer,`username` text UNIQUE,`email` text UNIQUE,`password` blob,`role` integer,PRIMARY KEY (`id`));"
 
 	createTokensTableQuery = "CREATE TABLE IF NOT EXISTS `tokens`" +
-		"(`id` integer,`token_value` text,`user_refer` integer,`kind` integer," +
+		"(`id` integer,`token_value` text,`user_id` integer,`kind` integer," +
 		"PRIMARY KEY (`id`)," +
-		"CONSTRAINT `fk_users_tokens` FOREIGN KEY (`user_refer`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE);"
+		"CONSTRAINT `fk_users_tokens` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE);"
 
 	createNotesTableQuery = "CREATE TABLE IF NOT EXISTS `notes`" +
-		"(`id` integer,`content` text,`user_refer` integer," +
+		"(`id` integer,`content` text, `color` text, `user_id` integer, `room_id` integer," +
 		"PRIMARY KEY (`id`)," +
-		"CONSTRAINT `fk_users_notes` FOREIGN KEY (`user_refer`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE);"
+		"CONSTRAINT `fk_users_notes` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE," +
+		"CONSTRAINT `fk_rooms_notes` FOREIGN KEY (`room_id`) REFERENCES `rooms`(`id`) ON DELETE CASCADE ON UPDATE CASCADE);"
 
 	createRoomsTableQuery = "CREATE TABLE IF NOT EXISTS `rooms` (`id` integer,`name` text, `invite` text UNIQUE, PRIMARY KEY (`id`));"
 

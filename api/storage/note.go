@@ -19,7 +19,7 @@ func (noteStorage *NoteStorage) Get(id int) (interface{}, error) {
 
 	result := database.QueryRow("SELECT * from notes where id = ? ;", id)
 
-	if scanErr := result.Scan(&note.ID, &note.Content, &note.UserRefer); scanErr != nil {
+	if scanErr := result.Scan(&note.ID, &note.Content, &note.Color, &note.UserRefer, &note.RoomRefer); scanErr != nil {
 
 		if errors.Is(scanErr, sql.ErrNoRows) {
 			return nil, errors.New(noteNotFoundErr)
@@ -39,7 +39,8 @@ func (noteStorage *NoteStorage) Create(item interface{}) error {
 	}
 
 	database := database.GetInstance().GetDB()
-	result, err := database.Exec("INSERT INTO notes (content, user_refer) VALUES (?, ?);", note.Content, note.UserRefer)
+	result, err := database.Exec("INSERT INTO notes (content,color, user_id, room_id) VALUES (?, ?, ?, ?);",
+		note.Content, note.Color, note.UserRefer, note.RoomRefer)
 
 	if err != nil {
 		return err
@@ -65,8 +66,8 @@ func (noteStorage *NoteStorage) Update(item interface{}) error {
 	}
 
 	database := database.GetInstance().GetDB()
-	result, err := database.Exec("UPDATE notes SET content = ?, user_refer = ? WHERE id = ? ;",
-		note.Content, note.UserRefer, note.ID)
+	result, err := database.Exec("UPDATE notes SET content = ?, color = ? WHERE id = ? ;",
+		note.Content, note.Color, note.ID)
 
 	if err != nil {
 		return err

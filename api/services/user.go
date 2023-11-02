@@ -175,9 +175,11 @@ func AddUserToRoom(userId int, requestBody UserRoomBody) error {
 	db := database.GetInstance().GetDB()
 	_, err := db.Exec("INSERT INTO users_rooms (user_id, room_id) VALUES (?, ?);", userId, requestBody.RoomRefer)
 
-	// Handle constraint fail (inserting a user again in the same room)
-	if strings.Contains(err.Error(), database.DB_Error_ConstraintFailed) {
-		return errors.New("user is already in the room")
+	if err != nil {
+		// Handle constraint fail (inserting a user again in the same room)
+		if strings.Contains(err.Error(), database.DB_Error_ConstraintFailed) {
+			return errors.New("user is already in the room")
+		}
 	}
 
 	return err

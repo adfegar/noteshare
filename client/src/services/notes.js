@@ -10,18 +10,31 @@ export async function addUserNote (note) {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${Cookies.get('access-token')}`
     },
+    body: JSON.stringify(note)
+  })
+
+  return addNoteResult
+}
+
+export async function updateUserNote ({ noteId, newContent }) {
+  await checkTokenExp({ token: Cookies.get('access-token') })
+  const addNoteResult = await fetch(`${API_PREFIX}/notes/${noteId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${Cookies.get('access-token')}`
+    },
     body: JSON.stringify({
-      content: note.content,
-      user_id: Number(Cookies.get('userid'))
+      content: newContent
     })
   })
 
   return addNoteResult
 }
 
-export async function getUserNotes () {
+export async function getUserNotes ({ userId }) {
   await checkTokenExp({ token: Cookies.get('access-token') })
-  const noteResult = await fetch(`${API_PREFIX}/users/${Cookies.get('userid')}/notes`, {
+  const noteResult = await fetch(`${API_PREFIX}/users/${userId}/notes`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${Cookies.get('access-token')}`

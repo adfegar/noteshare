@@ -18,11 +18,12 @@ import (
 // Middleware function to check if the auth token provided is correct and has not expired.
 func AuthMiddleware(next http.Handler) http.Handler {
 
-	allowedEndpoints := regexp.MustCompile(`/api/v1/auth/*`)
+	authEndpoints := regexp.MustCompile(`/api/v1/auth/*`)
+	userActionEndpoints := regexp.MustCompile(`/api/v1/users/\d/(add-to-room|delete-from-room)`)
 
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		//If the endpoint is not allowed, check its auth token.
-		if allowedEndpoints.MatchString(req.URL.Path) {
+		if authEndpoints.MatchString(req.URL.Path) || userActionEndpoints.MatchString(req.URL.Path) {
 			next.ServeHTTP(res, req)
 		} else {
 			authErr := checkAuth(req)

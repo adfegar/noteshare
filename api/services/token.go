@@ -41,7 +41,7 @@ func GetTokenByValue(tokenString string) (*models.Token, error) {
 func GetUserTokens(userRefer int) ([]models.Token, error) {
 	var userTokens []models.Token
 	database := database.GetInstance().GetDB()
-	result, queryErr := database.Query("SELECT * FROM tokens WHERE user_refer = ? ;", userRefer)
+	result, queryErr := database.Query("SELECT * FROM tokens WHERE user_id = ? ;", userRefer)
 
 	if queryErr != nil {
 		return userTokens, queryErr
@@ -68,7 +68,7 @@ func GetUserTokens(userRefer int) ([]models.Token, error) {
 func GetTokenByUserAndKind(userRefer int, kind models.TokenKind) (*models.Token, error) {
 	var token models.Token
 	database := database.GetInstance().GetDB()
-	result := database.QueryRow("SELECT * FROM tokens WHERE user_refer = ? AND kind = ? ;", userRefer, kind)
+	result := database.QueryRow("SELECT * FROM tokens WHERE user_id = ? AND kind = ? ;", userRefer, kind)
 
 	if scanErr := result.Scan(&token.ID, &token.TokenValue, &token.UserRefer, &token.Kind); scanErr != nil {
 

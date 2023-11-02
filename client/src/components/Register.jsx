@@ -13,17 +13,17 @@ export function Register () {
     return (
             <main>
                 <header>
-                    <h1>Log in</h1>
+                    <h1>Register</h1>
                 </header>
 
-                <article>
+                <article className='flex-col'>
                     <form
                         onSubmit={(event) => {
                           event.preventDefault()
 
                           const formFields = Object.fromEntries(new FormData(event.target))
                           registerUser(formFields).then(result => {
-                            if (result.status === 200) {
+                            if (result.status === 201) {
                               result.json().then(response => {
                                 setUserData({
                                   accessToken: response.access_token,
@@ -37,7 +37,7 @@ export function Register () {
                           })
                         }}
                     >
-                    <input type="text" name="first_name" />
+                    <input type="text" name="username" />
                     <input type="text" name="email" />
                     <input type="password" name="password" />
                     <button type="submit">Log in</button>

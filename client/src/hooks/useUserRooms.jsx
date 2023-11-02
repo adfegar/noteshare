@@ -6,7 +6,7 @@ export function useUserRooms ({ userId }) {
 
   useEffect(() => {
     getUserRooms({ userId }).then(response => {
-      if (response === 200) {
+      if (response.status === 200) {
         response.json().then(responseRooms => {
           setUserRooms(responseRooms)
         })
@@ -14,5 +14,5 @@ export function useUserRooms ({ userId }) {
     })
   }, [])
 
-  return { userRooms }
+  return { userRooms, setUserRooms }
 }

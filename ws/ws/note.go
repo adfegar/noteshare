@@ -7,6 +7,7 @@ import (
 
 type Note struct {
 	Content string `json:"content"`
+	Color   string `json:"color"`
 }
 
 func (note Note) encode() []byte {

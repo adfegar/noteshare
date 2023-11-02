@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    input {
+        @apply outline;
+        @apply outline-1;
+        @apply rounded-sm;
+    }
+}
