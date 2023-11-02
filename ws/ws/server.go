@@ -53,6 +53,7 @@ func (server *WsServer) registerClient(client *Client) {
 func (server *WsServer) unregisterClient(client *Client) {
 	log.Println(client.id.String() + " unregistered")
 	delete(server.Clients, client)
+	close(client.receive)
 	client = nil
 }
 

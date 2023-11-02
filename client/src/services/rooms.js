@@ -84,16 +84,15 @@ export async function getRoomNotes ({ roomId }) {
       if (userNotesResult.status === 200) {
         const userNotes = await userNotesResult.json()
         if (userNotes != null) {
-          console.log(userNotes)
-          let userRoomNotes = userNotes.filter((note) =>
+          const userRoomNotes = userNotes.filter((note) =>
             note.room_id === roomId
-          )
-          userRoomNotes = userRoomNotes.map(note => ({
+          ).map(note => ({
             id: note.id,
             content: note.content,
             color: note.color,
             creator: user.username
           }))
+
           roomNotes = roomNotes.concat(userRoomNotes)
         }
       }

@@ -31,7 +31,6 @@ func (r *Room) Run() {
 		case client := <-r.leave:
 			log.Println("Client " + client.id.String() + " leaves " + r.Name)
 			delete(r.clients, client)
-			close(client.receive)
 		case msg := <-r.forward:
 			for client := range r.clients {
 				client.receive <- msg.encode()

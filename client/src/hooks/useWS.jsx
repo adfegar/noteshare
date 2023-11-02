@@ -34,12 +34,12 @@ export function useWS () {
   }
 
   function sendMessage (note) {
-    const messageJSON = {
+    const message = {
       action: 'send-message',
       message: note
     }
-    sendJsonMessage(messageJSON)
+    sendJsonMessage(message)
   }
 
-  return { receivedNotes, joinRoom, sendMessage }
+  return { receivedNotes, setReceivedNotes, joinRoom, sendMessage }
 }

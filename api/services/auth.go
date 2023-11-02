@@ -158,7 +158,7 @@ func revokeAllUserTokens(user *models.User) error {
 	var tokens []models.Token
 	database := database.GetInstance().GetDB()
 
-	results, queryErr := database.Query("SELECT * FROM tokens WHERE user_refer = ? ;", user.ID)
+	results, queryErr := database.Query("SELECT * FROM tokens WHERE user_id = ? ;", user.ID)
 
 	if queryErr != nil {
 		return queryErr

@@ -6,7 +6,6 @@ export function useRoomNotes ({ roomId }) {
 
   useEffect(() => {
     getRoomNotes({ roomId }).then(roomNotesResult => {
-      console.log(roomNotesResult)
       setRoomNotes(roomNotesResult)
     })
   }, [roomId])

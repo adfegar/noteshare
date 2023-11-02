@@ -41,6 +41,7 @@ func unMarshalMessage(data []byte) (*Message, error) {
 		note := &Note{
 			Content: noteMap["content"].(string),
 			Color:   noteMap["color"].(string),
+			Creator: noteMap["creator"].(string),
 		}
 		message.Message = note
 	}

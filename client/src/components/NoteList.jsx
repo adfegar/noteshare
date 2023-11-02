@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 export function NoteList ({ userNotes }) {
   return (
       <section className='grid grid-cols-4 gap-5 pt-20'>
@@ -23,13 +25,33 @@ export const NoteColors = {
 }
 
 function Note ({ note }) {
+  const [isInEditMode, setIsInEditMode] = useState(false)
   return (
       <article
         style={{ backgroundColor: note.color }}
         className={'flex flex-col p-21 border border-solid border-black rounded'}
+        onClick={() => {
+          setIsInEditMode(!isInEditMode)
+        }}
+    >
+      <section
+        style={{ visibility: isInEditMode ? 'hidden' : 'visible' }}
       >
         <p className=''>{note.content}</p>
         <span className='text-end'>{note.creator}</span>
+      </section>
+      <section
+        style={{ visibility: isInEditMode ? 'visible' : 'hidden' }}
+      >
+        <form
+            onSubmit={(event) => {
+              event.preventDefault()
+            }}
+        >
+            <textarea name='content' />
+            <button type='submit' />
+        </form>
+      </section>
       </article>
   )
 }
