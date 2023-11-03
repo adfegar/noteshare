@@ -20,10 +20,11 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 	authEndpoints := regexp.MustCompile(`/api/v1/auth/*`)
 	userActionEndpoints := regexp.MustCompile(`/api/v1/users/\d/(add-to-room|delete-from-room)`)
+	userNoteEndpoints := regexp.MustCompile(`/api/v1/notes/*`)
 
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		//If the endpoint is not allowed, check its auth token.
-		if authEndpoints.MatchString(req.URL.Path) || userActionEndpoints.MatchString(req.URL.Path) {
+		if authEndpoints.MatchString(req.URL.Path) || userActionEndpoints.MatchString(req.URL.Path) || userNoteEndpoints.MatchString(req.URL.Path) {
 			next.ServeHTTP(res, req)
 		} else {
 			authErr := checkAuth(req)

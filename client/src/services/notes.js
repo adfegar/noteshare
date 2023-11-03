@@ -16,7 +16,7 @@ export async function addUserNote (note) {
   return addNoteResult
 }
 
-export async function updateUserNote ({ noteId, newContent }) {
+export async function updateUserNote (noteId, newNote) {
   await checkTokenExp({ token: Cookies.get('access-token') })
   const addNoteResult = await fetch(`${API_PREFIX}/notes/${noteId}`, {
     method: 'PUT',
@@ -24,9 +24,7 @@ export async function updateUserNote ({ noteId, newContent }) {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${Cookies.get('access-token')}`
     },
-    body: JSON.stringify({
-      content: newContent
-    })
+    body: JSON.stringify(newNote)
   })
 
   return addNoteResult

@@ -11,6 +11,7 @@ export function setUserCookies (email, accessToken, refreshToken) {
     if (result.status === 200) {
       result.json().then(user => {
         Cookies.set('userid', user.id, { expires: 365 })
+        Cookies.set('username', user.username, { expires: 365 })
       })
     }
   })
