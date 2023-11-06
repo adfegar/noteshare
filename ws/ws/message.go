@@ -9,12 +9,13 @@ import (
 )
 
 const (
-	SendMessageAction = "send-message"
-	JoinRoomAction    = "join-room"
-	LeaveRoomAction   = "leave-room"
-	UserJoinedAction  = "user-join"
-	UserLeftAction    = "user-left"
-	DisconnectAction  = "disconnect"
+	SendNoteAction   = "send-note"
+	EditNoteAction   = "edit-note"
+	JoinRoomAction   = "join-room"
+	LeaveRoomAction  = "leave-room"
+	UserJoinedAction = "user-join"
+	UserLeftAction   = "user-left"
+	DisconnectAction = "disconnect"
 )
 
 type Message struct {

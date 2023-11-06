@@ -10,5 +10,5 @@ export function useRoomNotes ({ roomId }) {
     })
   }, [roomId])
 
-  return { roomNotes }
+  return { roomNotes, setRoomNotes }
 }

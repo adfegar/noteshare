@@ -1,6 +1,7 @@
 import { useState, useContext, useCallback } from 'react'
 import { updateUserNote } from '../services/notes'
 import { UserDataContext } from '../contexts/userDataContext'
+import { useWS } from '../hooks/useWS'
 
 export function NoteList ({ userNotes }) {
   return (
@@ -42,6 +43,7 @@ function Note ({ note }) {
 function EditableNoteBody ({ note }) {
   const [currentNoteContent, setCurrentNoteContent] = useState(note?.content)
   const [isInEditMode, setIsInEditMode] = useState(false)
+  const { editNote } = useWS()
   const editContentInput = useCallback((inputElement) => {
     if (inputElement && isInEditMode) {
       inputElement.focus()
@@ -62,7 +64,7 @@ function EditableNoteBody ({ note }) {
                 className='flex-col'
                 style={{ display: isInEditMode ? 'none' : 'flex' }}
             >
-                <p className='h-200'>{currentNoteContent}</p>
+                <p className='h-200'>{note.content}</p>
                 <span className='text-end'>{note.creator}</span>
             </section>
             <section
@@ -75,10 +77,12 @@ function EditableNoteBody ({ note }) {
                   const formFields = Object.fromEntries(new FormData(event.target))
                   const newNote = {
                     content: formFields.content,
-                    color: ''
+                    color: note.color
                   }
                   updateUserNote(note.id, newNote).then(updateUserResult => {
                     if (updateUserResult.status === 201) {
+                      note.content = formFields.content
+                      editNote(note)
                       setCurrentNoteContent(formFields.content)
                       setIsInEditMode(false)
                     }

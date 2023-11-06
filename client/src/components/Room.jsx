@@ -7,9 +7,21 @@ import { addUserNote } from '../services/notes'
 import { useEffect } from 'react'
 
 export function Room ({ currentRoom }) {
-  const { roomNotes } = useRoomNotes({ roomId: currentRoom?.id })
+  const { roomNotes, setRoomNotes } = useRoomNotes({ roomId: currentRoom?.id })
   const { receivedNotes, setReceivedNotes, sendMessage } = useWS()
   const { roomUsers } = useRoomUsers({ roomId: currentRoom?.id })
+  const { lastEditedNote } = useWS()
+  console.log(roomNotes)
+  useEffect(() => {
+    if (lastEditedNote) {
+      for (const note of roomNotes) {
+        if (note.id === lastEditedNote.id) {
+          note.content = lastEditedNote.content
+          setRoomNotes(roomNotes)
+        }
+      }
+    }
+  }, [lastEditedNote])
 
   // reset the received notes array each time the users swaps rooms
   useEffect(() => {

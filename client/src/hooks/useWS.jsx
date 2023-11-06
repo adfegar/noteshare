@@ -2,8 +2,15 @@ import { useState, useEffect } from 'react'
 import useWebSocket from 'react-use-websocket'
 import { WS_PREFIX } from '../consts'
 
+const WSActions = {
+  JoinRoomAction: 'join-room',
+  SendNoteAction: 'send-note',
+  EditNoteAction: 'edit-note'
+}
+
 export function useWS () {
   const [receivedNotes, setReceivedNotes] = useState([])
+  const [lastEditedNote, setLastEditedNote] = useState()
   const { sendJsonMessage, lastMessage } = useWebSocket(
     WS_PREFIX,
     {
@@ -16,9 +23,13 @@ export function useWS () {
   // every time a note is sent, append it to receivedNotes array
   useEffect(() => {
     if (lastMessage) {
-      const newNote = JSON.parse(lastMessage.data)
-      const updatedReceivedNotes = [...receivedNotes, newNote]
-      setReceivedNotes(updatedReceivedNotes)
+      const message = JSON.parse(lastMessage.data)
+      if (message.action === WSActions.SendNoteAction) {
+        const updatedReceivedNotes = [...receivedNotes, message.message]
+        setReceivedNotes(updatedReceivedNotes)
+      } else if (message.action === WSActions.EditNoteAction) {
+        setLastEditedNote(message.message)
+      }
     }
   }, [lastMessage])
 
@@ -26,7 +37,7 @@ export function useWS () {
   function joinRoom (room) {
     const roomName = `r_${room.id}_${room.name}`
     const message = {
-      action: 'join-room',
+      action: WSActions.JoinRoomAction,
       message: {
         id: room.id,
         name: roomName
@@ -37,11 +48,19 @@ export function useWS () {
 
   function sendMessage (note) {
     const message = {
-      action: 'send-message',
+      action: WSActions.SendNoteAction,
       message: note
     }
     sendJsonMessage(message)
   }
 
-  return { receivedNotes, setReceivedNotes, joinRoom, sendMessage }
+  function editNote (note) {
+    const message = {
+      action: WSActions.EditNoteAction,
+      message: note
+    }
+    sendJsonMessage(message)
+  }
+
+  return { receivedNotes, lastEditedNote, setReceivedNotes, joinRoom, sendMessage, editNote }
 }
