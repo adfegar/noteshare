@@ -13,7 +13,8 @@ export default {
         260: '260px'
       },
       height: {
-        80: '80px'
+        80: '80px',
+        200: '200px'
       }
     }
   },

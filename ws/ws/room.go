@@ -5,20 +5,22 @@ import (
 )
 
 type Room struct {
+	ID      uint
+	Name    string
 	clients map[*Client]bool
 	join    chan *Client
 	leave   chan *Client
 	forward chan *Note
-	Name    string
 }
 
-func NewRoom(name string) *Room {
+func NewRoom(id uint, name string) *Room {
 	return &Room{
+		ID:      id,
+		Name:    name,
 		forward: make(chan *Note),
 		join:    make(chan *Client),
 		leave:   make(chan *Client),
 		clients: make(map[*Client]bool),
-		Name:    name,
 	}
 }
 

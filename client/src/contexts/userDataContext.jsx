@@ -6,7 +6,9 @@ export const UserDataContext = createContext()
 export function UserDataProvider ({ children }) {
   const [userData, setUserData] = useState({
     accessToken: Cookies.get('access-token'),
-    refreshToken: Cookies.get('refresh-token')
+    refreshToken: Cookies.get('refresh-token'),
+    userId: Cookies.get('userid'),
+    username: Cookies.get('username')
   })
 
   return (

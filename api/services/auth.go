@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"noteshare-api/auth"
 	"noteshare-api/database"
 	"noteshare-api/models"
@@ -65,7 +64,7 @@ func AuthenticateUser(userAuth UserAuthenticateBody) (accessToken *models.Token,
 	user, notFoundErr := GetUserByEmail(userAuth.Email)
 
 	if notFoundErr != nil {
-		err = errors.New("user not found")
+		err = notFoundErr
 		return
 	} else if wrongPasswordErr := user.ComparePassword(userAuth.Password); wrongPasswordErr != nil {
 		err = wrongPasswordErr

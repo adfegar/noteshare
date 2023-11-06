@@ -1,10 +1,13 @@
 import { useUserRooms } from '../hooks/useUserRooms'
-import Cookies from 'js-cookie'
 import { useWS } from '../hooks/useWS'
 import { addRoom, addUserToRoom, getRoomByInviteCode } from '../services/rooms'
+import { useContext } from 'react'
+import { UserDataContext } from '../contexts/userDataContext'
 
 export function Sidebar ({ currentRoomSetter }) {
-  const { userRooms, setUserRooms } = useUserRooms({ userId: Cookies.get('userid') })
+  const { userData } = useContext(UserDataContext)
+  const { userRooms, setUserRooms } = useUserRooms({ userId: userData.userId })
+
   return (
     <aside className='w-260 h-full p-20 flex flex-col'>
       <article className=' flex flex-col my-4'>
@@ -89,12 +92,11 @@ function JoinWithInviteForm () {
 }
 
 function JoinRoomButton ({ room, currentRoomSetter }) {
-  const roomName = `r_${room.id}_${room.name}`
   const { joinRoom } = useWS()
 
   return (
         <a className='cursor-pointer' onClick={() => {
-          joinRoom(roomName)
+          joinRoom(room)
           currentRoomSetter(room)
         }}
         >

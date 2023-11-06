@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useContext, useCallback } from 'react'
 import { updateUserNote } from '../services/notes'
-import Cookies from 'js-cookie'
+import { UserDataContext } from '../contexts/userDataContext'
 
 export function NoteList ({ userNotes }) {
   return (
-      <section className='grid grid-cols-4 gap-5 pt-20'>
+      <section className='grid grid-cols-4 gap-5 pt-20 px-20 overflow-y-auto'>
       {
           (userNotes && userNotes.length > 0)
             ? userNotes.map(note =>
@@ -27,13 +27,14 @@ export const NoteColors = {
 }
 
 function Note ({ note }) {
-  if (note.creator === Cookies.get('username')) {
+  const { userData } = useContext(UserDataContext)
+  if (note.creator === userData.username) {
     return (
         <EditableNoteBody note={note} />
     )
   } else {
     return (
-          <NoteBody note={note} />
+        <NoteBody note={note} />
     )
   }
 }
@@ -41,10 +42,16 @@ function Note ({ note }) {
 function EditableNoteBody ({ note }) {
   const [currentNoteContent, setCurrentNoteContent] = useState(note?.content)
   const [isInEditMode, setIsInEditMode] = useState(false)
+  const editContentInput = useCallback((inputElement) => {
+    if (inputElement && isInEditMode) {
+      inputElement.focus()
+    }
+  }, [isInEditMode])
+
   return (
           <article
           style={{ backgroundColor: note.color }}
-          className={'flex flex-col p-21 border border-solid border-black rounded cursor-pointer'}
+          className={'flex flex-col p-20 border border-solid border-black rounded cursor-pointer'}
           onClick={() => {
             if (!isInEditMode) {
               setIsInEditMode(true)
@@ -52,9 +59,10 @@ function EditableNoteBody ({ note }) {
           }}
           >
             <section
-                style={{ display: isInEditMode ? 'none' : 'block' }}
+                className='flex-col'
+                style={{ display: isInEditMode ? 'none' : 'flex' }}
             >
-                <p className=''>{currentNoteContent}</p>
+                <p className='h-200'>{currentNoteContent}</p>
                 <span className='text-end'>{note.creator}</span>
             </section>
             <section
@@ -77,7 +85,7 @@ function EditableNoteBody ({ note }) {
                   })
                 }}
             >
-            <section className='flex'>
+            <section className='flex justify-between'>
                 <button type='submit'>{'Add'}</button>
                 <button type='button'
                 onClick={() => {
@@ -87,7 +95,14 @@ function EditableNoteBody ({ note }) {
                     {'Cancel'}
                 </button>
             </section>
-            <textarea name='content' />
+            <textarea
+                name='content'
+                className='h-200 p-20 bg-inherit resize-none'
+                maxLength={500}
+                defaultValue={note.content}
+                ref={editContentInput}
+            />
+
           </form>
           </section>
           </article>
@@ -96,12 +111,11 @@ function EditableNoteBody ({ note }) {
 
 function NoteBody ({ note }) {
   return (
-
         <article
           style={{ backgroundColor: note.color }}
-          className={'flex flex-col p-21 border border-solid border-black rounded'}
+          className={'flex flex-col p-20 border border-solid border-black rounded'}
         >
-            <p className=''>{note.Content}</p>
+            <p className='h-200'>{note.content}</p>
             <span className='text-end'>{note.creator}</span>
         </article>
   )

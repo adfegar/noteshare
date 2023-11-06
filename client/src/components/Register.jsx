@@ -30,6 +30,7 @@ export function Register () {
                                   refreshToken: response.refresh_token
                                 })
                                 setUserCookies(formFields.email, response.access_token, response.refresh_token)
+                                  .then(console.log('cookies set'))
                               })
                             } else {
                               setMessage('An error ocurred. Please try again.')

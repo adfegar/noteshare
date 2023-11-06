@@ -16,19 +16,21 @@ export function useWS () {
   // every time a note is sent, append it to receivedNotes array
   useEffect(() => {
     if (lastMessage) {
-      const note = JSON.parse(lastMessage.data)
-      // set a random id just for react key
-      note.id = crypto.randomUUID()
-      const updatedReceivedNotes = [...receivedNotes, note]
+      const newNote = JSON.parse(lastMessage.data)
+      const updatedReceivedNotes = [...receivedNotes, newNote]
       setReceivedNotes(updatedReceivedNotes)
     }
   }, [lastMessage])
 
   // custom functions to handle message actions
   function joinRoom (room) {
+    const roomName = `r_${room.id}_${room.name}`
     const message = {
       action: 'join-room',
-      message: room
+      message: {
+        id: room.id,
+        name: roomName
+      }
     }
     sendJsonMessage(message)
   }

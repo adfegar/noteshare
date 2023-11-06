@@ -30,13 +30,19 @@ export function Room ({ currentRoom }) {
                         user_id: Number(Cookies.get('userid')),
                         room_id: currentRoom.id
                       }
-                      const noteMessage = {
-                        content: noteObject.content,
-                        color: noteObject.color,
-                        creator: roomUsers.find((user) => user.id === Number(Cookies.get('userid'))).username
-                      }
-                      sendMessage(noteMessage)
-                      addUserNote(noteObject)
+                      addUserNote(noteObject).then(addNoteResult => {
+                        if (addNoteResult.status === 201) {
+                          addNoteResult.json().then(addedNote => {
+                            const noteMessage = {
+                              id: addedNote.id,
+                              content: addedNote.content,
+                              color: addedNote.color,
+                              creator: roomUsers.find((user) => user.id === addedNote.user_id).username
+                            }
+                            sendMessage(noteMessage)
+                          })
+                        }
+                      })
                     }}
                 >
                     {'New note'}

@@ -24,7 +24,6 @@ export function Login () {
                           authenticateUser(formFields).then(result => {
                             if (result.ok) {
                               result.json().then(response => {
-                                console.log(response)
                                 setUserData({
                                   accessToken: response.access_token,
                                   refreshToken: response.refresh_token
@@ -32,7 +31,7 @@ export function Login () {
                                 setUserCookies(formFields.email, response.access_token, response.refresh_token)
                               })
                             } else {
-                              setMessage(result.text)
+                              setMessage('incorrect email or password')
                             }
                           })
                         }}

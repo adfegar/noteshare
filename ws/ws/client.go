@@ -47,12 +47,14 @@ func (c *Client) read() {
 
 			switch message.Action {
 			case JoinRoomAction:
-				c.joinRoom(message.Message.(string))
+				c.joinRoom(message.Message.(*RoomMessage))
 			case LeaveRoomAction:
 				c.leaveRoom()
 			case SendMessageAction:
 				c.sendMessage(message.Message.(*Note))
 			}
+		} else {
+			log.Println(unMarshalErr)
 		}
 	}
 }
@@ -71,11 +73,11 @@ func (c *Client) write() {
 	}
 }
 
-func (c *Client) joinRoom(name string) {
-	room := c.server.findRoomByName(name)
+func (c *Client) joinRoom(requestRoom *RoomMessage) {
+	room := c.server.findRoomById(requestRoom.ID)
 
 	if room == nil {
-		room = c.server.createRoom(name)
+		room = c.server.createRoom(requestRoom.ID, requestRoom.Name)
 	}
 
 	c.leaveRoom()

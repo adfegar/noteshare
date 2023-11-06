@@ -39,6 +39,10 @@ func (userStorage *UserStorage) Create(item interface{}) error {
 	database := database.GetInstance().GetDB()
 	result, err := database.Exec("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?);", user.UserName, user.Email, user.Password, user.Role)
 
+	if err != nil {
+		return err
+	}
+
 	// Set the user id to the database generated id
 	userId, idErr := result.LastInsertId()
 
