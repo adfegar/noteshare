@@ -30,6 +30,18 @@ export async function updateUserNote (noteId, newNote) {
   return addNoteResult
 }
 
+export async function deleteUserNote ({ noteId }) {
+  await checkTokenExp({ token: Cookies.get('access-token') })
+  const deleteNoteResult = await fetch(`${API_PREFIX}/notes/${noteId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${Cookies.get('access-token')}`
+    }
+  })
+
+  return deleteNoteResult
+}
+
 export async function getUserNotes ({ userId }) {
   await checkTokenExp({ token: Cookies.get('access-token') })
   const noteResult = await fetch(`${API_PREFIX}/users/${userId}/notes`, {

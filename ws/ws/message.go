@@ -11,6 +11,7 @@ import (
 const (
 	SendNoteAction   = "send-note"
 	EditNoteAction   = "edit-note"
+	DeleteNoteAction = "delete-note"
 	JoinRoomAction   = "join-room"
 	LeaveRoomAction  = "leave-room"
 	EditRoomAction   = "edit-room"

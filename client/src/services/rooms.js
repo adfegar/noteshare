@@ -34,6 +34,18 @@ export async function updateRoom ({ roomId, newName }) {
   return updateRoomResult
 }
 
+export async function deleteRoom ({ roomId }) {
+  await checkTokenExp({ token: Cookies.get('access-token') })
+  const deleteRoomResult = await fetch(`${API_PREFIX}/rooms/${roomId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${Cookies.get('access-token')}`
+    }
+  })
+
+  return deleteRoomResult
+}
+
 export async function addUserToRoom ({ roomId }) {
   await checkTokenExp({ token: Cookies.get('access-token') })
   const addUserToRoomResult = await fetch(`${API_PREFIX}/users/${Cookies.get('userid')}/add-to-room`, {
