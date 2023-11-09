@@ -19,6 +19,21 @@ export async function addRoom ({ roomName }) {
   return addRoomResult
 }
 
+export async function updateRoom ({ roomId, newName }) {
+  const updateRoomResult = await fetch(`${API_PREFIX}/rooms/${roomId}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${Cookies.get('access-token')}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: newName
+    })
+  })
+
+  return updateRoomResult
+}
+
 export async function addUserToRoom ({ roomId }) {
   await checkTokenExp({ token: Cookies.get('access-token') })
   const addUserToRoomResult = await fetch(`${API_PREFIX}/users/${Cookies.get('userid')}/add-to-room`, {

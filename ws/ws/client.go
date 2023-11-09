@@ -50,9 +50,8 @@ func (c *Client) read() {
 				c.joinRoom(message.Message.(*RoomMessage))
 			case LeaveRoomAction:
 				c.leaveRoom()
-			case SendNoteAction, EditNoteAction:
+			case SendNoteAction, EditNoteAction, EditRoomAction:
 				c.sendMessage(message)
-
 			}
 		} else {
 			log.Println(unMarshalErr)

@@ -13,6 +13,7 @@ const (
 	EditNoteAction   = "edit-note"
 	JoinRoomAction   = "join-room"
 	LeaveRoomAction  = "leave-room"
+	EditRoomAction   = "edit-room"
 	UserJoinedAction = "user-join"
 	UserLeftAction   = "user-left"
 	DisconnectAction = "disconnect"

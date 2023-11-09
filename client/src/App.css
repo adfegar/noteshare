@@ -8,4 +8,18 @@
         @apply outline-1;
         @apply rounded-sm;
     }
+    .svg-xsm{
+        @apply max-w-[20px];
+        @apply max-h-[20px];
+    }
+    .svg-sm{
+        @apply max-w-[25px];
+        @apply max-h-[25px];
+    }
+
+    .svg-md{
+        @apply max-w-[30px];
+        @apply max-h-[30px];
+    }
+
 }

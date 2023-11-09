@@ -3,7 +3,6 @@ import './App.css'
 import { UserDataContext } from './contexts/userDataContext'
 import { useContext, useState } from 'react'
 import { Sidebar } from './components/Sidebar'
-import { Header } from './components/Header'
 import { Room } from './components/Room'
 
 function App () {
@@ -16,10 +15,9 @@ function App () {
   } else {
     return (
         <>
-            <Header />
             <main className='flex h-full'>
-                <Sidebar currentRoomSetter={setCurrentRoom} />
-                <Room currentRoom={currentRoom}/>
+                <Sidebar currentRoom={currentRoom} currentRoomSetter={setCurrentRoom} />
+                <Room currentRoom={currentRoom} setCurrentRoom={setCurrentRoom}/>
             </main>
         </>
     )

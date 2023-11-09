@@ -3,12 +3,12 @@ import { updateUserNote } from '../services/notes'
 import { UserDataContext } from '../contexts/userDataContext'
 import { useWS } from '../hooks/useWS'
 
-export function NoteList ({ userNotes }) {
+export function NoteList ({ roomNotes }) {
   return (
       <section className='grid grid-cols-4 gap-5 pt-20 px-20 overflow-y-auto'>
       {
-          (userNotes && userNotes.length > 0)
-            ? userNotes.map(note =>
+          (roomNotes && roomNotes.length > 0)
+            ? roomNotes.map(note =>
               <Note key={note.id} note={note}/>
             )
             : <p>{'No notes where found'}</p>
@@ -41,7 +41,6 @@ function Note ({ note }) {
 }
 
 function EditableNoteBody ({ note }) {
-  const [currentNoteContent, setCurrentNoteContent] = useState(note?.content)
   const [isInEditMode, setIsInEditMode] = useState(false)
   const { editNote } = useWS()
   const editContentInput = useCallback((inputElement) => {
@@ -83,7 +82,6 @@ function EditableNoteBody ({ note }) {
                     if (updateUserResult.status === 201) {
                       note.content = formFields.content
                       editNote(note)
-                      setCurrentNoteContent(formFields.content)
                       setIsInEditMode(false)
                     }
                   })
@@ -101,7 +99,7 @@ function EditableNoteBody ({ note }) {
             </section>
             <textarea
                 name='content'
-                className='h-200 p-20 bg-inherit resize-none'
+                className='h-200 p-20 bg-inherit resize-none focus:outline-none'
                 maxLength={500}
                 defaultValue={note.content}
                 ref={editContentInput}

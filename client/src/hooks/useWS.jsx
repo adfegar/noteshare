@@ -5,12 +5,14 @@ import { WS_PREFIX } from '../consts'
 const WSActions = {
   JoinRoomAction: 'join-room',
   SendNoteAction: 'send-note',
-  EditNoteAction: 'edit-note'
+  EditNoteAction: 'edit-note',
+  EditRoomAction: 'edit-room'
 }
 
 export function useWS () {
   const [receivedNotes, setReceivedNotes] = useState([])
   const [lastEditedNote, setLastEditedNote] = useState()
+  const [lastEditedRoom, setLastEditedRoom] = useState()
   const { sendJsonMessage, lastMessage } = useWebSocket(
     WS_PREFIX,
     {
@@ -29,6 +31,8 @@ export function useWS () {
         setReceivedNotes(updatedReceivedNotes)
       } else if (message.action === WSActions.EditNoteAction) {
         setLastEditedNote(message.message)
+      } else if (message.action === WSActions.EditRoomAction) {
+        setLastEditedRoom(message.message)
       }
     }
   }, [lastMessage])
@@ -46,7 +50,15 @@ export function useWS () {
     sendJsonMessage(message)
   }
 
-  function sendMessage (note) {
+  function editRoom (room) {
+    const message = {
+      action: WSActions.EditRoomAction,
+      message: room
+    }
+    sendJsonMessage(message)
+  }
+
+  function sendNote (note) {
     const message = {
       action: WSActions.SendNoteAction,
       message: note
@@ -62,5 +74,5 @@ export function useWS () {
     sendJsonMessage(message)
   }
 
-  return { receivedNotes, lastEditedNote, setReceivedNotes, joinRoom, sendMessage, editNote }
+  return { receivedNotes, lastEditedNote, lastEditedRoom, setReceivedNotes, joinRoom, editRoom, sendNote, editNote }
 }
