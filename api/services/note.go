@@ -78,6 +78,30 @@ func GetUserNotes(userId int) ([]models.Note, error) {
 	return userNotes, nil
 }
 
+func GetRoomNotes(roomId int) ([]models.Note, error) {
+	var roomNotes []models.Note
+	db := database.GetInstance().GetDB()
+
+	result, err := db.Query("SELECT * FROM notes WHERE room_id = ? ;", roomId)
+
+	if err != nil {
+		return nil, err
+	}
+	defer result.Close()
+
+	for result.Next() {
+		var note models.Note
+
+		if scanErr := result.Scan(&note.ID, &note.Content, &note.Color, &note.UserRefer, &note.RoomRefer); scanErr != nil {
+			return nil, scanErr
+		}
+
+		roomNotes = append(roomNotes, note)
+	}
+
+	return roomNotes, nil
+}
+
 func CreateNote(noteBody NoteBody) (*models.Note, error) {
 
 	note := &models.Note{

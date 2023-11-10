@@ -5,13 +5,11 @@ export function useUserNotes () {
   const [userNotes, setUserNotes] = useState([])
 
   useEffect(() => {
-    getUserNotes().then(result => {
-      if (result.status === 200) {
-        result.json().then(notes => {
-          setUserNotes(notes)
-        })
-      }
-    })
+    getUserNotes()
+      .then(result => {
+        setUserNotes(result)
+      })
+      .catch(err => console.error(err))
   }, [])
 
   return { userNotes }

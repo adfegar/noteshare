@@ -5,13 +5,11 @@ export function useUserRooms ({ userId }) {
   const [userRooms, setUserRooms] = useState()
 
   useEffect(() => {
-    getUserRooms({ userId }).then(response => {
-      if (response.status === 200) {
-        response.json().then(responseRooms => {
-          setUserRooms(responseRooms)
-        })
-      }
-    })
+    getUserRooms({ userId })
+      .then(response => {
+        setUserRooms(response)
+      })
+      .catch(err => console.error(err))
   }, [])
 
   return { userRooms, setUserRooms }

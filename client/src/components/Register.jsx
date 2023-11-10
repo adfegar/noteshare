@@ -22,20 +22,18 @@ export function Register () {
                           event.preventDefault()
 
                           const formFields = Object.fromEntries(new FormData(event.target))
-                          registerUser(formFields).then(result => {
-                            if (result.status === 201) {
-                              result.json().then(response => {
-                                setUserData({
-                                  accessToken: response.access_token,
-                                  refreshToken: response.refresh_token
-                                })
-                                setUserCookies(formFields.email, response.access_token, response.refresh_token)
-                                  .then(console.log('cookies set'))
+                          registerUser(formFields)
+                            .then(response => {
+                              setUserData({
+                                accessToken: response.access_token,
+                                refreshToken: response.refresh_token
                               })
-                            } else {
-                              setMessage('An error ocurred. Please try again.')
-                            }
-                          })
+                              setUserCookies(formFields.email, response.access_token, response.refresh_token)
+                            })
+                            .catch(err => {
+                              setMessage('Something happened. Please try again.')
+                              console.error(err)
+                            })
                         }}
                     >
                     <input type="text" name="username" />

@@ -21,19 +21,18 @@ export function Login () {
                         onSubmit={(event) => {
                           event.preventDefault()
                           const formFields = Object.fromEntries(new FormData(event.target))
-                          authenticateUser(formFields).then(result => {
-                            if (result.ok) {
-                              result.json().then(response => {
-                                setUserData({
-                                  accessToken: response.access_token,
-                                  refreshToken: response.refresh_token
-                                })
-                                setUserCookies(formFields.email, response.access_token, response.refresh_token)
+                          authenticateUser(formFields)
+                            .then(response => {
+                              setUserData({
+                                accessToken: response.access_token,
+                                refreshToken: response.refresh_token
                               })
-                            } else {
-                              setMessage('incorrect email or password')
-                            }
-                          })
+                              setUserCookies(formFields.email, response.access_token, response.refresh_token)
+                            })
+                            .catch(err => {
+                              setMessage('Incorrect email or password. Please, try again')
+                              console.error(err)
+                            })
                         }}
                     >
                     <input type="text" name="email" />

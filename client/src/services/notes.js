@@ -13,12 +13,18 @@ export async function addUserNote (note) {
     body: JSON.stringify(note)
   })
 
-  return addNoteResult
+  if (addNoteResult.status === 201) {
+    const room = await addNoteResult.json()
+    return room
+  } else {
+    const error = await addNoteResult.json()
+    throw new Error(error.error)
+  }
 }
 
 export async function updateUserNote (noteId, newNote) {
   await checkTokenExp({ token: Cookies.get('access-token') })
-  const addNoteResult = await fetch(`${API_PREFIX}/notes/${noteId}`, {
+  const updateNoteResult = await fetch(`${API_PREFIX}/notes/${noteId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -27,7 +33,10 @@ export async function updateUserNote (noteId, newNote) {
     body: JSON.stringify(newNote)
   })
 
-  return addNoteResult
+  if (updateNoteResult.status !== 200) {
+    const error = await updateNoteResult.json()
+    throw new Error(error.error)
+  }
 }
 
 export async function deleteUserNote ({ noteId }) {
@@ -39,17 +48,26 @@ export async function deleteUserNote ({ noteId }) {
     }
   })
 
-  return deleteNoteResult
+  if (deleteNoteResult.status !== 200) {
+    const error = await deleteNoteResult.json()
+    throw new Error(error.error)
+  }
 }
 
 export async function getUserNotes ({ userId }) {
   await checkTokenExp({ token: Cookies.get('access-token') })
-  const noteResult = await fetch(`${API_PREFIX}/users/${userId}/notes`, {
+  const userNotesResult = await fetch(`${API_PREFIX}/users/${userId}/notes`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${Cookies.get('access-token')}`
     }
   })
 
-  return noteResult
+  if (userNotesResult.status === 200) {
+    const userNotes = await userNotesResult.json()
+    return userNotes
+  } else {
+    const error = await userNotesResult.json()
+    throw new Error(error.error)
+  }
 }

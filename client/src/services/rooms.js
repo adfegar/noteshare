@@ -1,7 +1,6 @@
 import Cookies from 'js-cookie'
 import { API_PREFIX } from '../consts'
 import { checkTokenExp } from './auth'
-import { getUserNotes } from './notes'
 
 export async function addRoom ({ roomName }) {
   await checkTokenExp({ token: Cookies.get('access-token') })
@@ -16,7 +15,13 @@ export async function addRoom ({ roomName }) {
     })
   })
 
-  return addRoomResult
+  if (addRoomResult.status === 201) {
+    const room = await addRoomResult.json()
+    return room
+  } else {
+    const error = await addRoomResult.json()
+    throw new Error(error.error)
+  }
 }
 
 export async function updateRoom ({ roomId, newName }) {
@@ -31,7 +36,10 @@ export async function updateRoom ({ roomId, newName }) {
     })
   })
 
-  return updateRoomResult
+  if (updateRoomResult.status !== 200) {
+    const error = await updateRoomResult.json()
+    throw new Error(error.error)
+  }
 }
 
 export async function deleteRoom ({ roomId }) {
@@ -43,7 +51,10 @@ export async function deleteRoom ({ roomId }) {
     }
   })
 
-  return deleteRoomResult
+  if (deleteRoomResult.status !== 200) {
+    const error = await deleteRoomResult.json()
+    throw new Error(error.error)
+  }
 }
 
 export async function addUserToRoom ({ roomId }) {
@@ -58,7 +69,11 @@ export async function addUserToRoom ({ roomId }) {
       room_id: Number(roomId)
     })
   })
-  return addUserToRoomResult
+
+  if (addUserToRoomResult.status !== 200) {
+    const error = await addUserToRoomResult.json()
+    throw new Error(error.error)
+  }
 }
 
 export async function getRoomByInviteCode ({ inviteCode }) {
@@ -69,7 +84,14 @@ export async function getRoomByInviteCode ({ inviteCode }) {
       Authorization: `Bearer ${Cookies.get('access-token')}`
     }
   })
-  return roomResponse
+
+  if (roomResponse.status === 200) {
+    const room = await roomResponse.json()
+    return room
+  } else {
+    const error = await roomResponse.json()
+    throw new Error(error.error)
+  }
 }
 
 export async function getUserRooms ({ userId }) {
@@ -80,7 +102,14 @@ export async function getUserRooms ({ userId }) {
       Authorization: `Bearer ${Cookies.get('access-token')}`
     }
   })
-  return roomsResponse
+
+  if (roomsResponse.status === 200) {
+    const rooms = await roomsResponse.json()
+    return rooms
+  } else {
+    const error = await roomsResponse.json()
+    throw new Error(error.error)
+  }
 }
 
 export async function getRoomUsers ({ roomId }) {
@@ -95,36 +124,32 @@ export async function getRoomUsers ({ roomId }) {
   if (usersResponse.status === 200) {
     const users = await usersResponse.json()
     return users
+  } else {
+    const error = await usersResponse.json()
+    throw new Error(error.error)
   }
-
-  return null
 }
 
 export async function getRoomNotes ({ roomId }) {
-  const roomUsers = await getRoomUsers({ roomId })
-  let roomNotes = []
-
-  if (roomUsers != null) {
-    for (const user of roomUsers) {
-      const userNotesResult = await getUserNotes({ userId: user.id })
-
-      if (userNotesResult.status === 200) {
-        const userNotes = await userNotesResult.json()
-        if (userNotes != null) {
-          const userRoomNotes = userNotes.filter((note) =>
-            note.room_id === roomId
-          ).map(note => ({
-            id: note.id,
-            content: note.content,
-            color: note.color,
-            creator: user.username
-          }))
-
-          roomNotes = roomNotes.concat(userRoomNotes)
-        }
-      }
+  await checkTokenExp({ token: Cookies.get('access-token') })
+  const roomNotesResult = await fetch(`${API_PREFIX}/rooms/${roomId}/notes`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${Cookies.get('access-token')}`
     }
-  }
+  })
 
-  return roomNotes
+  if (roomNotesResult.status === 200) {
+    const roomUsers = await getRoomUsers({ roomId })
+    const roomNotes = await roomNotesResult.json()
+    return roomNotes.map(note => ({
+      id: note.id,
+      content: note.content,
+      color: note.color,
+      creator: roomUsers.find(user => user.id === note.user_id).username
+    }))
+  } else {
+    const error = await roomNotesResult.json()
+    throw new Error(error.Error)
+  }
 }

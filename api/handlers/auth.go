@@ -54,7 +54,7 @@ func handleRegisterUser(res http.ResponseWriter, req *http.Request) error {
 		return utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
 	}
 
-	return utils.WriteJSON(res, 201, AuthenticationResponse{TokenValue: accessToken.TokenValue, RefreshTokenValue: refreshToken.TokenValue})
+	return utils.WriteJSON(res, 200, AuthenticationResponse{TokenValue: accessToken.TokenValue, RefreshTokenValue: refreshToken.TokenValue})
 }
 
 // Function that returns a user's JWT token, given its email and password

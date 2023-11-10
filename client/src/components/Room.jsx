@@ -1,16 +1,15 @@
-import { useRoomUsers } from '../hooks/useRoomUsers'
 import { NoteColors, NoteList } from './NoteList'
 import { useWS } from '../hooks/useWS'
 import { useRoomNotes } from '../hooks/useRoomNotes'
-import Cookies from 'js-cookie'
 import { addUserNote } from '../services/notes'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useContext } from 'react'
 import { deleteRoom, updateRoom } from '../services/rooms'
+import { UserDataContext } from '../contexts/userDataContext'
 
 export function Room ({ currentRoom, setCurrentRoom }) {
-  const { roomNotes, setRoomNotes } = useRoomNotes({ roomId: currentRoom?.id })
+  const { userData } = useContext(UserDataContext)
   const { receivedNotes, lastEditedNote, lastDeletedNote, lastEditedRoom, setReceivedNotes, sendNote, editRoom } = useWS()
-  const { roomUsers } = useRoomUsers({ roomId: currentRoom?.id })
+  const { roomNotes, setRoomNotes } = useRoomNotes({ roomId: currentRoom?.id })
   const [isInRoomEditMode, setIsInRoomEditMode] = useState(false)
   const [copiedToClipboard, setCopiedToClipboard] = useState(false)
 
@@ -27,6 +26,7 @@ export function Room ({ currentRoom, setCurrentRoom }) {
     }
   }, [lastEditedNote])
 
+  // every time a note is deleted in this room, delete it from the room notes array
   useEffect(() => {
     if (lastDeletedNote) {
       const updatedRoomNotes = [...roomNotes]
@@ -34,6 +34,7 @@ export function Room ({ currentRoom, setCurrentRoom }) {
     }
   }, [lastDeletedNote])
 
+  // every time a room is edited
   useEffect(() => {
     if (lastEditedRoom) {
       setCurrentRoom({
@@ -65,7 +66,7 @@ export function Room ({ currentRoom, setCurrentRoom }) {
                       const noteObject = {
                         content: '',
                         color: NoteColors[Object.keys(NoteColors)[randomColorIndex]],
-                        user_id: Number(Cookies.get('userid')),
+                        user_id: Number(userData.userId),
                         room_id: currentRoom.id
                       }
                       addUserNote(noteObject).then(addNoteResult => {
@@ -75,7 +76,7 @@ export function Room ({ currentRoom, setCurrentRoom }) {
                               id: addedNote.id,
                               content: addedNote.content,
                               color: addedNote.color,
-                              creator: roomUsers.find((user) => user.id === addedNote.user_id).username
+                              creator: userData.username
                             }
                             sendNote(noteMessage)
                           })

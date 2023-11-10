@@ -16,6 +16,7 @@ func InitRoomRoutes(router *mux.Router) {
 	router.HandleFunc("/api/v1/rooms/{id:[0-9]+}", utils.ParseToHandlerFunc(handleGetRoom)).Methods("GET")
 	router.HandleFunc("/api/v1/rooms/{inviteCode}", utils.ParseToHandlerFunc(handleGetRoomByInvite)).Methods("GET")
 	router.HandleFunc("/api/v1/rooms/{id}/users", utils.ParseToHandlerFunc(handleGetRoomUsers)).Methods("GET")
+	router.HandleFunc("/api/v1/rooms/{id}/notes", utils.ParseToHandlerFunc(handleGetRoomNotes)).Methods("GET")
 	router.HandleFunc("/api/v1/rooms/{id}", utils.ParseToHandlerFunc(handleUpdateRoom)).Methods("PUT")
 	router.HandleFunc("/api/v1/rooms/{id}", utils.ParseToHandlerFunc(handleDeleteRoom)).Methods("DELETE")
 }
@@ -70,6 +71,18 @@ func handleGetRoomUsers(res http.ResponseWriter, req *http.Request) error {
 	return utils.WriteJSON(res, 200, responseUsers)
 }
 
+func handleGetRoomNotes(res http.ResponseWriter, req *http.Request) error {
+	id, _ := strconv.Atoi(mux.Vars(req)["id"])
+
+	roomNotes, err := services.GetRoomNotes(id)
+
+	if err != nil {
+		return utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
+	}
+
+	return utils.WriteJSON(res, 200, roomNotes)
+}
+
 func handleCreateRoom(res http.ResponseWriter, req *http.Request) error {
 	var roomBody services.RoomBody
 
@@ -120,7 +133,7 @@ func handleUpdateRoom(res http.ResponseWriter, req *http.Request) error {
 		return utils.WriteJSON(res, 404, utils.ApiError{Error: err.Error()})
 	}
 
-	return utils.WriteJSON(res, 201, room)
+	return utils.WriteJSON(res, 200, room)
 }
 
 func handleDeleteRoom(res http.ResponseWriter, req *http.Request) error {
@@ -132,5 +145,5 @@ func handleDeleteRoom(res http.ResponseWriter, req *http.Request) error {
 		return utils.WriteJSON(res, 404, utils.ApiError{Error: err.Error()})
 	}
 
-	return utils.WriteJSON(res, 201, utils.APISuccess{Success: "room deleted successfully"})
+	return utils.WriteJSON(res, 200, utils.APISuccess{Success: "room deleted successfully"})
 }

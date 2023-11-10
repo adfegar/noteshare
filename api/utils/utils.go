@@ -9,11 +9,11 @@ import (
 )
 
 type ApiError struct {
-	Error string
+	Error string `json:"error"`
 }
 
 type APISuccess struct {
-	Success string
+	Success string `json:"success"`
 }
 
 type APIFunc func(res http.ResponseWriter, req *http.Request) error

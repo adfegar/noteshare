@@ -90,7 +90,7 @@ func handleUpdateNote(res http.ResponseWriter, req *http.Request) error {
 		return utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
 	}
 
-	return utils.WriteJSON(res, 201, note)
+	return utils.WriteJSON(res, 200, note)
 }
 
 func handleDeleteNote(res http.ResponseWriter, req *http.Request) error {
@@ -100,5 +100,5 @@ func handleDeleteNote(res http.ResponseWriter, req *http.Request) error {
 		return utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
 	}
 
-	return utils.WriteJSON(res, 201, utils.APISuccess{Success: "note deleted successfully"})
+	return utils.WriteJSON(res, 200, utils.APISuccess{Success: "note deleted successfully"})
 }

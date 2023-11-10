@@ -148,13 +148,19 @@ func handleUpdateUser(res http.ResponseWriter, req *http.Request) error {
 		return utils.WriteJSON(res, 404, utils.ApiError{Error: "user not found"})
 	}
 
-	return utils.WriteJSON(res, 201, CreateResponseUser(*user))
+	return utils.WriteJSON(res, 200, CreateResponseUser(*user))
 }
 
 func handleDeleteUser(res http.ResponseWriter, req *http.Request) error {
 	id, _ := strconv.Atoi(mux.Vars(req)["id"])
 
-	return services.DeleteUser(id)
+	err := services.DeleteUser(id)
+
+	if err != nil {
+		return utils.WriteJSON(res, 404, utils.ApiError{Error: err.Error()})
+	}
+
+	return utils.WriteJSON(res, 200, utils.APISuccess{Success: "user deleted successfully"})
 }
 
 func handleAddUserToRoom(res http.ResponseWriter, req *http.Request) error {
@@ -179,7 +185,7 @@ func handleAddUserToRoom(res http.ResponseWriter, req *http.Request) error {
 		return utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
 	}
 
-	return utils.WriteJSON(res, 201, utils.APISuccess{Success: "user added to room successfully"})
+	return utils.WriteJSON(res, 200, utils.APISuccess{Success: "user added to room successfully"})
 }
 
 func handleDeleteUserFromRoom(res http.ResponseWriter, req *http.Request) error {
@@ -204,5 +210,5 @@ func handleDeleteUserFromRoom(res http.ResponseWriter, req *http.Request) error 
 		return utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
 	}
 
-	return utils.WriteJSON(res, 201, utils.APISuccess{Success: "user deleted from room successfully"})
+	return utils.WriteJSON(res, 200, utils.APISuccess{Success: "user deleted from room successfully"})
 }

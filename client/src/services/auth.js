@@ -12,7 +12,13 @@ export async function registerUser (user) {
       body: JSON.stringify(user)
     })
 
-    return registerResult
+    if (registerResult.status === 200) {
+      const registerResponse = await registerResult.json()
+      return registerResponse
+    } else {
+      const error = await registerResult.json()
+      throw new Error(error.error)
+    }
   }
 }
 
@@ -26,7 +32,13 @@ export async function authenticateUser (user) {
       body: JSON.stringify(user)
     })
 
-    return authenticateResult
+    if (authenticateResult.status === 200) {
+      const authResponse = await authenticateResult.json()
+      return authResponse
+    } else {
+      const error = await authenticateResult.json()
+      throw new Error(error.error)
+    }
   }
 }
 
@@ -42,8 +54,11 @@ export async function refreshUserToken ({ refreshToken }) {
   })
 
   if (refreshTokenResult.status === 200) {
-    const tokenResponse = await refreshTokenResult.json()
-    Cookies.set('access-token', tokenResponse.token, { expires: 365 })
+    const refreshResponse = await refreshTokenResult.json()
+    Cookies.set('access-token', refreshResponse.token, { expires: 365 })
+  } else {
+    const error = await refreshTokenResult.json()
+    throw new Error(error.error)
   }
 }
 

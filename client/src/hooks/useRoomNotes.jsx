@@ -5,9 +5,13 @@ export function useRoomNotes ({ roomId }) {
   const [roomNotes, setRoomNotes] = useState([])
 
   useEffect(() => {
-    getRoomNotes({ roomId }).then(roomNotesResult => {
-      setRoomNotes(roomNotesResult)
-    })
+    if (roomId) {
+      getRoomNotes({ roomId })
+        .then(roomNotesResult => {
+          setRoomNotes(roomNotesResult)
+        })
+        .catch(err => console.error(err))
+    }
   }, [roomId])
 
   return { roomNotes, setRoomNotes }
