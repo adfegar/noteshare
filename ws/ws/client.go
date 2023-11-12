@@ -62,7 +62,6 @@ func (c *Client) read() {
 func (c *Client) write() {
 	defer c.socket.Close()
 	for msg := range c.receive {
-		log.Print(c)
 		log.Println(c.id.String() + " Writting...")
 		log.Println(string(msg))
 

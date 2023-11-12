@@ -9,7 +9,10 @@ export function useUserNotes () {
       .then(result => {
         setUserNotes(result)
       })
-      .catch(err => console.error(err))
+      .catch(err => {
+        setUserNotes([])
+        console.error(err)
+      })
   }, [])
 
   return { userNotes }

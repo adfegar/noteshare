@@ -11,7 +11,7 @@ const WSActions = {
 }
 
 export function useWS () {
-  const [receivedNotes, setReceivedNotes] = useState([])
+  const [lastReceivedNote, setLastReceivedNote] = useState()
   const [lastEditedNote, setLastEditedNote] = useState()
   const [lastDeletedNote, setLastDeletedNote] = useState()
   const [lastEditedRoom, setLastEditedRoom] = useState()
@@ -29,8 +29,7 @@ export function useWS () {
     if (lastMessage) {
       const message = JSON.parse(lastMessage.data)
       if (message.action === WSActions.SendNoteAction) {
-        const updatedReceivedNotes = [...receivedNotes, message.message]
-        setReceivedNotes(updatedReceivedNotes)
+        setLastReceivedNote(message.message)
       } else if (message.action === WSActions.EditNoteAction) {
         setLastEditedNote(message.message)
       } else if (message.action === WSActions.DeleteNoteAction) {
@@ -86,5 +85,5 @@ export function useWS () {
     sendJsonMessage(message)
   }
 
-  return { receivedNotes, lastEditedNote, lastDeletedNote, lastEditedRoom, setReceivedNotes, joinRoom, editRoom, sendNote, editNote, deleteNote }
+  return { lastReceivedNote, lastEditedNote, lastDeletedNote, lastEditedRoom, joinRoom, editRoom, sendNote, editNote, deleteNote }
 }

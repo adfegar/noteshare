@@ -9,7 +9,10 @@ export function useRoomUsers ({ roomId }) {
       .then(roomUsers => {
         setRoomUsers(roomUsers)
       })
-      .catch(err => console.error(err))
+      .catch(err => {
+        setRoomUsers([])
+        console.error(err)
+      })
   }, [roomId])
 
   return { roomUsers }

@@ -86,7 +86,7 @@ func GetUserRooms(userId int) ([]models.Room, error) {
 		var room models.Room
 
 		if scanErr := results.Scan(&room.ID, &room.Name, &room.Invite); scanErr != nil {
-			return rooms, scanErr
+			return nil, scanErr
 		}
 
 		rooms = append(rooms, room)

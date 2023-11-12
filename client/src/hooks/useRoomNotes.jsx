@@ -10,7 +10,10 @@ export function useRoomNotes ({ roomId }) {
         .then(roomNotesResult => {
           setRoomNotes(roomNotesResult)
         })
-        .catch(err => console.error(err))
+        .catch(err => {
+          setRoomNotes([])
+          console.error(err)
+        })
     }
   }, [roomId])
 

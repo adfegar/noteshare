@@ -1,8 +1,10 @@
 import { useContext, useState } from 'react'
 import { UserDataContext } from '../contexts/userDataContext'
-import { Navigate } from 'react-router-dom'
+import { Navigate, Link } from 'react-router-dom'
 import { registerUser } from '../services/auth'
 import { setUserCookies } from '../utils'
+import { FormTextField } from './FormTextField'
+import { FormPasswordField } from './FormPasswordField'
 
 export function Register () {
   const { userData, setUserData } = useContext(UserDataContext)
@@ -11,13 +13,14 @@ export function Register () {
     return (<Navigate to="/" replace={true} />)
   } else {
     return (
-            <main>
+            <main className='formBox flex flex-col gap-7 rounded-md m-auto relative w-[449px] p-[30px]'>
                 <header>
-                    <h1>Register</h1>
+                    <h1 className='text-3xl text-center'>Sign up to send fancy notes to your friends!</h1>
                 </header>
 
-                <article className='flex-col'>
+                <article>
                     <form
+                        className='flex flex-col gap-4'
                         onSubmit={(event) => {
                           event.preventDefault()
 
@@ -36,10 +39,14 @@ export function Register () {
                             })
                         }}
                     >
-                    <input type="text" name="username" />
-                    <input type="text" name="email" />
-                    <input type="password" name="password" />
-                    <button type="submit">Log in</button>
+                    <FormTextField name={'Username'} required={true} />
+                    <FormTextField name={'Email'} required={true} />
+                    <FormPasswordField required={true} />
+                    <button className='p-[10px] bg-ui-blue text-white border rounded-md' type="submit">Register</button>
+                    <span className='text-center'>
+                        {'Already registered?'}
+                        <Link className='text-ui-blue' to="/login" replace={true}> Log In</Link>
+                    </span>
                     </form>
                     <p>{message}</p>
                 </article>

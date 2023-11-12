@@ -3,6 +3,12 @@
 @tailwind utilities;
 
 @layer base {
+    body{
+        font-family: 'helvetica'
+    }
+    .formBox{
+        box-shadow: #9adcff 0px 0px 0px 2px inset, rgb(255, 255, 255) 10px -10px 0px -3px, #c1ffd7 10px -10px, rgb(255, 255, 255) 20px -20px 0px -3px, #fff89a 20px -20px, rgb(255, 255, 255) 30px -30px 0px -3px, #ffcf96 30px -30px, rgb(255, 255, 255) 40px -40px 0px -3px, #ff8080 40px -40px;
+    }
     input {
         @apply outline;
         @apply outline-1;
@@ -22,4 +28,9 @@
         @apply max-h-[30px];
     }
 
+}
+
+@font-face {
+    font-family: "Virgil";
+    src: url("../public/fonts/Virgil.woff2");
 }

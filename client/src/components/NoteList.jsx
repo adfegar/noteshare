@@ -18,11 +18,11 @@ export function NoteList ({ roomNotes }) {
 }
 
 export const NoteColors = {
-  BLUE: '#c2d9ff',
-  PINK: '#f8bdeb',
+  BLUE: '#9adcff',
+  PINK: '#ff96d1',
   PURPLE: '#d0bfff',
-  GREEN: '#cdfad5',
-  YELLOW: '#f6fdc3',
+  GREEN: '#c1ffd7',
+  YELLOW: '#fff89a',
   ORANGE: '#ffcf96',
   RED: '#ff8080'
 }
@@ -52,7 +52,7 @@ function EditableNoteBody ({ note }) {
   return (
           <article
           style={{ backgroundColor: note.color }}
-          className={'flex flex-col p-20 border border-solid border-black rounded'}
+          className={'flex flex-col p-20 border border-solid border-black rounded font-virgil text-note'}
           >
             {
                 !isInEditMode
@@ -86,11 +86,10 @@ function EditableNoteBody ({ note }) {
                                 <button
                                     onClick={() => {
                                       deleteUserNote({ noteId: note.id })
-                                        .then(deleteUserNoteResult => {
-                                          if (deleteUserNoteResult.status === 201) {
-                                            deleteNote(note)
-                                          }
+                                        .then(() => {
+                                          deleteNote(note)
                                         })
+                                        .catch(error => console.error(error))
                                     }}
                                 >
                                     <svg className='svg-sm' width="64px" height="64px" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="#000000" stroke="#000000" strokeWidth="20.48">
@@ -109,7 +108,7 @@ function EditableNoteBody ({ note }) {
                                     </svg>
                                 </button>
                             </section>
-                        <span className='text-end'>{note.creator}</span>
+                        <span className='text-lg'>{note.creator}</span>
                         </section>
                         </section>
                   : <section>
@@ -122,13 +121,14 @@ function EditableNoteBody ({ note }) {
                                 content: formFields.content,
                                 color: note.color
                               }
-                              updateUserNote(note.id, newNote).then(updateUserResult => {
-                                if (updateUserResult.status === 201) {
+
+                              updateUserNote(note.id, newNote)
+                                .then(() => {
                                   note.content = formFields.content
                                   editNote(note)
                                   setIsInEditMode(false)
-                                }
-                              })
+                                })
+                                .catch(error => console.error(error))
                             }}
                         >
                             <section className='flex justify-between'>
@@ -159,10 +159,10 @@ function NoteBody ({ note }) {
   return (
         <article
           style={{ backgroundColor: note.color }}
-          className={'flex flex-col p-20 border border-solid border-black rounded'}
+          className={'flex flex-col p-20 border border-solid border-black rounded font-virgil text-note'}
         >
             <p className='h-200'>{note.content}</p>
-            <span className='text-end'>{note.creator}</span>
+            <span className='text-lg text-end'>{note.creator}</span>
         </article>
   )
 }

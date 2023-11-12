@@ -56,15 +56,9 @@ function AddRoomForm ({ userRooms, setUserRooms }) {
         className='flex items-center gap-3 px-3 py-1 min-h-[44px] border rounded-md border-white'
         onClick={() => {
           addRoom({ roomName: 'new room' }).then(addRoomResult => {
-            if (addRoomResult.status === 201) {
-              addRoomResult.json().then(room => {
-                addUserToRoom({ roomId: room.id })
-                const updatedUserRooms = [...userRooms, room]
-                setUserRooms(updatedUserRooms)
-              })
-            } else {
-              console.error('error adding room')
-            }
+            addUserToRoom({ roomId: addRoomResult.id })
+            const updatedUserRooms = [...userRooms, addRoomResult]
+            setUserRooms(updatedUserRooms)
           })
         }}
       >

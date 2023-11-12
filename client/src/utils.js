@@ -7,12 +7,8 @@ export function setUserCookies (email, accessToken, refreshToken) {
   Cookies.set('refresh-token', refreshToken, { expires: 365 })
 
   getUserByEmail({ email }).then(result => {
-    if (result.status === 200) {
-      result.json().then(user => {
-        Cookies.set('userid', user.id, { expires: 365 })
-        Cookies.set('username', user.username, { expires: 365 })
-        window.location.reload(false)
-      })
-    }
+    Cookies.set('userid', result.id, { expires: 365 })
+    Cookies.set('username', result.username, { expires: 365 })
+    window.location.reload(false)
   })
 }

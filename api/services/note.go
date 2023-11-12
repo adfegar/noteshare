@@ -1,6 +1,7 @@
 package services
 
 import (
+	"database/sql"
 	"noteshare-api/database"
 	"noteshare-api/models"
 	"noteshare-api/storage"
@@ -89,6 +90,8 @@ func GetRoomNotes(roomId int) ([]models.Note, error) {
 	}
 	defer result.Close()
 
+	found := false
+
 	for result.Next() {
 		var note models.Note
 
@@ -97,6 +100,11 @@ func GetRoomNotes(roomId int) ([]models.Note, error) {
 		}
 
 		roomNotes = append(roomNotes, note)
+		found = true
+	}
+
+	if !found {
+		return nil, sql.ErrNoRows
 	}
 
 	return roomNotes, nil

@@ -140,16 +140,18 @@ export async function getRoomNotes ({ roomId }) {
   })
 
   if (roomNotesResult.status === 200) {
-    const roomUsers = await getRoomUsers({ roomId })
     const roomNotes = await roomNotesResult.json()
-    return roomNotes.map(note => ({
-      id: note.id,
-      content: note.content,
-      color: note.color,
-      creator: roomUsers.find(user => user.id === note.user_id).username
-    }))
+    const roomUsers = await getRoomUsers({ roomId })
+    if (roomNotes != null) {
+      return roomNotes.map(note => ({
+        id: note.id,
+        content: note.content,
+        color: note.color,
+        creator: roomUsers.find(user => user.id === note.user_id).username
+      }))
+    }
   } else {
     const error = await roomNotesResult.json()
-    throw new Error(error.Error)
+    throw new Error(error.error)
   }
 }

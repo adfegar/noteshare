@@ -15,6 +15,15 @@ export default {
       height: {
         80: '80px',
         200: '200px'
+      },
+      fontFamily: {
+        virgil: ['Virgil', 'regular']
+      },
+      fontSize: {
+        note: '1.05rem'
+      },
+      colors: {
+        'ui-blue': '#1c3ffd'
       }
     }
   },

@@ -8,10 +8,18 @@ import { UserDataContext } from '../contexts/userDataContext'
 
 export function Room ({ currentRoom, setCurrentRoom }) {
   const { userData } = useContext(UserDataContext)
-  const { receivedNotes, lastEditedNote, lastDeletedNote, lastEditedRoom, setReceivedNotes, sendNote, editRoom } = useWS()
+  const { lastReceivedNote, lastEditedNote, lastDeletedNote, lastEditedRoom, sendNote, editRoom } = useWS()
   const { roomNotes, setRoomNotes } = useRoomNotes({ roomId: currentRoom?.id })
   const [isInRoomEditMode, setIsInRoomEditMode] = useState(false)
   const [copiedToClipboard, setCopiedToClipboard] = useState(false)
+
+  // each time a note is received, add it to the room notes array
+  useEffect(() => {
+    if (lastReceivedNote) {
+      const updatedRoomNotes = [...roomNotes, lastReceivedNote]
+      setRoomNotes(updatedRoomNotes)
+    }
+  }, [lastReceivedNote])
 
   // each time a note is edited, change it in the room notes array
   useEffect(() => {
@@ -34,7 +42,7 @@ export function Room ({ currentRoom, setCurrentRoom }) {
     }
   }, [lastDeletedNote])
 
-  // every time a room is edited
+  // every time a room name is edited, change it for all users
   useEffect(() => {
     if (lastEditedRoom) {
       setCurrentRoom({
@@ -43,11 +51,6 @@ export function Room ({ currentRoom, setCurrentRoom }) {
       })
     }
   }, [lastEditedRoom])
-
-  // reset the received notes array each time the users swaps rooms
-  useEffect(() => {
-    setReceivedNotes([])
-  }, [currentRoom])
 
   if (currentRoom) {
     return (
@@ -70,17 +73,13 @@ export function Room ({ currentRoom, setCurrentRoom }) {
                         room_id: currentRoom.id
                       }
                       addUserNote(noteObject).then(addNoteResult => {
-                        if (addNoteResult.status === 201) {
-                          addNoteResult.json().then(addedNote => {
-                            const noteMessage = {
-                              id: addedNote.id,
-                              content: addedNote.content,
-                              color: addedNote.color,
-                              creator: userData.username
-                            }
-                            sendNote(noteMessage)
-                          })
+                        const noteMessage = {
+                          id: addNoteResult.id,
+                          content: addNoteResult.content,
+                          color: addNoteResult.color,
+                          creator: userData.username
                         }
+                        sendNote(noteMessage)
                       })
                     }}
                 >
@@ -96,7 +95,7 @@ export function Room ({ currentRoom, setCurrentRoom }) {
                         <span className='py-[2px] pr-[5px]'>{'New note'}</span>
                 </button>
             </section>
-            <NoteList roomNotes={roomNotes.concat(receivedNotes)} />
+            <NoteList roomNotes={roomNotes} />
         </article>
     )
   }

@@ -3,6 +3,8 @@ import { useState, useContext } from 'react'
 import { UserDataContext } from '../contexts/userDataContext'
 import { Navigate, Link } from 'react-router-dom'
 import { setUserCookies } from '../utils'
+import { FormTextField } from './FormTextField'
+import { FormPasswordField } from './FormPasswordField'
 
 export function Login () {
   const { userData, setUserData } = useContext(UserDataContext)
@@ -11,13 +13,14 @@ export function Login () {
     return (<Navigate to="/" replace={true} />)
   } else {
     return (
-            <main>
+            <main className='formBox flex flex-col gap-7 rounded-md m-auto relative w-[449px] p-[30px]'>
                 <header>
-                    <h1>Log in</h1>
+                    <h1 className='text-3xl text-center'>Log in to Noteshare</h1>
                 </header>
 
                 <article className='flex-col'>
                     <form
+                        className='flex flex-col gap-4'
                         onSubmit={(event) => {
                           event.preventDefault()
                           const formFields = Object.fromEntries(new FormData(event.target))
@@ -35,12 +38,15 @@ export function Login () {
                             })
                         }}
                     >
-                    <input type="text" name="email" />
-                    <input type="password" name="password" />
-                    <button type="submit">Log in</button>
+                    <FormTextField name={'Email'} required={false} />
+                    <FormPasswordField required={false} />
+                    <button className='p-[10px] bg-ui-blue text-white border rounded-md' type="submit">Log in</button>
+                    <span className='text-center'>
+                        {'You are not registered?'}
+                        <Link className='text-ui-blue' to="/register" replace={true}> Register</Link>
+                    </span>
                     </form>
                     <p>{message}</p>
-                    <Link to="/register" replace={true}>Register</Link>
                 </article>
             </main>
     )
