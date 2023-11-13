@@ -23,7 +23,8 @@ export default {
         note: '1.05rem'
       },
       colors: {
-        'ui-blue': '#1c3ffd'
+        'ui-blue': '#1c3ffd',
+        'error-red': '#ff0000'
       }
     }
   },

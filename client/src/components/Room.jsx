@@ -25,12 +25,10 @@ export function Room ({ currentRoom, setCurrentRoom }) {
   useEffect(() => {
     if (lastEditedNote) {
       const updatedRoomNotes = [...roomNotes]
-      for (const note of updatedRoomNotes) {
-        if (note.id === lastEditedNote.id) {
-          note.content = lastEditedNote.content
-          setRoomNotes(updatedRoomNotes)
-        }
-      }
+      const targetNote = updatedRoomNotes.find(note => note.id === lastEditedNote.id)
+      targetNote.content = lastEditedNote.content
+      targetNote.color = lastEditedNote.color
+      setRoomNotes(updatedRoomNotes)
     }
   }, [lastEditedNote])
 

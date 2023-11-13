@@ -40,13 +40,13 @@ export function Login () {
                     >
                     <FormTextField name={'Email'} required={false} />
                     <FormPasswordField required={false} />
+                    <span className='text-center text-error-red'>{message}</span>
                     <button className='p-[10px] bg-ui-blue text-white border rounded-md' type="submit">Log in</button>
                     <span className='text-center'>
                         {'You are not registered?'}
                         <Link className='text-ui-blue' to="/register" replace={true}> Register</Link>
                     </span>
                     </form>
-                    <p>{message}</p>
                 </article>
             </main>
     )

@@ -9,9 +9,10 @@ export function FormTextField ({ name, required }) {
             }
         </section>
         <input
+            className='p-1 outline-none border-b border-black bg-inherit focus:border-ui-blue'
             type="text"
             name={name.toLowerCase()}
-            className='p-1 outline-none border-b border-black bg-inherit focus:border-ui-blue'
+            required={required}
         />
     </section>
   )

@@ -11,6 +11,7 @@ export function FormPasswordField ({ required }) {
         <input
             type="password"
             name="password"
+            required={required}
             className='p-1 outline-none border-b border-black bg-inherit focus:border-ui-blue'
         />
     </section>

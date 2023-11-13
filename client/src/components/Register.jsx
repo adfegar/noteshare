@@ -34,7 +34,7 @@ export function Register () {
                               setUserCookies(formFields.email, response.access_token, response.refresh_token)
                             })
                             .catch(err => {
-                              setMessage('Something happened. Please try again.')
+                              setMessage('An error ocurred. Please try again.')
                               console.error(err)
                             })
                         }}
@@ -42,13 +42,13 @@ export function Register () {
                     <FormTextField name={'Username'} required={true} />
                     <FormTextField name={'Email'} required={true} />
                     <FormPasswordField required={true} />
-                    <button className='p-[10px] bg-ui-blue text-white border rounded-md' type="submit">Register</button>
+                    <span className='text-center text-error-red'>{message}</span>
+                    <button className='p-[10px] bg-ui-blue text-white border rounded-md' type="submit">Sign Up</button>
                     <span className='text-center'>
                         {'Already registered?'}
                         <Link className='text-ui-blue' to="/login" replace={true}> Log In</Link>
                     </span>
                     </form>
-                    <p>{message}</p>
                 </article>
             </main>
     )
