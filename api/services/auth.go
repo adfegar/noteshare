@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"noteshare-api/auth"
 	"noteshare-api/database"
 	"noteshare-api/models"
@@ -118,6 +119,10 @@ func RefreshToken(request RefreshTokenRequest) (accessToken *models.Token, err e
 	if jwtErr := auth.ValidateToken(request.RefreshToken); jwtErr != nil {
 		err = jwtErr
 		return
+	}
+
+	if _, tokenNotFoundErr := GetTokenByValue(request.RefreshToken); tokenNotFoundErr != nil {
+		return nil, errors.New("refresh token revoked")
 	}
 
 	//Get the refresh-token's user

@@ -19,6 +19,7 @@ func (server *APIServer) Run() error {
 		AllowCredentials: true,
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		MaxAge:           86400,
 		Debug:            true,
 	}).Handler(router)
 	// init middlewares

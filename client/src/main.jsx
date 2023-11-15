@@ -12,20 +12,20 @@ import { UserDataProvider } from './contexts/userDataContext.jsx'
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <UserDataProvider> <App/> </UserDataProvider>
+    element: <App/>
   },
   {
     path: '/login',
-    element: <UserDataProvider> <Login/>  </UserDataProvider>
+    element: <Login/>
   },
   {
     path: '/register',
-    element: <UserDataProvider> <Register/> </UserDataProvider>
+    element: <Register/>
   }
 ])
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <RouterProvider router={router} />
-  </React.StrictMode>
+    <UserDataProvider>
+        <RouterProvider router={router} />
+    </UserDataProvider>
 )

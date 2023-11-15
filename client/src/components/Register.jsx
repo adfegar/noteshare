@@ -5,11 +5,14 @@ import { registerUser } from '../services/auth'
 import { setUserCookies } from '../utils'
 import { FormTextField } from './FormTextField'
 import { FormPasswordField } from './FormPasswordField'
+import Cookies from 'js-cookie'
 
 export function Register () {
   const { userData, setUserData } = useContext(UserDataContext)
   const [message, setMessage] = useState()
-  if (userData?.accessToken) {
+  const [authenticated] = useState(Cookies.get('authenticated'))
+
+  if (userData.accessToken && (authenticated === 'true')) {
     return (<Navigate to="/" replace={true} />)
   } else {
     return (

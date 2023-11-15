@@ -1,73 +1,50 @@
 import Cookies from 'js-cookie'
 import { API_PREFIX } from '../consts'
 import { checkTokenExp } from './auth'
+import { instance } from './interceptors'
 
 export async function addUserNote (note) {
   await checkTokenExp({ token: Cookies.get('access-token') })
-  const addNoteResult = await fetch(`${API_PREFIX}/notes`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${Cookies.get('access-token')}`
-    },
-    body: JSON.stringify(note)
-  })
+  const addNoteResult = await instance.post(`${API_PREFIX}/notes`, note)
 
   if (addNoteResult.status === 201) {
-    const room = await addNoteResult.json()
+    const room = await addNoteResult.data
     return room
   } else {
-    const error = await addNoteResult.json()
+    const error = await addNoteResult.data
     throw new Error(error.error)
   }
 }
 
 export async function updateUserNote (noteId, newNote) {
   await checkTokenExp({ token: Cookies.get('access-token') })
-  const updateNoteResult = await fetch(`${API_PREFIX}/notes/${noteId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${Cookies.get('access-token')}`
-    },
-    body: JSON.stringify(newNote)
-  })
+  const updateNoteResult = await instance.put(`${API_PREFIX}/notes/${noteId}`, newNote)
 
   if (updateNoteResult.status !== 200) {
-    const error = await updateNoteResult.json()
+    const error = await updateNoteResult.data
     throw new Error(error.error)
   }
 }
 
 export async function deleteUserNote ({ noteId }) {
   await checkTokenExp({ token: Cookies.get('access-token') })
-  const deleteNoteResult = await fetch(`${API_PREFIX}/notes/${noteId}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${Cookies.get('access-token')}`
-    }
-  })
+  const deleteNoteResult = await instance.delete(`${API_PREFIX}/notes/${noteId}`)
 
   if (deleteNoteResult.status !== 200) {
-    const error = await deleteNoteResult.json()
+    const error = await deleteNoteResult.data
     throw new Error(error.error)
   }
 }
 
 export async function getUserNotes ({ userId }) {
   await checkTokenExp({ token: Cookies.get('access-token') })
-  const userNotesResult = await fetch(`${API_PREFIX}/users/${userId}/notes`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${Cookies.get('access-token')}`
-    }
-  })
+  const userNotesResult = await instance.get(`${API_PREFIX}/users/${userId}/notes`)
 
   if (userNotesResult.status === 200) {
-    const userNotes = await userNotesResult.json()
+    const userNotes = await userNotesResult.data
     return userNotes
   } else {
-    const error = await userNotesResult.json()
+    const error = await userNotesResult.data
     throw new Error(error.error)
   }
 }

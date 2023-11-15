@@ -1,21 +1,17 @@
 import Cookies from 'js-cookie'
 import { API_PREFIX } from '../consts'
 import { checkTokenExp } from './auth'
+import { instance } from './interceptors'
 
 export async function getUserByEmail ({ email }) {
   await checkTokenExp({ token: Cookies.get('access-token') })
-  const userResult = await fetch(`${API_PREFIX}/users/${email}`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${Cookies.get('access-token')}`
-    }
-  })
+  const userResult = await instance.get(`${API_PREFIX}/users/${email}`)
 
   if (userResult.status === 200) {
-    const user = await userResult.json()
+    const user = await userResult.data
     return user
   } else {
-    const error = await userResult.json()
+    const error = await userResult.data
     throw new Error(error.error)
   }
 }

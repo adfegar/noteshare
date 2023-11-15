@@ -16,6 +16,9 @@ export default {
         80: '80px',
         200: '200px'
       },
+      gridTemplateColumns: {
+        auto: 'repeat(auto-fill, minmax(360px, 1fr))'
+      },
       fontFamily: {
         virgil: ['Virgil', 'regular']
       },
