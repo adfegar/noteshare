@@ -8,7 +8,7 @@ import { UserDataContext } from '../contexts/userDataContext'
 
 export function Room ({ currentRoom, setCurrentRoom }) {
   const { userData } = useContext(UserDataContext)
-  const { lastReceivedNote, lastEditedNote, lastDeletedNote, lastEditedRoom, sendNote, editRoom } = useWS()
+  const { lastReceivedNote, lastEditedNote, lastDeletedNote, lastEditedRoom, lastDeletedRoom, sendNote, editRoom, deleteRoomWS } = useWS()
   const { roomNotes, setRoomNotes } = useRoomNotes({ roomId: currentRoom?.id })
   const [isInRoomEditMode, setIsInRoomEditMode] = useState(false)
   const [copiedToClipboard, setCopiedToClipboard] = useState(false)
@@ -42,7 +42,7 @@ export function Room ({ currentRoom, setCurrentRoom }) {
 
   // every time a room name is edited, change it for all users
   useEffect(() => {
-    if (lastEditedRoom) {
+    if (lastEditedRoom && lastEditedRoom.id === currentRoom?.id) {
       setCurrentRoom({
         id: currentRoom.id,
         name: lastEditedRoom.name
@@ -50,13 +50,20 @@ export function Room ({ currentRoom, setCurrentRoom }) {
     }
   }, [lastEditedRoom])
 
+  // when the room is deleted, unset the current room
+  useEffect(() => {
+    if (lastDeletedRoom && lastDeletedRoom.id === currentRoom.id) {
+      setCurrentRoom(undefined)
+    }
+  }, [lastDeletedRoom])
+
   if (currentRoom) {
     return (
-        <article className='w-full h-full flex flex-col px-20 py-5'>
+        <article className='w-full h-full flex flex-col px-20 pt-5'>
             <section className='flex items-center justify-between p-20'>
                 {
                     !isInRoomEditMode
-                      ? <RoomNameDisplay currentRoom={currentRoom} setIsInRoomEditMode={setIsInRoomEditMode} setCopiedToClipboard={setCopiedToClipboard} />
+                      ? <RoomNameDisplay currentRoom={currentRoom} setIsInRoomEditMode={setIsInRoomEditMode} setCopiedToClipboard={setCopiedToClipboard} deleteRoomWS={deleteRoomWS}/>
                       : <EditableRoomNameDisplay currentRoom={currentRoom} setIsInRoomEditMode={setIsInRoomEditMode} editRoom={editRoom} />
                 }
                 <CopiedToClipBoardPopUp copiedToClipboard={copiedToClipboard} />
@@ -99,7 +106,7 @@ export function Room ({ currentRoom, setCurrentRoom }) {
   }
 }
 
-function RoomNameDisplay ({ currentRoom, setIsInRoomEditMode, setCopiedToClipboard }) {
+function RoomNameDisplay ({ currentRoom, setIsInRoomEditMode, setCopiedToClipboard, deleteRoomWS }) {
   return (
         <section
             className='flex items-center gap-3'
@@ -149,10 +156,8 @@ function RoomNameDisplay ({ currentRoom, setIsInRoomEditMode, setCopiedToClipboa
                 <button
                     onClick={() => {
                       deleteRoom({ roomId: currentRoom.id })
-                        .then(deleteRoomResult => {
-                          if (deleteRoomResult.status === 201) {
-                            console.log('room deleted')
-                          }
+                        .then(() => {
+                          deleteRoomWS(currentRoom)
                         })
                     }}
                 >
@@ -185,14 +190,12 @@ function EditableRoomNameDisplay ({ currentRoom, setIsInRoomEditMode, editRoom }
               event.preventDefault()
               const formFields = Object.fromEntries(new FormData(event.target))
               updateRoom({ roomId: currentRoom.id, newName: formFields.roomName })
-                .then(updateRoomResult => {
-                  if (updateRoomResult.status === 201) {
-                    editRoom({
-                      id: currentRoom.id,
-                      name: formFields.roomName
-                    })
-                    setIsInRoomEditMode(false)
-                  }
+                .then(() => {
+                  editRoom({
+                    id: currentRoom.id,
+                    name: formFields.roomName
+                  })
+                  setIsInRoomEditMode(false)
                 })
             }}
         >

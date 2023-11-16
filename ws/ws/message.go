@@ -15,6 +15,7 @@ const (
 	JoinRoomAction   = "join-room"
 	LeaveRoomAction  = "leave-room"
 	EditRoomAction   = "edit-room"
+	DeleteRoomAction = "delete-room"
 	UserJoinedAction = "user-join"
 	UserLeftAction   = "user-left"
 	DisconnectAction = "disconnect"

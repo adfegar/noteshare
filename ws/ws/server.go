@@ -85,6 +85,9 @@ func ServeHTTP(server *WsServer, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	clientRooms := req.URL.Query()["rooms"]
+	log.Println(clientRooms)
+
 	client := NewClient(server, socket)
 	go client.write()
 	go client.read()

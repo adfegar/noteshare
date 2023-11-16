@@ -10,20 +10,22 @@ import (
 // client represents a single chatting user.
 
 type Client struct {
-	id      uuid.UUID
-	server  *WsServer
-	socket  *websocket.Conn
-	receive chan []byte
-	room    *Room
+	id          uuid.UUID
+	server      *WsServer
+	socket      *websocket.Conn
+	receive     chan []byte
+	currentRoom *Room
+	rooms       map[*Room]bool
 }
 
 func NewClient(server *WsServer, socket *websocket.Conn) *Client {
 	return &Client{
-		id:      uuid.New(),
-		server:  server,
-		socket:  socket,
-		receive: make(chan []byte, messageBufferSize),
-		room:    nil,
+		id:          uuid.New(),
+		server:      server,
+		socket:      socket,
+		receive:     make(chan []byte, messageBufferSize),
+		currentRoom: nil,
+		rooms:       make(map[*Room]bool),
 	}
 }
 
@@ -50,8 +52,10 @@ func (c *Client) read() {
 				c.joinRoom(message.Message.(*RoomMessage))
 			case LeaveRoomAction:
 				c.leaveRoom()
-			case SendNoteAction, EditNoteAction, DeleteNoteAction, EditRoomAction:
+			case SendNoteAction, EditNoteAction, DeleteNoteAction:
 				c.sendMessage(message)
+			case EditRoomAction, DeleteRoomAction:
+				c.sendMessageToRooms(message)
 			}
 		} else {
 			log.Println(unMarshalErr)
@@ -62,6 +66,7 @@ func (c *Client) read() {
 func (c *Client) write() {
 	defer c.socket.Close()
 	for msg := range c.receive {
+		log.Print(c)
 		log.Println(c.id.String() + " Writting...")
 		log.Println(string(msg))
 
@@ -78,21 +83,28 @@ func (c *Client) joinRoom(requestRoom *RoomMessage) {
 	if room == nil {
 		room = c.server.createRoom(requestRoom.ID, requestRoom.Name)
 	}
-
-	c.leaveRoom()
-	c.room = room
-	c.room.join <- c
+	c.rooms[room] = true
+	c.currentRoom = room
+	c.currentRoom.join <- c
 }
 
 func (c *Client) leaveRoom() {
-	if c.room != nil {
-		c.room.leave <- c
+	if c.currentRoom != nil {
+		c.currentRoom.leave <- c
 	}
 }
 
 func (c *Client) sendMessage(message *Message) {
-	if c.room != nil {
-		c.room.forward <- message
+	if c.currentRoom != nil {
+		c.currentRoom.forward <- message
+	}
+}
+
+func (c *Client) sendMessageToRooms(message *Message) {
+	if len(c.rooms) > 0 {
+		for room := range c.rooms {
+			room.forward <- message
+		}
 	}
 }
 

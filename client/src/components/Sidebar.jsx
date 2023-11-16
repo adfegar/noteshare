@@ -9,8 +9,9 @@ import { removeUserCookies } from '../utils'
 export function Sidebar ({ currentRoom, currentRoomSetter }) {
   const { userData } = useContext(UserDataContext)
   const { userRooms, setUserRooms } = useUserRooms({ userId: userData.userId })
-  const { lastEditedRoom } = useWS()
+  const { lastEditedRoom, lastDeletedRoom } = useWS()
 
+  // every time a room name is edited, change it in the menu
   useEffect(() => {
     if (userRooms && lastEditedRoom) {
       const updatedUserRooms = [...userRooms]
@@ -24,11 +25,19 @@ export function Sidebar ({ currentRoom, currentRoomSetter }) {
     }
   }, [lastEditedRoom])
 
+  // every time a room is deleted, delete it from the menu
+  useEffect(() => {
+    if (userRooms && lastDeletedRoom) {
+      const updatedUserRooms = [...userRooms]
+      setUserRooms(updatedUserRooms.filter(room => room.id !== lastDeletedRoom.id))
+    }
+  }, [lastDeletedRoom])
+
   return (
     <nav className='h-full w-260 px-20 flex flex-col bg-[#1c3ffd] text-white'>
       <article className=' flex flex-col gap-3 my-4'>
         <AddRoomForm userRooms={userRooms} setUserRooms={setUserRooms}/>
-        <JoinWithInviteForm />
+        <JoinWithInviteForm userRooms={userRooms} setUserRooms={setUserRooms}/>
       </article>
 
       <article className='flex flex-col flex-1 overflow-y-auto my-3 py-2 border-y border-white'>
@@ -106,7 +115,7 @@ function AddRoomForm ({ userRooms, setUserRooms }) {
   )
 }
 
-function JoinWithInviteForm () {
+function JoinWithInviteForm ({ userRooms, setUserRooms }) {
   return (
       <section>
         <form
@@ -116,7 +125,8 @@ function JoinWithInviteForm () {
               const formFields = Object.fromEntries(new FormData(event.target))
               getRoomByInviteCode({ inviteCode: formFields.invite }).then(result => {
                 addUserToRoom({ roomId: result.id }).then(() => {
-                  console.log('user added')
+                  const updatedUserRooms = [...userRooms, result]
+                  setUserRooms(updatedUserRooms)
                 })
               })
             }}
@@ -186,13 +196,13 @@ function UserProfile ({ username }) {
                 showOptions &&
                     <section className='absolute bottom-[75px] w-full p-3 bg-[#0F0F0F] rounded-md'>
                         <button
-                            className='flex align-center gap-3 w-full'
+                            className='flex items-center gap-3 w-full'
                             onClick={() => {
                               removeUserCookies()
                               navigate('/login', { replace: true })
                             }}
                         >
-                            <svg className='svg-sm' width="64px" height="64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <svg className='svg-xsm' width="64px" height="64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                               <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
                               <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
                               <g id="SVGRepo_iconCarrier">

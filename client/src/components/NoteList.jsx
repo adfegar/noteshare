@@ -5,7 +5,7 @@ import { useWS } from '../hooks/useWS'
 
 export function NoteList ({ roomNotes }) {
   return (
-      <section className='grid grid-cols-auto gap-5 pt-20 px-20 overflow-y-auto'>
+      <section className='grid grid-cols-auto gap-5 pt-5 pb-10 px-5 overflow-y-auto'>
       {
           (roomNotes && roomNotes.length > 0)
             ? roomNotes.map(note =>

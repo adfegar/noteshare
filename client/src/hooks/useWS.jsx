@@ -6,8 +6,9 @@ const WSActions = {
   JoinRoomAction: 'join-room',
   SendNoteAction: 'send-note',
   EditNoteAction: 'edit-note',
+  DeleteNoteAction: 'delete-note',
   EditRoomAction: 'edit-room',
-  DeleteNoteAction: 'delete-note'
+  DeleteRoomAction: 'delete-room'
 }
 
 export function useWS () {
@@ -15,12 +16,15 @@ export function useWS () {
   const [lastEditedNote, setLastEditedNote] = useState()
   const [lastDeletedNote, setLastDeletedNote] = useState()
   const [lastEditedRoom, setLastEditedRoom] = useState()
+  const [lastDeletedRoom, setLastDeletedRoom] = useState()
   const { sendJsonMessage, lastMessage } = useWebSocket(
     WS_PREFIX,
     {
       share: true,
       shouldReconnect: () => true,
-      onOpen: () => console.log('Connected to WS'),
+      onOpen: () => {
+        console.log('Connected to WS')
+      },
       onClose: () => console.log('Disconnected from WS')
     }
   )
@@ -36,6 +40,8 @@ export function useWS () {
         setLastDeletedNote(message.message)
       } else if (message.action === WSActions.EditRoomAction) {
         setLastEditedRoom(message.message)
+      } else if (message.action === WSActions.DeleteRoomAction) {
+        setLastDeletedRoom(message.message)
       }
     }
   }, [lastMessage])
@@ -56,6 +62,14 @@ export function useWS () {
   function editRoom (room) {
     const message = {
       action: WSActions.EditRoomAction,
+      message: room
+    }
+    sendJsonMessage(message)
+  }
+
+  function deleteRoomWS (room) {
+    const message = {
+      action: WSActions.DeleteRoomAction,
       message: room
     }
     sendJsonMessage(message)
@@ -85,5 +99,5 @@ export function useWS () {
     sendJsonMessage(message)
   }
 
-  return { lastReceivedNote, lastEditedNote, lastDeletedNote, lastEditedRoom, joinRoom, editRoom, sendNote, editNote, deleteNote }
+  return { lastReceivedNote, lastEditedNote, lastDeletedNote, lastEditedRoom, lastDeletedRoom, joinRoom, editRoom, deleteRoomWS, sendNote, editNote, deleteNote }
 }
