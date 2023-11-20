@@ -63,11 +63,11 @@ export async function getUserRooms ({ userId }) {
   const roomsResponse = await instance.get(`${API_PREFIX}/users/${userId}/rooms`)
 
   if (roomsResponse.status === 200) {
-    const rooms = await roomsResponse.data
+    const rooms = roomsResponse.data
     return rooms
   } else {
-    const error = await roomsResponse.data
-    console.log(error)
+    const error = roomsResponse.data
+    throw new Error(error.error)
   }
 }
 
@@ -76,10 +76,10 @@ export async function getRoomUsers ({ roomId }) {
   const usersResponse = await instance.get(`${API_PREFIX}/rooms/${roomId}/users`)
 
   if (usersResponse.status === 200) {
-    const users = await usersResponse.data
+    const users = usersResponse.data
     return users
   } else {
-    const error = await usersResponse.data
+    const error = usersResponse.data
     throw new Error(error.error)
   }
 }
@@ -89,7 +89,7 @@ export async function getRoomNotes ({ roomId }) {
   const roomNotesResult = await instance.get(`${API_PREFIX}/rooms/${roomId}/notes`)
 
   if (roomNotesResult.status === 200) {
-    const roomNotes = await roomNotesResult.data
+    const roomNotes = roomNotesResult.data
     const roomUsers = await getRoomUsers({ roomId })
     if (roomNotes != null) {
       return roomNotes.map(note => ({
@@ -100,7 +100,7 @@ export async function getRoomNotes ({ roomId }) {
       }))
     }
   } else {
-    const error = await roomNotesResult.data
+    const error = roomNotesResult.data
     throw new Error(error.error)
   }
 }

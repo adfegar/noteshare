@@ -1,7 +1,7 @@
 package services
 
 import (
-	"database/sql"
+	"errors"
 	"noteshare-api/database"
 	"noteshare-api/models"
 	"noteshare-api/storage"
@@ -66,6 +66,7 @@ func GetUserNotes(userId int) ([]models.Note, error) {
 	}
 	defer results.Close()
 
+	found := false
 	for results.Next() {
 		var note models.Note
 
@@ -74,6 +75,11 @@ func GetUserNotes(userId int) ([]models.Note, error) {
 		}
 
 		userNotes = append(userNotes, note)
+		found = true
+	}
+
+	if !found {
+		return nil, errors.New("user has no notes")
 	}
 
 	return userNotes, nil
@@ -104,7 +110,7 @@ func GetRoomNotes(roomId int) ([]models.Note, error) {
 	}
 
 	if !found {
-		return nil, sql.ErrNoRows
+		return nil, errors.New("room has no notes")
 	}
 
 	return roomNotes, nil

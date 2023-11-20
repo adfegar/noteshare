@@ -7,7 +7,11 @@ export function useUserRooms ({ userId }) {
   useEffect(() => {
     getUserRooms({ userId })
       .then(response => {
-        setUserRooms(response)
+        if (response != null) {
+          setUserRooms(response)
+        } else {
+          setUserRooms([])
+        }
       })
       .catch(err => {
         setUserRooms([])

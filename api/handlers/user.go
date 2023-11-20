@@ -91,7 +91,7 @@ func handleGetUserRooms(res http.ResponseWriter, req *http.Request) error {
 	userRooms, err := services.GetUserRooms(id)
 
 	if err != nil {
-		utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
+		return utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
 	}
 
 	return utils.WriteJSON(res, 200, userRooms)

@@ -82,6 +82,7 @@ func GetUserRooms(userId int) ([]models.Room, error) {
 	}
 	defer results.Close()
 
+	found := false
 	for results.Next() {
 		var room models.Room
 
@@ -90,6 +91,11 @@ func GetUserRooms(userId int) ([]models.Room, error) {
 		}
 
 		rooms = append(rooms, room)
+		found = true
+	}
+
+	if !found {
+		return nil, errors.New("user has no rooms")
 	}
 
 	return rooms, nil

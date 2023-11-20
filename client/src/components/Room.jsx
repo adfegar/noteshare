@@ -45,7 +45,8 @@ export function Room ({ currentRoom, setCurrentRoom }) {
     if (lastEditedRoom && lastEditedRoom.id === currentRoom?.id) {
       setCurrentRoom({
         id: currentRoom.id,
-        name: lastEditedRoom.name
+        name: lastEditedRoom.name,
+        invite: currentRoom.invite
       })
     }
   }, [lastEditedRoom])

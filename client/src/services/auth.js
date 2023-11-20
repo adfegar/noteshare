@@ -8,7 +8,7 @@ export async function registerUser (user) {
     const registerResult = await instance.post(`${API_PREFIX}/auth/register`, user)
 
     if (registerResult.status === 200) {
-      const registerResponse = await registerResult.data
+      const registerResponse = registerResult.data
       return registerResponse
     } else {
       const error = await registerResult.data
@@ -22,10 +22,10 @@ export async function authenticateUser (user) {
     const authenticateResult = await instance.post(`${API_PREFIX}/auth/authenticate`, user)
 
     if (authenticateResult.status === 200) {
-      const authResponse = await authenticateResult.data
+      const authResponse = authenticateResult.data
       return authResponse
     } else {
-      const error = await authenticateResult.data
+      const error = authenticateResult.data
       throw new Error(error.error)
     }
   }
@@ -35,10 +35,10 @@ export async function refreshUserToken ({ refreshToken }) {
   const refreshTokenResult = await instance.post(`${API_PREFIX}/auth/refresh-token`, refreshToken)
 
   if (refreshTokenResult.status === 200) {
-    const refreshResponse = await refreshTokenResult.data
+    const refreshResponse = refreshTokenResult.data
     Cookies.set('access-token', refreshResponse.token, { expires: 365 })
   } else {
-    const error = await refreshTokenResult.data
+    const error = refreshTokenResult.data
     throw new Error(error.error)
   }
 }

@@ -8,10 +8,10 @@ export async function addUserNote (note) {
   const addNoteResult = await instance.post(`${API_PREFIX}/notes`, note)
 
   if (addNoteResult.status === 201) {
-    const room = await addNoteResult.data
+    const room = addNoteResult.data
     return room
   } else {
-    const error = await addNoteResult.data
+    const error = addNoteResult.data
     throw new Error(error.error)
   }
 }
@@ -21,7 +21,7 @@ export async function updateUserNote (noteId, newNote) {
   const updateNoteResult = await instance.put(`${API_PREFIX}/notes/${noteId}`, newNote)
 
   if (updateNoteResult.status !== 200) {
-    const error = await updateNoteResult.data
+    const error = updateNoteResult.data
     throw new Error(error.error)
   }
 }
@@ -31,7 +31,7 @@ export async function deleteUserNote ({ noteId }) {
   const deleteNoteResult = await instance.delete(`${API_PREFIX}/notes/${noteId}`)
 
   if (deleteNoteResult.status !== 200) {
-    const error = await deleteNoteResult.data
+    const error = deleteNoteResult.data
     throw new Error(error.error)
   }
 }
@@ -41,10 +41,10 @@ export async function getUserNotes ({ userId }) {
   const userNotesResult = await instance.get(`${API_PREFIX}/users/${userId}/notes`)
 
   if (userNotesResult.status === 200) {
-    const userNotes = await userNotesResult.data
+    const userNotes = userNotesResult.data
     return userNotes
   } else {
-    const error = await userNotesResult.data
+    const error = userNotesResult.data
     throw new Error(error.error)
   }
 }

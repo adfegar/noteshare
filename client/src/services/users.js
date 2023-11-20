@@ -8,10 +8,10 @@ export async function getUserByEmail ({ email }) {
   const userResult = await instance.get(`${API_PREFIX}/users/${email}`)
 
   if (userResult.status === 200) {
-    const user = await userResult.data
+    const user = userResult.data
     return user
   } else {
-    const error = await userResult.data
+    const error = userResult.data
     throw new Error(error.error)
   }
 }
