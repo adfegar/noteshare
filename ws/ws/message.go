@@ -55,16 +55,22 @@ func unMarshalMessage(data []byte) (*Message, error) {
 		if messageMarshalErr != nil {
 			return nil, messageMarshalErr
 		}
-		var note *Note
-		noteUnMarshalErr := json.Unmarshal(messageBytes, &note)
-
-		if noteUnMarshalErr != nil {
-			return nil, noteUnMarshalErr
-		}
-
 		newValidator := validator.New()
 
-		if noteValidationErr := newValidator.Struct(note); noteValidationErr != nil {
+		switch message.Action {
+		case SendNoteAction, EditNoteAction, DeleteNoteAction:
+			var note *Note
+			noteUnMarshalErr := json.Unmarshal(messageBytes, &note)
+
+			if noteUnMarshalErr != nil {
+				return nil, noteUnMarshalErr
+			}
+			if noteValidationErr := newValidator.Struct(note); noteValidationErr != nil {
+				return nil, noteValidationErr
+			}
+			message.Message = note
+
+		case JoinRoomAction, LeaveRoomAction, EditRoomAction, DeleteRoomAction:
 			var room *RoomMessage
 			roomUnmarshalErr := json.Unmarshal(messageBytes, &room)
 
@@ -73,11 +79,11 @@ func unMarshalMessage(data []byte) (*Message, error) {
 			}
 
 			if roomValidationErr := newValidator.Struct(room); roomValidationErr != nil {
-				return nil, errors.New("message parse error")
+				return nil, roomValidationErr
 			}
 			message.Message = room
-		} else {
-			message.Message = note
+		default:
+			return nil, errors.New("action not supported")
 		}
 	} else {
 		return nil, errors.New("wrong message format")
