@@ -64,10 +64,10 @@ func GetInstance() *Database {
 		if connErr := db.Ping(); connErr != nil {
 			log.Fatal(connErr)
 		}
+
 		fmt.Println("Connected to the database")
 		databaseInstance = &Database{db}
 		databaseInstance.Init()
-
 	}
 	return databaseInstance
 }

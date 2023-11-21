@@ -34,7 +34,7 @@ export function Sidebar ({ currentRoom, currentRoomSetter }) {
   }, [lastDeletedRoom])
 
   return (
-    <nav className='h-full w-260 px-20 flex flex-col bg-[#1c3ffd] text-white'>
+    <nav className='h-full w-260 px-20 flex flex-col bg-ui-blue text-white'>
       <article className=' flex flex-col gap-3 my-4'>
         <AddRoomForm userRooms={userRooms} setUserRooms={setUserRooms}/>
         <JoinWithInviteForm userRooms={userRooms} setUserRooms={setUserRooms}/>
@@ -148,7 +148,7 @@ function JoinRoomButton ({ room, currentRoom, currentRoomSetter }) {
   return (
         <a
             style={{ background: (currentRoom?.id === room.id) ? '#4d77ff' : 'inherit' }}
-            className='flex gap-3 items-center p-3 text-white rounded-md cursor-pointer hover:bg-[#4d77ff]'
+            className='flex gap-3 items-center p-3 text-white rounded-md cursor-pointer'
             onClick={() => {
               joinRoom(room)
               currentRoomSetter(room)

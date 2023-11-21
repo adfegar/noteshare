@@ -27,7 +27,9 @@ export default {
       },
       colors: {
         'ui-blue': '#1c3ffd',
-        'error-red': '#ff0000'
+        'ui-hover-blue': '#4d77ff',
+        'error-red': '#ff0000',
+        'color-palette-bg': '#52575D'
       }
     }
   },

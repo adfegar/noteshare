@@ -22,3 +22,11 @@ export function removeUserCookies () {
   Cookies.remove('username')
   Cookies.set('authenticated', false)
 }
+
+export function autoFocusInput (input, isInEditMode) {
+  if (input && isInEditMode) {
+    const lastCharacterPosition = input.value.length
+    input.setSelectionRange(lastCharacterPosition, lastCharacterPosition)
+    input.focus()
+  }
+}

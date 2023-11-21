@@ -4,6 +4,7 @@
 
 @layer base {
     body{
+        background-color: #fff;
         font-family: 'helvetica'
     }
     .formBox{

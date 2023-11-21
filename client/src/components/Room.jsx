@@ -2,9 +2,10 @@ import { NoteColors, NoteList } from './NoteList'
 import { useWS } from '../hooks/useWS'
 import { useRoomNotes } from '../hooks/useRoomNotes'
 import { addUserNote } from '../services/notes'
-import { useEffect, useState, useContext } from 'react'
+import { useEffect, useState, useContext, useCallback } from 'react'
 import { deleteRoom, updateRoom } from '../services/rooms'
 import { UserDataContext } from '../contexts/userDataContext'
+import { autoFocusInput } from '../utils'
 
 export function Room ({ currentRoom, setCurrentRoom }) {
   const { userData } = useContext(UserDataContext)
@@ -65,11 +66,11 @@ export function Room ({ currentRoom, setCurrentRoom }) {
                 {
                     !isInRoomEditMode
                       ? <RoomNameDisplay currentRoom={currentRoom} setIsInRoomEditMode={setIsInRoomEditMode} setCopiedToClipboard={setCopiedToClipboard} deleteRoomWS={deleteRoomWS}/>
-                      : <EditableRoomNameDisplay currentRoom={currentRoom} setIsInRoomEditMode={setIsInRoomEditMode} editRoom={editRoom} />
+                      : <EditableRoomNameDisplay currentRoom={currentRoom} isInRoomEditMode={isInRoomEditMode} setIsInRoomEditMode={setIsInRoomEditMode} editRoom={editRoom} />
                 }
                 <CopiedToClipBoardPopUp copiedToClipboard={copiedToClipboard} />
                 <button
-                    className='flex content-center p-[10px] text-white rounded-md bg-[#1c3ffd]'
+                    className='flex content-center p-[10px] text-white rounded-md bg-ui-blue'
                     onClick={() => {
                       const randomColorIndex = Math.floor(Math.random() * Object.keys(NoteColors).length)
                       const noteObject = {
@@ -182,7 +183,7 @@ function RoomNameDisplay ({ currentRoom, setIsInRoomEditMode, setCopiedToClipboa
   )
 }
 
-function EditableRoomNameDisplay ({ currentRoom, setIsInRoomEditMode, editRoom }) {
+function EditableRoomNameDisplay ({ currentRoom, isInRoomEditMode, setIsInRoomEditMode, editRoom }) {
   return (
     <section>
         <form
@@ -200,7 +201,7 @@ function EditableRoomNameDisplay ({ currentRoom, setIsInRoomEditMode, editRoom }
                 })
             }}
         >
-            <input className='text-3xl' type='text' name='roomName' defaultValue={currentRoom.name} />
+            <EditRoomTextField isInEditMode={isInRoomEditMode} defaultContent={currentRoom.name} />
             <button type='submit'>
               <svg
                 className='svg-sm'
@@ -257,11 +258,27 @@ function EditableRoomNameDisplay ({ currentRoom, setIsInRoomEditMode, editRoom }
   )
 }
 
+function EditRoomTextField ({ isInEditMode, defaultContent }) {
+  const editRoomNameInput = useCallback((roomNameInput) => {
+    autoFocusInput(roomNameInput, isInEditMode)
+  }, [isInEditMode])
+
+  return (
+        <input
+            name='roomName'
+            type='text'
+            className='text-3xl'
+            defaultValue={defaultContent}
+            ref={editRoomNameInput}
+        />
+  )
+}
+
 function CopiedToClipBoardPopUp ({ copiedToClipboard }) {
   if (copiedToClipboard) {
     return (
           <section
-          className='px-4 py-3 text-white bg-[#1c3ffd] border border-[#1c3ffd] rounded-md transition duration-150 property-all ease-in-out'
+          className='px-4 py-3 text-white bg-ui-blue border border-[#1c3ffd] rounded-md transition duration-150 property-all ease-in-out'
           >
           <span>{'Invite copied to clipboard!'}</span>
           </section>
