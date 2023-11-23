@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"noteshare-ws/models"
 	"os"
 
 	"github.com/gorilla/websocket"
@@ -48,14 +49,14 @@ func (server *WsServer) Run() {
 }
 
 func (server *WsServer) registerClient(client *Client) {
-	log.Println(client.id.String() + " registered")
+	log.Println(client.ID.String() + " registered")
 	server.Clients[client] = true
 }
 
 func (server *WsServer) unregisterClient(client *Client) {
-	log.Println(client.id.String() + " unregistered")
+	log.Println(client.ID.String() + " unregistered")
 	delete(server.Clients, client)
-	close(client.receive)
+	close(client.Receive)
 	client = nil
 }
 
@@ -119,7 +120,7 @@ func ServeHTTP(server *WsServer, res http.ResponseWriter, req *http.Request) {
 	}
 
 	// decode the returned rooms if the request succeeds
-	var rooms []RoomMessage
+	var rooms []models.RoomMessage
 	if apiResponse.StatusCode == 200 {
 		decodeErr := json.NewDecoder(apiResponse.Body).Decode(&rooms)
 
@@ -130,18 +131,19 @@ func ServeHTTP(server *WsServer, res http.ResponseWriter, req *http.Request) {
 
 	// make the client join that rooms
 	client := NewClient(server, socket)
+	server.Register <- client
+
 	for _, room := range rooms {
 		serverRoom := server.findRoomById(room.ID)
 
 		if serverRoom == nil {
 			serverRoom = server.createRoom(room.ID, room.Name)
 		}
-		serverRoom.join <- client
-		client.rooms[serverRoom] = true
+		serverRoom.Join <- client
+		client.Rooms[serverRoom] = true
 	}
 
 	// start client's read and write goroutines
 	go client.write()
 	go client.read()
-	server.Register <- client
 }

@@ -9,7 +9,6 @@ import Cookies from 'js-cookie'
 function App () {
   const { userData } = useContext(UserDataContext)
   const [currentRoom, setCurrentRoom] = useState()
-  const [authenticated, setAuthenticated] = useState(Cookies.get('authenticated'))
 
   useEffect(() => {
     if (!Cookies.get('authenticated')) {
@@ -17,14 +16,10 @@ function App () {
     }
   }, [])
 
-  useEffect(() => {
-    setAuthenticated(Cookies.get('authenticated'))
-  }, [Cookies.get('authenticated')])
-
   return (
       <>
           {
-            userData.accessToken && (authenticated === 'true')
+            userData.accessToken && (Cookies.get('authenticated') === 'true')
               ? <main className='flex h-full'>
                     <Sidebar currentRoom={currentRoom} currentRoomSetter={setCurrentRoom}/>
                     <Room currentRoom={currentRoom} setCurrentRoom={setCurrentRoom}/>

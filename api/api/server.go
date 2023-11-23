@@ -15,7 +15,7 @@ type APIServer struct {
 func (server *APIServer) Run() error {
 	router := mux.NewRouter()
 	handler := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedOrigins:   []string{"http://localhost:5173", "ws://localhost:3000"},
 		AllowCredentials: true,
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},

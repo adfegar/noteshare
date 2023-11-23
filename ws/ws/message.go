@@ -4,34 +4,27 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"noteshare-ws/models"
 
 	"github.com/go-playground/validator/v10"
 )
 
 const (
-	ClientConnectedAction = "client-connected"
-	InitClientAction      = "init"
-	SendNoteAction        = "send-note"
-	EditNoteAction        = "edit-note"
-	DeleteNoteAction      = "delete-note"
-	JoinRoomAction        = "join-room"
-	LeaveRoomAction       = "leave-room"
-	EditRoomAction        = "edit-room"
-	DeleteRoomAction      = "delete-room"
-	UserJoinedAction      = "user-join"
-	UserLeftAction        = "user-left"
-	DisconnectAction      = "disconnect"
+	SendNoteAction   = "send-note"
+	EditNoteAction   = "edit-note"
+	DeleteNoteAction = "delete-note"
+	JoinRoomAction   = "join-room"
+	LeaveRoomAction  = "leave-room"
+	EditRoomAction   = "edit-room"
+	DeleteRoomAction = "delete-room"
+	UserJoinedAction = "user-join"
+	UserLeftAction   = "user-left"
+	DisconnectAction = "disconnect"
 )
 
 type Message struct {
 	Action  string      `json:"action"`
 	Message interface{} `json:"message"` //message can be RoomMessage or Note
-	Target  int         `json:"target"`
-}
-
-type RoomMessage struct {
-	ID   uint   `json:"id" validate:"required"`
-	Name string `json:"name" validate:"required"`
 }
 
 func (message Message) encode() []byte {
@@ -62,7 +55,7 @@ func unMarshalMessage(data []byte) (*Message, error) {
 
 		switch message.Action {
 		case SendNoteAction, EditNoteAction, DeleteNoteAction:
-			var note *Note
+			var note *models.Note
 			noteUnMarshalErr := json.Unmarshal(messageBytes, &note)
 
 			if noteUnMarshalErr != nil {
@@ -74,7 +67,7 @@ func unMarshalMessage(data []byte) (*Message, error) {
 			message.Message = note
 
 		case JoinRoomAction, LeaveRoomAction, EditRoomAction, DeleteRoomAction:
-			var room *RoomMessage
+			var room *models.RoomMessage
 			roomUnmarshalErr := json.Unmarshal(messageBytes, &room)
 
 			if roomUnmarshalErr != nil {
@@ -88,21 +81,6 @@ func unMarshalMessage(data []byte) (*Message, error) {
 		default:
 			return nil, errors.New("action not supported")
 		}
-	} else if noteMap, ok := message.Message.([]interface{}); ok {
-		messageBytes, messageMarshalErr := json.Marshal(noteMap)
-
-		if messageMarshalErr != nil {
-			return nil, messageMarshalErr
-		}
-
-		var rooms []RoomMessage
-		roomsUnmarshalErr := json.Unmarshal(messageBytes, &rooms)
-
-		if roomsUnmarshalErr != nil {
-			return nil, roomsUnmarshalErr
-		}
-
-		message.Message = rooms
 	} else {
 		return nil, errors.New("wrong message format")
 	}

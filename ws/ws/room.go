@@ -7,46 +7,46 @@ import (
 type Room struct {
 	ID      uint
 	Name    string
-	clients map[*Client]bool
-	join    chan *Client
-	leave   chan *Client
-	forward chan *Message
+	Clients map[*Client]bool
+	Join    chan *Client
+	Leave   chan *Client
+	Forward chan *Message
 }
 
 func NewRoom(id uint, name string) *Room {
 	return &Room{
 		ID:      id,
 		Name:    name,
-		forward: make(chan *Message),
-		join:    make(chan *Client),
-		leave:   make(chan *Client),
-		clients: make(map[*Client]bool),
+		Forward: make(chan *Message),
+		Join:    make(chan *Client),
+		Leave:   make(chan *Client),
+		Clients: make(map[*Client]bool),
 	}
 }
 
-func (r *Room) Run() {
+func (room *Room) Run() {
 	for {
 		select {
-		case client := <-r.join:
-			log.Println("Client " + client.id.String() + " joins " + r.Name)
-			r.clients[client] = true
-		case client := <-r.leave:
-			log.Println("Client " + client.id.String() + " leaves " + r.Name)
-			delete(r.clients, client)
-		case msg := <-r.forward:
-			r.handleSendMessage(msg)
+		case client := <-room.Join:
+			log.Println("Client " + client.ID.String() + " joins " + room.Name)
+			room.Clients[client] = true
+		case client := <-room.Leave:
+			log.Println("Client " + client.ID.String() + " leaves " + room.Name)
+			delete(room.Clients, client)
+		case msg := <-room.Forward:
+			room.handleSendMessage(msg)
 		}
 	}
 }
 
-func (r *Room) handleSendMessage(message *Message) {
-	for client := range r.clients {
+func (room *Room) handleSendMessage(message *Message) {
+	for client := range room.Clients {
 		if message.Action == SendNoteAction || message.Action == EditNoteAction || message.Action == DeleteNoteAction {
-			if client.currentRoom.ID == r.ID {
-				client.receive <- message.encode()
+			if client.CurrentRoom.ID == room.ID {
+				client.Receive <- message.encode()
 			}
 		} else {
-			client.receive <- message.encode()
+			client.Receive <- message.encode()
 		}
 	}
 }

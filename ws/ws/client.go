@@ -2,6 +2,7 @@ package ws
 
 import (
 	"log"
+	"noteshare-ws/models"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -10,36 +11,35 @@ import (
 // client represents a single chatting user.
 
 type Client struct {
-	id          uuid.UUID
-	server      *WsServer
-	socket      *websocket.Conn
-	receive     chan []byte
-	currentRoom *Room
-	rooms       map[*Room]bool
+	ID          uuid.UUID
+	Server      *WsServer
+	Socket      *websocket.Conn
+	Receive     chan []byte
+	CurrentRoom *Room
+	Rooms       map[*Room]bool
 }
 
 func NewClient(server *WsServer, socket *websocket.Conn) *Client {
 	return &Client{
-		id:          uuid.New(),
-		server:      server,
-		socket:      socket,
-		receive:     make(chan []byte, messageBufferSize),
-		currentRoom: nil,
-		rooms:       make(map[*Room]bool),
+		ID:          uuid.New(),
+		Server:      server,
+		Socket:      socket,
+		Receive:     make(chan []byte, messageBufferSize),
+		CurrentRoom: nil,
+		Rooms:       make(map[*Room]bool),
 	}
 }
 
-func (c *Client) read() {
-	defer c.socket.Close()
+func (client *Client) read() {
+	defer client.Socket.Close()
 	for {
-		_, messageBytes, err := c.socket.ReadMessage()
-		log.Println(c.id.String() + " Reading...")
+		_, messageBytes, err := client.Socket.ReadMessage()
+		log.Println(client.ID.String() + " Reading...")
 		log.Println(string(messageBytes))
 
 		if err != nil && websocket.IsCloseError(err, 1001) {
 			log.Println("Socket closed. Disconnecting client...")
-			c.leaveRoom()
-			c.server.unregisterClient(c)
+			client.disconnect()
 			break
 		}
 
@@ -49,54 +49,61 @@ func (c *Client) read() {
 
 			switch message.Action {
 			case JoinRoomAction:
-				c.joinRoom(message.Message.(*RoomMessage))
+				client.joinRoom(message.Message.(*models.RoomMessage))
 			case LeaveRoomAction:
-				c.leaveRoom()
+				client.leaveRoom(client.CurrentRoom)
 			case SendNoteAction, EditNoteAction, DeleteNoteAction, EditRoomAction, DeleteRoomAction:
-				c.sendMessage(message)
+				client.sendMessage(message)
+			default:
+				log.Println("action not supported")
+				client.disconnect()
+				break
 			}
 		} else {
 			log.Println(unMarshalErr)
+			client.disconnect()
+			break
 		}
 	}
 }
 
-func (c *Client) write() {
-	defer c.socket.Close()
-	for msg := range c.receive {
-		log.Println(c.id.String() + " Writting...")
+func (client *Client) write() {
+	defer client.Socket.Close()
+	for msg := range client.Receive {
+		log.Println(client.ID.String() + " Writting...")
 		log.Println(string(msg))
 
-		err := c.socket.WriteMessage(websocket.TextMessage, msg)
+		err := client.Socket.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 }
 
-func (c *Client) joinRoom(requestRoom *RoomMessage) {
-	room := c.server.findRoomById(requestRoom.ID)
+func (client *Client) joinRoom(requestRoom *models.RoomMessage) {
+	room := client.Server.findRoomById(requestRoom.ID)
 
 	if room == nil {
-		room = c.server.createRoom(requestRoom.ID, requestRoom.Name)
+		room = client.Server.createRoom(requestRoom.ID, requestRoom.Name)
 	}
-	c.rooms[room] = true
-	c.currentRoom = room
-	c.currentRoom.join <- c
+	client.Rooms[room] = true
+	client.CurrentRoom = room
+	client.CurrentRoom.Join <- client
 }
 
-func (c *Client) leaveRoom() {
-	if c.currentRoom != nil {
-		c.currentRoom.leave <- c
-	}
+func (client *Client) leaveRoom(room *Room) {
+	room.Leave <- client
 }
 
-func (c *Client) sendMessage(message *Message) {
-	if c.currentRoom != nil {
-		c.currentRoom.forward <- message
+func (client *Client) sendMessage(message *Message) {
+	if client.CurrentRoom != nil {
+		client.CurrentRoom.Forward <- message
 	}
 }
 
-func (c *Client) disconnect() {
-	c.server.unregisterClient(c)
+func (client *Client) disconnect() {
+	for room := range client.Rooms {
+		room.Leave <- client
+	}
+	client.Server.unregisterClient(client)
 }
