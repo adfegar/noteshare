@@ -21,10 +21,8 @@ export function useWS () {
     WS_PREFIX,
     {
       share: true,
-      shouldReconnect: () => true,
-      onOpen: () => {
-        console.log('Connected to WS')
-      },
+      shouldReconnect: () => false,
+      onOpen: () => console.log('connected to WS'),
       onClose: () => console.log('Disconnected from WS')
     }
   )
@@ -44,7 +42,7 @@ export function useWS () {
         setLastDeletedRoom(message.message)
       }
     }
-  }, [lastMessage])
+  }, [lastMessage?.data])
 
   // custom functions to handle message actions
   function joinRoom (room) {

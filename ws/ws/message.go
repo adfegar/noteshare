@@ -9,21 +9,24 @@ import (
 )
 
 const (
-	SendNoteAction   = "send-note"
-	EditNoteAction   = "edit-note"
-	DeleteNoteAction = "delete-note"
-	JoinRoomAction   = "join-room"
-	LeaveRoomAction  = "leave-room"
-	EditRoomAction   = "edit-room"
-	DeleteRoomAction = "delete-room"
-	UserJoinedAction = "user-join"
-	UserLeftAction   = "user-left"
-	DisconnectAction = "disconnect"
+	ClientConnectedAction = "client-connected"
+	InitClientAction      = "init"
+	SendNoteAction        = "send-note"
+	EditNoteAction        = "edit-note"
+	DeleteNoteAction      = "delete-note"
+	JoinRoomAction        = "join-room"
+	LeaveRoomAction       = "leave-room"
+	EditRoomAction        = "edit-room"
+	DeleteRoomAction      = "delete-room"
+	UserJoinedAction      = "user-join"
+	UserLeftAction        = "user-left"
+	DisconnectAction      = "disconnect"
 )
 
 type Message struct {
-	Message interface{} `json:"message"` //message can be RoomMessage or Note
 	Action  string      `json:"action"`
+	Message interface{} `json:"message"` //message can be RoomMessage or Note
+	Target  int         `json:"target"`
 }
 
 type RoomMessage struct {
@@ -85,6 +88,21 @@ func unMarshalMessage(data []byte) (*Message, error) {
 		default:
 			return nil, errors.New("action not supported")
 		}
+	} else if noteMap, ok := message.Message.([]interface{}); ok {
+		messageBytes, messageMarshalErr := json.Marshal(noteMap)
+
+		if messageMarshalErr != nil {
+			return nil, messageMarshalErr
+		}
+
+		var rooms []RoomMessage
+		roomsUnmarshalErr := json.Unmarshal(messageBytes, &rooms)
+
+		if roomsUnmarshalErr != nil {
+			return nil, roomsUnmarshalErr
+		}
+
+		message.Message = rooms
 	} else {
 		return nil, errors.New("wrong message format")
 	}

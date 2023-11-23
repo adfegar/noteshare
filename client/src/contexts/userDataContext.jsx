@@ -8,7 +8,8 @@ export function UserDataProvider ({ children }) {
     accessToken: Cookies.get('access-token'),
     refreshToken: Cookies.get('refresh-token'),
     userId: Cookies.get('userid'),
-    username: Cookies.get('username')
+    username: Cookies.get('username'),
+    rooms: []
   })
 
   return (

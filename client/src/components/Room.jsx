@@ -54,7 +54,7 @@ export function Room ({ currentRoom, setCurrentRoom }) {
 
   // when the room is deleted, unset the current room
   useEffect(() => {
-    if (lastDeletedRoom && lastDeletedRoom.id === currentRoom.id) {
+    if (lastDeletedRoom && lastDeletedRoom.id === currentRoom?.id) {
       setCurrentRoom(undefined)
     }
   }, [lastDeletedRoom])

@@ -52,10 +52,8 @@ func (c *Client) read() {
 				c.joinRoom(message.Message.(*RoomMessage))
 			case LeaveRoomAction:
 				c.leaveRoom()
-			case SendNoteAction, EditNoteAction, DeleteNoteAction:
+			case SendNoteAction, EditNoteAction, DeleteNoteAction, EditRoomAction, DeleteRoomAction:
 				c.sendMessage(message)
-			case EditRoomAction, DeleteRoomAction:
-				c.sendMessageToRooms(message)
 			}
 		} else {
 			log.Println(unMarshalErr)
@@ -66,7 +64,6 @@ func (c *Client) read() {
 func (c *Client) write() {
 	defer c.socket.Close()
 	for msg := range c.receive {
-		log.Print(c)
 		log.Println(c.id.String() + " Writting...")
 		log.Println(string(msg))
 
@@ -97,14 +94,6 @@ func (c *Client) leaveRoom() {
 func (c *Client) sendMessage(message *Message) {
 	if c.currentRoom != nil {
 		c.currentRoom.forward <- message
-	}
-}
-
-func (c *Client) sendMessageToRooms(message *Message) {
-	if len(c.rooms) > 0 {
-		for room := range c.rooms {
-			room.forward <- message
-		}
 	}
 }
 

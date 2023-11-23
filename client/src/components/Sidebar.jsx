@@ -9,7 +9,7 @@ import { removeUserCookies } from '../utils'
 export function Sidebar ({ currentRoom, currentRoomSetter }) {
   const { userData } = useContext(UserDataContext)
   const { userRooms, setUserRooms } = useUserRooms({ userId: userData.userId })
-  const { lastEditedRoom, lastDeletedRoom } = useWS()
+  const { lastEditedRoom, lastDeletedRoom, joinRoom } = useWS()
 
   // every time a room name is edited, change it in the menu
   useEffect(() => {
@@ -36,8 +36,18 @@ export function Sidebar ({ currentRoom, currentRoomSetter }) {
   return (
     <nav className='h-full w-260 px-20 flex flex-col bg-ui-blue text-white'>
       <article className=' flex flex-col gap-3 my-4'>
-        <AddRoomForm userRooms={userRooms} setUserRooms={setUserRooms}/>
-        <JoinWithInviteForm userRooms={userRooms} setUserRooms={setUserRooms}/>
+        <AddRoomForm
+            userRooms={userRooms}
+            setUserRooms={setUserRooms}
+            joinRoom={joinRoom}
+            setCurrentRoom={currentRoomSetter}
+        />
+        <JoinWithInviteForm
+            userRooms={userRooms}
+            setUserRooms={setUserRooms}
+            joinRoom={joinRoom}
+            setCurrentRoom={currentRoomSetter}
+        />
       </article>
 
       <article className='flex flex-col flex-1 overflow-y-auto my-3 py-2 border-y border-white'>
@@ -47,6 +57,7 @@ export function Sidebar ({ currentRoom, currentRoomSetter }) {
                 <JoinRoomButton
                   key={room.id}
                   room={room}
+                  joinRoom={joinRoom}
                   currentRoom={currentRoom}
                   currentRoomSetter={currentRoomSetter}
                 />
@@ -59,7 +70,7 @@ export function Sidebar ({ currentRoom, currentRoomSetter }) {
   )
 }
 
-function AddRoomForm ({ userRooms, setUserRooms }) {
+function AddRoomForm ({ userRooms, setUserRooms, joinRoom, setCurrentRoom }) {
   return (
       <button
         className='flex items-center gap-3 px-3 py-1 min-h-[44px] border rounded-md border-white'
@@ -68,6 +79,8 @@ function AddRoomForm ({ userRooms, setUserRooms }) {
             addUserToRoom({ roomId: addRoomResult.id })
             const updatedUserRooms = [...userRooms, addRoomResult]
             setUserRooms(updatedUserRooms)
+            joinRoom(addRoomResult)
+            setCurrentRoom(addRoomResult)
           })
         }}
       >
@@ -115,7 +128,7 @@ function AddRoomForm ({ userRooms, setUserRooms }) {
   )
 }
 
-function JoinWithInviteForm ({ userRooms, setUserRooms }) {
+function JoinWithInviteForm ({ userRooms, setUserRooms, joinRoom, setCurrentRoom }) {
   return (
       <section>
         <form
@@ -127,8 +140,11 @@ function JoinWithInviteForm ({ userRooms, setUserRooms }) {
                 addUserToRoom({ roomId: result.id }).then(() => {
                   const updatedUserRooms = [...userRooms, result]
                   setUserRooms(updatedUserRooms)
+                  joinRoom(result)
+                  setCurrentRoom(result)
                 })
               })
+              event.target.reset()
             }}
         >
             <input
@@ -142,9 +158,7 @@ function JoinWithInviteForm ({ userRooms, setUserRooms }) {
   )
 }
 
-function JoinRoomButton ({ room, currentRoom, currentRoomSetter }) {
-  const { joinRoom } = useWS()
-
+function JoinRoomButton ({ room, currentRoom, joinRoom, currentRoomSetter }) {
   return (
         <a
             style={{ background: (currentRoom?.id === room.id) ? '#4d77ff' : 'inherit' }}

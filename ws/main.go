@@ -4,9 +4,17 @@ import (
 	"log"
 	"net/http"
 	"noteshare-ws/ws"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	server := ws.NewWsServer()
 	go server.Run()
 

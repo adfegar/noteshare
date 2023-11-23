@@ -34,9 +34,19 @@ func (r *Room) Run() {
 			log.Println("Client " + client.id.String() + " leaves " + r.Name)
 			delete(r.clients, client)
 		case msg := <-r.forward:
-			for client := range r.clients {
-				client.receive <- msg.encode()
+			r.handleSendMessage(msg)
+		}
+	}
+}
+
+func (r *Room) handleSendMessage(message *Message) {
+	for client := range r.clients {
+		if message.Action == SendNoteAction || message.Action == EditNoteAction || message.Action == DeleteNoteAction {
+			if client.currentRoom.ID == r.ID {
+				client.receive <- message.encode()
 			}
+		} else {
+			client.receive <- message.encode()
 		}
 	}
 }
