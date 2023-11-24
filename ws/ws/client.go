@@ -60,7 +60,7 @@ func (client *Client) read() {
 				break
 			}
 		} else {
-			log.Println(unMarshalErr)
+			log.Println("unmarshal error on client read: " + unMarshalErr.Error())
 			client.disconnect()
 			break
 		}
@@ -75,7 +75,9 @@ func (client *Client) write() {
 
 		err := client.Socket.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("error on writting: " + err.Error())
+			client.disconnect()
+			break
 		}
 	}
 }
