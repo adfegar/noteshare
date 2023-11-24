@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import useWebSocket from 'react-use-websocket'
 import { WS_PREFIX } from '../consts'
+import Cookies from 'js-cookie'
 
 const WSActions = {
   JoinRoomAction: 'join-room',
@@ -22,7 +23,18 @@ export function useWS () {
     {
       share: true,
       shouldReconnect: () => false,
-      onOpen: () => console.log('connected to WS'),
+      onOpen: () => {
+        console.log('connected to WS')
+
+        const initMessage = {
+          action: 'init-client',
+          message: {
+            access_token: Cookies.get('access-token'),
+            userId: Number(Cookies.get('userid'))
+          }
+        }
+        sendJsonMessage(initMessage)
+      },
       onClose: () => console.log('Disconnected from WS')
     }
   )

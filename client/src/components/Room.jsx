@@ -1,5 +1,4 @@
 import { NoteColors, NoteList } from './NoteList'
-import { useWS } from '../hooks/useWS'
 import { useRoomNotes } from '../hooks/useRoomNotes'
 import { addUserNote } from '../services/notes'
 import { useEffect, useState, useContext, useCallback } from 'react'
@@ -7,9 +6,22 @@ import { deleteRoom, updateRoom } from '../services/rooms'
 import { UserDataContext } from '../contexts/userDataContext'
 import { autoFocusInput } from '../utils'
 
-export function Room ({ currentRoom, setCurrentRoom }) {
+export function Room
+({
+  lastReceivedNote,
+  lastEditedNote,
+  lastDeletedNote,
+  lastEditedRoom,
+  lastDeletedRoom,
+  sendNote,
+  editNote,
+  deleteNote,
+  editRoom,
+  deleteRoomWS,
+  currentRoom,
+  setCurrentRoom
+}) {
   const { userData } = useContext(UserDataContext)
-  const { lastReceivedNote, lastEditedNote, lastDeletedNote, lastEditedRoom, lastDeletedRoom, sendNote, editRoom, deleteRoomWS } = useWS()
   const { roomNotes, setRoomNotes } = useRoomNotes({ roomId: currentRoom?.id })
   const [isInRoomEditMode, setIsInRoomEditMode] = useState(false)
   const [copiedToClipboard, setCopiedToClipboard] = useState(false)
@@ -102,7 +114,11 @@ export function Room ({ currentRoom, setCurrentRoom }) {
                         <span className='py-[2px] pr-[5px]'>{'New note'}</span>
                 </button>
             </section>
-            <NoteList roomNotes={roomNotes} />
+            <NoteList
+                editNote={editNote}
+                deleteNote={deleteNote}
+                roomNotes={roomNotes}
+            />
         </article>
     )
   }

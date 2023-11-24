@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"noteshare-ws/ws"
+	"os"
 
 	"github.com/joho/godotenv"
 )
@@ -21,9 +22,19 @@ func main() {
 	http.HandleFunc("/room", func(w http.ResponseWriter, r *http.Request) {
 		ws.ServeHTTP(server, w, r)
 	})
+
+	var listenAddress string
+	port, isPresent := os.LookupEnv("PORT")
+
+	if isPresent {
+		listenAddress = ":" + port
+	} else {
+		listenAddress = ":3000"
+	}
+
 	// start the web server
 	log.Println("Starting web server on :3000")
-	if err := http.ListenAndServe(":3000", nil); err != nil {
+	if err := http.ListenAndServe(listenAddress, nil); err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
 }

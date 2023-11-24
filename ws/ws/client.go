@@ -1,8 +1,12 @@
 package ws
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
+	"net/http"
 	"noteshare-ws/models"
+	"os"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -48,6 +52,8 @@ func (client *Client) read() {
 		if unMarshalErr == nil {
 
 			switch message.Action {
+			case InitClientAction:
+				client.init(message.Message.(*models.UserData))
 			case JoinRoomAction:
 				client.joinRoom(message.Message.(*models.RoomMessage))
 			case LeaveRoomAction:
@@ -79,6 +85,45 @@ func (client *Client) write() {
 			client.disconnect()
 			break
 		}
+	}
+}
+
+func (client *Client) init(userData *models.UserData) {
+	// make a request to API to get the user rooms
+	apiRequest, reqErr := http.NewRequest(
+		"GET",
+		fmt.Sprintf("%s/users/%d/rooms", os.Getenv("PROD_API_URL"), userData.UserId),
+		nil,
+	)
+
+	if reqErr != nil {
+		log.Fatal(reqErr)
+	}
+
+	apiRequest.Header.Add("Authorization", "Bearer "+userData.AccessToken)
+	apiResponse, err := http.DefaultClient.Do(apiRequest)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// decode the returned rooms if the request succeeds
+	var rooms []models.RoomMessage
+	if apiResponse.StatusCode == 200 {
+		decodeErr := json.NewDecoder(apiResponse.Body).Decode(&rooms)
+
+		if decodeErr != nil {
+			log.Fatal(decodeErr)
+		}
+	}
+
+	for _, room := range rooms {
+		serverRoom := client.Server.findRoomById(room.ID)
+
+		if serverRoom == nil {
+			serverRoom = client.Server.createRoom(room.ID, room.Name)
+		}
+		serverRoom.Join <- client
+		client.Rooms[serverRoom] = true
 	}
 }
 

@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	InitClientAction = "init-client"
 	SendNoteAction   = "send-note"
 	EditNoteAction   = "edit-note"
 	DeleteNoteAction = "delete-note"
@@ -78,6 +79,20 @@ func unMarshalMessage(data []byte) (*Message, error) {
 				return nil, roomValidationErr
 			}
 			message.Message = room
+
+		case InitClientAction:
+			var userData *models.UserData
+			userDataUnmarshalErr := json.Unmarshal(messageBytes, &userData)
+
+			if userDataUnmarshalErr != nil {
+				return nil, userDataUnmarshalErr
+			}
+
+			if userDataValidationErr := newValidator.Struct(userData); userDataValidationErr != nil {
+				return nil, userDataValidationErr
+			}
+			message.Message = userData
+
 		default:
 			return nil, errors.New("action not supported")
 		}

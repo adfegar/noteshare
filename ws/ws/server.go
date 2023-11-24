@@ -1,11 +1,8 @@
 package ws
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
-	"noteshare-ws/models"
-	"os"
 
 	"github.com/gorilla/websocket"
 )
@@ -89,60 +86,9 @@ func ServeHTTP(server *WsServer, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// get the required user cookies
-	userCookies := req.Cookies()
-	var userToken string
-	var userId string
-
-	for _, cookie := range userCookies {
-		if cookie.Name == os.Getenv("ACCESS_TOKEN_COOKIE") {
-			userToken = cookie.Value
-		} else if cookie.Name == os.Getenv("USER_ID_COOKIE") {
-			userId = cookie.Value
-		}
-	}
-
-	// make a request to API to get the user rooms
-	apiRequest, reqErr := http.NewRequest(
-		"GET",
-		os.Getenv("API_URL")+"/users/"+userId+"/rooms",
-		nil,
-	)
-
-	if reqErr != nil {
-		log.Fatal(reqErr)
-	}
-
-	apiRequest.Header.Add("Authorization", "Bearer "+userToken)
-	apiResponse, err := http.DefaultClient.Do(apiRequest)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// decode the returned rooms if the request succeeds
-	var rooms []models.RoomMessage
-	if apiResponse.StatusCode == 200 {
-		decodeErr := json.NewDecoder(apiResponse.Body).Decode(&rooms)
-
-		if decodeErr != nil {
-			log.Fatal(decodeErr)
-		}
-	}
-
 	// make the client join that rooms
 	client := NewClient(server, socket)
 	server.Register <- client
-
-	for _, room := range rooms {
-		serverRoom := server.findRoomById(room.ID)
-
-		if serverRoom == nil {
-			serverRoom = server.createRoom(room.ID, room.Name)
-		}
-		serverRoom.Join <- client
-		client.Rooms[serverRoom] = true
-	}
-
 	// start client's read and write goroutines
 	go client.write()
 	go client.read()

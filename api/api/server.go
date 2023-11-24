@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 	"noteshare-api/handlers"
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -14,8 +15,12 @@ type APIServer struct {
 
 func (server *APIServer) Run() error {
 	router := mux.NewRouter()
+	// CORS config
 	handler := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173", "ws://localhost:3000"},
+		AllowedOrigins: []string{
+			os.Getenv("LOCAL_CLIENT_URL"),
+			os.Getenv("LOCAL_WSS_URL"),
+		},
 		AllowCredentials: true,
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
@@ -25,7 +30,7 @@ func (server *APIServer) Run() error {
 	// init middlewares
 	router.Use(AuthMiddleware)
 	router.Use(ValidatePathParams)
-	// init all routes
+	// init all routes and run the server
 	initRoutes(router)
 	return http.ListenAndServe(server.ListenAddress, handler)
 }

@@ -1,15 +1,20 @@
 import { useUserRooms } from '../hooks/useUserRooms'
-import { useWS } from '../hooks/useWS'
 import { addRoom, addUserToRoom, getRoomByInviteCode } from '../services/rooms'
 import { useContext, useEffect, useState } from 'react'
 import { UserDataContext } from '../contexts/userDataContext'
 import { useNavigate } from 'react-router-dom'
 import { removeUserCookies } from '../utils'
 
-export function Sidebar ({ currentRoom, currentRoomSetter }) {
+export function Sidebar
+({
+  joinRoom,
+  lastEditedRoom,
+  lastDeletedRoom,
+  currentRoom,
+  currentRoomSetter
+}) {
   const { userData } = useContext(UserDataContext)
   const { userRooms, setUserRooms } = useUserRooms({ userId: userData.userId })
-  const { lastEditedRoom, lastDeletedRoom, joinRoom } = useWS()
 
   // every time a room name is edited, change it in the menu
   useEffect(() => {

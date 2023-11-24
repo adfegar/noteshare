@@ -1,16 +1,15 @@
 import { useState, useContext, useCallback } from 'react'
 import { deleteUserNote, updateUserNote } from '../services/notes'
 import { UserDataContext } from '../contexts/userDataContext'
-import { useWS } from '../hooks/useWS'
 import { autoFocusInput } from '../utils'
 
-export function NoteList ({ roomNotes }) {
+export function NoteList ({ roomNotes, editNote, deleteNote }) {
   return (
       <section className='grid grid-cols-auto gap-5 pt-20 px-20 overflow-y-auto'>
       {
           (roomNotes && roomNotes.length > 0)
             ? roomNotes.map(note =>
-              <Note key={note.id} note={note}/>
+              <Note key={note.id} note={note} editNote={editNote} deleteNote={deleteNote}/>
             )
             : <p>{'No notes where found'}</p>
       }
@@ -29,11 +28,11 @@ export const NoteColors = {
 }
 
 // General note component
-function Note ({ note }) {
+function Note ({ note, editNote, deleteNote }) {
   const { userData } = useContext(UserDataContext)
   if (note.creator === userData.username) {
     return (
-        <OwnedNote note={note} />
+        <OwnedNote note={note} editNote={editNote} deleteNote={deleteNote} />
     )
   } else {
     return (
@@ -42,9 +41,8 @@ function Note ({ note }) {
   }
 }
 // Component that represents a note that the user owns
-function OwnedNote ({ note }) {
+function OwnedNote ({ note, editNote, deleteNote }) {
   const [isInEditMode, setIsInEditMode] = useState(false)
-  const { editNote, deleteNote } = useWS()
 
   return (
           <article
