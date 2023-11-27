@@ -19,7 +19,7 @@ func (roomStorage *RoomStorage) Get(id int) (interface{}, error) {
 
 	result := database.QueryRow("SELECT * from rooms where id = ? ;", id)
 
-	if scanErr := result.Scan(&room.ID, &room.Name, &room.Invite); scanErr != nil {
+	if scanErr := result.Scan(&room.ID, &room.Name, &room.Invite, &room.Creator); scanErr != nil {
 
 		if errors.Is(scanErr, sql.ErrNoRows) {
 			return nil, errors.New(roomNotFoundErr)
@@ -39,7 +39,7 @@ func (roomStorage *RoomStorage) Create(item interface{}) error {
 	}
 
 	database := database.GetInstance().GetDB()
-	result, err := database.Exec("INSERT INTO rooms (name, invite) VALUES (?, ?) ;", room.Name, room.Invite)
+	result, err := database.Exec("INSERT INTO rooms (name, invite, creator_id) VALUES (?, ?, ?) ;", room.Name, room.Invite, room.Creator)
 
 	if err != nil {
 		return err

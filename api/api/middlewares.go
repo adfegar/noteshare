@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"noteshare-api/auth"
 	"noteshare-api/models"
@@ -19,12 +20,10 @@ import (
 func AuthMiddleware(next http.Handler) http.Handler {
 
 	authEndpoints := regexp.MustCompile(`/api/v1/auth/*`)
-	userActionEndpoints := regexp.MustCompile(`/api/v1/users/\d/(add-to-room|delete-from-room)`)
-	userNoteEndpoints := regexp.MustCompile(`/api/v1/notes/*`)
 
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		//If the endpoint is not allowed, check its auth token.
-		if authEndpoints.MatchString(req.URL.Path) || userActionEndpoints.MatchString(req.URL.Path) || userNoteEndpoints.MatchString(req.URL.Path) {
+		if authEndpoints.MatchString(req.URL.Path) {
 			next.ServeHTTP(res, req)
 		} else {
 			authErr := checkAuth(req)
@@ -88,6 +87,52 @@ func ValidatePathParams(next http.Handler) http.Handler {
 	})
 }
 
+func CheckUserOwnershipMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		userNoteEndpoints := regexp.MustCompile(`/api/v1/notes/\d`)
+		userRoomEndpoints := regexp.MustCompile((`/api/v1/rooms/\d`))
+
+		if (userRoomEndpoints.MatchString(req.URL.Path) && req.Method == "DELETE") ||
+			(userNoteEndpoints.MatchString(req.URL.Path) && (req.Method == "PUT" || req.Method == "DELETE")) {
+
+			itemId, _ := strconv.Atoi(mux.Vars(req)["id"])
+			tokenValue := req.Header.Get("Authorization")[7:]
+			token, err := services.GetTokenByValue(tokenValue)
+
+			if err != nil {
+				utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
+			} else {
+				if userRoomEndpoints.MatchString(req.URL.Path) {
+					room, err := services.GetRoomById(itemId)
+
+					if err != nil {
+						utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
+					} else if room.Creator != token.UserRefer {
+						utils.WriteJSON(res, 403, utils.ApiError{Error: "user does not own the room."})
+					} else {
+						next.ServeHTTP(res, req)
+					}
+				} else if userNoteEndpoints.MatchString(req.URL.Path) {
+					note, err := services.GetNoteById(itemId)
+
+					if err != nil {
+						utils.WriteJSON(res, 500, utils.ApiError{Error: err.Error()})
+					} else if note.UserRefer != token.UserRefer {
+						utils.WriteJSON(res, 403, utils.ApiError{Error: "user does not own the note."})
+					} else {
+						next.ServeHTTP(res, req)
+					}
+				} else {
+					next.ServeHTTP(res, req)
+				}
+			}
+		} else {
+			next.ServeHTTP(res, req)
+		}
+
+	})
+}
+
 // AUX FUNCTIONS
 // Function that checks if a request is authorized
 func checkAuth(req *http.Request) error {
@@ -120,8 +165,14 @@ func checkAuth(req *http.Request) error {
 	}
 
 	user, _ := services.GetUserByEmail(claims["email"].(string))
-
-	if (req.Method == "POST" || req.Method == "PUT" || req.Method == "DELETE") && user.Role != models.Admin {
+	// user-accessible endpoints
+	userActionEndpoints := regexp.MustCompile(`/api/v1/users/\d/(add-to-room|delete-from-room)`)
+	userNoteEndpoints := regexp.MustCompile(`/api/v1/notes/*`)
+	userRoomEndpoints := regexp.MustCompile((`/api/v1/rooms/*`))
+	log.Println(req.URL.Path)
+	// for POST, PUT and DELETE methods, check if user is admin and that the endpoint is not user accessible
+	if ((req.Method == "POST" || req.Method == "PUT" || req.Method == "DELETE") && (user.Role != models.Admin)) &&
+		(!userActionEndpoints.MatchString(req.URL.Path) && !userNoteEndpoints.MatchString(req.URL.Path) && !userRoomEndpoints.MatchString(req.URL.Path)) {
 		return errors.New("method not allowed")
 	}
 

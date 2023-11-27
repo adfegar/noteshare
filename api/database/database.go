@@ -26,7 +26,10 @@ const (
 		"CONSTRAINT `fk_users_notes` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE," +
 		"CONSTRAINT `fk_rooms_notes` FOREIGN KEY (`room_id`) REFERENCES `rooms`(`id`) ON DELETE CASCADE ON UPDATE CASCADE);"
 
-	createRoomsTableQuery = "CREATE TABLE IF NOT EXISTS `rooms` (`id` integer,`name` text, `invite` text UNIQUE, PRIMARY KEY (`id`));"
+	createRoomsTableQuery = "CREATE TABLE IF NOT EXISTS `rooms`" +
+		"(`id` integer,`name` text, `invite` text UNIQUE, `creator_id` integer," +
+		"PRIMARY KEY (`id`)," +
+		"CONSTRAINT `fk_room_user` FOREIGN KEY (`creator_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE);"
 
 	createUsersRoomsTableQuery = "CREATE TABLE IF NOT EXISTS `users_rooms`" +
 		"(`id` integer,`user_id` integer, `room_id` integer," +
@@ -55,8 +58,7 @@ func GetInstance() *Database {
 	defer lock.Unlock()
 
 	if databaseInstance == nil {
-		db, dbErr := sql.Open("libsql", os.Getenv("PROD_DB_STRING"))
-
+		db, dbErr := sql.Open("libsql", os.Getenv("LOCAL_DB_STRING"))
 		if dbErr != nil {
 			log.Fatal(dbErr.Error())
 		}

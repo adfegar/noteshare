@@ -15,7 +15,6 @@ export function Sidebar
 }) {
   const { userData } = useContext(UserDataContext)
   const { userRooms, setUserRooms } = useUserRooms({ userId: userData.userId })
-
   // every time a room name is edited, change it in the menu
   useEffect(() => {
     if (userRooms && lastEditedRoom) {
@@ -45,6 +44,7 @@ export function Sidebar
             userRooms={userRooms}
             setUserRooms={setUserRooms}
             joinRoom={joinRoom}
+            currentUserId={userData.userId}
             setCurrentRoom={currentRoomSetter}
         />
         <JoinWithInviteForm
@@ -75,18 +75,22 @@ export function Sidebar
   )
 }
 
-function AddRoomForm ({ userRooms, setUserRooms, joinRoom, setCurrentRoom }) {
+function AddRoomForm ({ userRooms, setUserRooms, joinRoom, currentUserId, setCurrentRoom }) {
   return (
       <button
         className='flex items-center gap-3 px-3 py-1 min-h-[44px] border rounded-md border-white'
         onClick={() => {
-          addRoom({ roomName: 'new room' }).then(addRoomResult => {
-            addUserToRoom({ roomId: addRoomResult.id })
-            const updatedUserRooms = [...userRooms, addRoomResult]
-            setUserRooms(updatedUserRooms)
-            joinRoom(addRoomResult)
-            setCurrentRoom(addRoomResult)
+          addRoom({
+            roomName: 'new room',
+            creatorId: currentUserId
           })
+            .then(addRoomResult => {
+              addUserToRoom({ roomId: addRoomResult.id })
+              const updatedUserRooms = [...userRooms, addRoomResult]
+              setUserRooms(updatedUserRooms)
+              joinRoom(addRoomResult)
+              setCurrentRoom(addRoomResult)
+            })
         }}
       >
         <svg className='svg-xsm' viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#ffffff">

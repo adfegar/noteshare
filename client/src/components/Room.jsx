@@ -25,7 +25,6 @@ export function Room
   const { roomNotes, setRoomNotes } = useRoomNotes({ roomId: currentRoom?.id })
   const [isInRoomEditMode, setIsInRoomEditMode] = useState(false)
   const [copiedToClipboard, setCopiedToClipboard] = useState(false)
-
   // each time a note is received, add it to the room notes array
   useEffect(() => {
     if (lastReceivedNote) {
@@ -59,7 +58,8 @@ export function Room
       setCurrentRoom({
         id: currentRoom.id,
         name: lastEditedRoom.name,
-        invite: currentRoom.invite
+        invite: currentRoom.invite,
+        creator: currentRoom.creator
       })
     }
   }, [lastEditedRoom])
@@ -77,8 +77,19 @@ export function Room
             <section className='flex items-center justify-between p-20'>
                 {
                     !isInRoomEditMode
-                      ? <RoomNameDisplay currentRoom={currentRoom} setIsInRoomEditMode={setIsInRoomEditMode} setCopiedToClipboard={setCopiedToClipboard} deleteRoomWS={deleteRoomWS}/>
-                      : <EditableRoomNameDisplay currentRoom={currentRoom} isInRoomEditMode={isInRoomEditMode} setIsInRoomEditMode={setIsInRoomEditMode} editRoom={editRoom} />
+                      ? <RoomNameDisplay
+                            currentRoom={currentRoom}
+                            currentUserId={Number(userData.userId)}
+                            setIsInRoomEditMode={setIsInRoomEditMode}
+                            setCopiedToClipboard={setCopiedToClipboard}
+                            deleteRoomWS={deleteRoomWS}
+                        />
+                      : <EditableRoomNameDisplay
+                            currentRoom={currentRoom}
+                            isInRoomEditMode={isInRoomEditMode}
+                            setIsInRoomEditMode={setIsInRoomEditMode}
+                            editRoom={editRoom}
+                        />
                 }
                 <CopiedToClipBoardPopUp copiedToClipboard={copiedToClipboard} />
                 <button
@@ -124,7 +135,7 @@ export function Room
   }
 }
 
-function RoomNameDisplay ({ currentRoom, setIsInRoomEditMode, setCopiedToClipboard, deleteRoomWS }) {
+function RoomNameDisplay ({ currentRoom, currentUserId, setIsInRoomEditMode, setCopiedToClipboard, deleteRoomWS }) {
   return (
         <section
             className='flex items-center gap-3'
@@ -171,29 +182,33 @@ function RoomNameDisplay ({ currentRoom, setIsInRoomEditMode, setCopiedToClipboa
                       </g>
                     </svg>
                 </button>
-                <button
+                {
+                    currentRoom.creator === currentUserId &&
+
+                    <button
                     onClick={() => {
                       deleteRoom({ roomId: currentRoom.id })
                         .then(() => {
                           deleteRoomWS(currentRoom)
                         })
                     }}
-                >
+                    >
                     <svg className='svg-sm' width="64px" height="64px" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="#1c3ffd" stroke="#1c3ffd" strokeWidth="20.48">
-                      <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                      <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
-                      <g id="SVGRepo_iconCarrier">
-                        <path
-                          d="M960 160h-291.2a160 160 0 0 0-313.6 0H64a32 32 0 0 0 0 64h896a32 32 0 0 0 0-64zM512 96a96 96 0 0 1 90.24 64h-180.48A96 96 0 0 1 512 96zM844.16 290.56a32 32 0 0 0-34.88 6.72A32 32 0 0 0 800 320a32 32 0 1 0 64 0 33.6 33.6 0 0 0-9.28-22.72 32 32 0 0 0-10.56-6.72zM832 416a32 32 0 0 0-32 32v96a32 32 0 0 0 64 0v-96a32 32 0 0 0-32-32zM832 640a32 32 0 0 0-32 32v224a32 32 0 0 1-32 32H256a32 32 0 0 1-32-32V320a32 32 0 0 0-64 0v576a96 96 0 0 0 96 96h512a96 96 0 0 0 96-96v-224a32 32 0 0 0-32-32z"
-                          fill="#1c3ffd"
-                        ></path>
-                        <path
-                          d="M384 768V352a32 32 0 0 0-64 0v416a32 32 0 0 0 64 0zM544 768V352a32 32 0 0 0-64 0v416a32 32 0 0 0 64 0zM704 768V352a32 32 0 0 0-64 0v416a32 32 0 0 0 64 0z"
-                          fill="#1c3ffd"
-                        ></path>
-                      </g>
+                    <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+                    <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
+                    <g id="SVGRepo_iconCarrier">
+                    <path
+                    d="M960 160h-291.2a160 160 0 0 0-313.6 0H64a32 32 0 0 0 0 64h896a32 32 0 0 0 0-64zM512 96a96 96 0 0 1 90.24 64h-180.48A96 96 0 0 1 512 96zM844.16 290.56a32 32 0 0 0-34.88 6.72A32 32 0 0 0 800 320a32 32 0 1 0 64 0 33.6 33.6 0 0 0-9.28-22.72 32 32 0 0 0-10.56-6.72zM832 416a32 32 0 0 0-32 32v96a32 32 0 0 0 64 0v-96a32 32 0 0 0-32-32zM832 640a32 32 0 0 0-32 32v224a32 32 0 0 1-32 32H256a32 32 0 0 1-32-32V320a32 32 0 0 0-64 0v576a96 96 0 0 0 96 96h512a96 96 0 0 0 96-96v-224a32 32 0 0 0-32-32z"
+                    fill="#1c3ffd"
+                    ></path>
+                    <path
+                    d="M384 768V352a32 32 0 0 0-64 0v416a32 32 0 0 0 64 0zM544 768V352a32 32 0 0 0-64 0v416a32 32 0 0 0 64 0zM704 768V352a32 32 0 0 0-64 0v416a32 32 0 0 0 64 0z"
+                    fill="#1c3ffd"
+                    ></path>
+                    </g>
                     </svg>
-                </button>
+                    </button>
+                }
             </section>
         </section>
   )

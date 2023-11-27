@@ -30,6 +30,7 @@ func (server *APIServer) Run() error {
 	// init middlewares
 	router.Use(AuthMiddleware)
 	router.Use(ValidatePathParams)
+	router.Use(CheckUserOwnershipMiddleware)
 	// init all routes and run the server
 	initRoutes(router)
 	return http.ListenAndServe(server.ListenAddress, handler)

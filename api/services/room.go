@@ -11,8 +11,8 @@ import (
 )
 
 type RoomBody struct {
-	Name   string `json:"name" required:"true"`
-	Invite string
+	Name    string `json:"name" required:"true"`
+	Creator uint   `json:"creator" required:"true"`
 }
 
 type UpdateRoomBody struct {
@@ -35,7 +35,7 @@ func GetAllRooms() ([]models.Room, error) {
 	for results.Next() {
 		var room models.Room
 
-		if scanErr := results.Scan(&room.ID, &room.Name, &room.Invite); scanErr != nil {
+		if scanErr := results.Scan(&room.ID, &room.Name, &room.Invite, &room.Creator); scanErr != nil {
 			return rooms, scanErr
 		}
 
@@ -61,7 +61,7 @@ func GetRoomByInvite(inviteCode string) (*models.Room, error) {
 
 	result := database.QueryRow("SELECT * FROM rooms WHERE invite LIKE ? ;", inviteCode)
 
-	if scanErr := result.Scan(&room.ID, &room.Name, &room.Invite); scanErr != nil {
+	if scanErr := result.Scan(&room.ID, &room.Name, &room.Invite, &room.Creator); scanErr != nil {
 		if errors.Is(scanErr, sql.ErrNoRows) {
 			return nil, errors.New("room not found")
 		}
@@ -75,7 +75,8 @@ func GetUserRooms(userId int) ([]models.Room, error) {
 	var rooms []models.Room
 
 	database := database.GetInstance().GetDB()
-	results, err := database.Query("SELECT rooms.* FROM rooms JOIN users_rooms ON users_rooms.room_id = rooms.id WHERE users_rooms.user_id = ?;", userId)
+	results, err := database.Query("SELECT rooms.* FROM rooms "+
+		"JOIN users_rooms ON users_rooms.room_id = rooms.id WHERE users_rooms.user_id = ?;", userId)
 
 	if err != nil {
 		return rooms, err
@@ -86,7 +87,7 @@ func GetUserRooms(userId int) ([]models.Room, error) {
 	for results.Next() {
 		var room models.Room
 
-		if scanErr := results.Scan(&room.ID, &room.Name, &room.Invite); scanErr != nil {
+		if scanErr := results.Scan(&room.ID, &room.Name, &room.Invite, &room.Creator); scanErr != nil {
 			return nil, scanErr
 		}
 
@@ -104,8 +105,9 @@ func GetUserRooms(userId int) ([]models.Room, error) {
 func CreateRoom(roomBody RoomBody) (*models.Room, error) {
 
 	room := &models.Room{
-		Name:   roomBody.Name,
-		Invite: uuid.NewString(),
+		Name:    roomBody.Name,
+		Invite:  uuid.NewString(),
+		Creator: roomBody.Creator,
 	}
 
 	if err := roomStorage.Create(room); err != nil {

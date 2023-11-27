@@ -3,9 +3,13 @@ import { API_PREFIX } from '../consts'
 import { checkTokenExp } from './auth'
 import { instance } from './interceptors'
 
-export async function addRoom ({ roomName }) {
+export async function addRoom ({ roomName, creatorId }) {
   await checkTokenExp({ token: Cookies.get('access-token') })
-  const addRoomResult = await instance.post(`${API_PREFIX}/rooms`, { name: roomName })
+  const addRoomResult = await instance.post(`${API_PREFIX}/rooms`,
+    {
+      name: roomName,
+      creator: Number(creatorId)
+    })
 
   if (addRoomResult.status === 201) {
     const room = await addRoomResult.data
