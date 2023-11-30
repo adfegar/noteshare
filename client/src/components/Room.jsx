@@ -298,6 +298,7 @@ function EditRoomTextField ({ isInEditMode, defaultContent }) {
         <input
             name='roomName'
             type='text'
+            maxLength={20}
             className='text-3xl'
             defaultValue={defaultContent}
             ref={editRoomNameInput}

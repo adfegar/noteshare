@@ -14,7 +14,8 @@ export default {
       },
       height: {
         80: '80px',
-        200: '200px'
+        200: '200px',
+        280: '280px'
       },
       gridTemplateColumns: {
         auto: 'repeat(auto-fill, minmax(360px, 1fr))'

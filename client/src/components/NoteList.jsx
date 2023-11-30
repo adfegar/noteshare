@@ -47,7 +47,7 @@ function OwnedNote ({ note, editNote, deleteNote }) {
   return (
           <article
           style={{ backgroundColor: note.color }}
-          className={'flex flex-col p-20 border border-solid border-black rounded font-virgil text-note'}
+          className={'h-280 relative flex flex-col p-20 border border-solid border-black rounded font-virgil text-note'}
           >
             {
                 !isInEditMode
@@ -71,13 +71,13 @@ function OwnedNote ({ note, editNote, deleteNote }) {
 function EditableNoteBody ({ note, editNote, deleteNote, setIsInEditMode }) {
   const [isInEditColorMode, setIsInEditColorMode] = useState(false)
   return (
-        <section
-        className='flex-col relative'
-        >
-            <p className='h-200'>{note.content}</p>
+      <>
+            <p className='flex-1 noteContent'>{note.content}</p>
             {
                 isInEditColorMode &&
-                    <section className='grid grid-cols-4 gap-3 bg-color-palette-bg rounded-md w-[220px] h-[120px] p-[15px] absolute top-[120px] left-[32px]'>
+                    <section 
+                        className='grid grid-cols-4 gap-3 bg-color-palette-bg rounded-md w-[220px] h-[120px] p-[15px] absolute top-[140px] left-[52px]'
+                    >
                         {
                             Object.values(NoteColors).map(color =>
                                 <button
@@ -170,17 +170,17 @@ function EditableNoteBody ({ note, editNote, deleteNote, setIsInEditMode }) {
                 </section>
             <span className='text-lg'>{note.creator}</span>
             </section>
-        </section>
+        </>
 
   )
 }
 
 // Component that represents the note content editor
 function EditNoteContentForm ({ note, editNote, isInEditMode, setIsInEditMode }) {
+    const [contentWordCount, setContentWordCount] = useState(note.content.length)
   return (
-        <section>
             <form
-                className='flex flex-col'
+                className='flex flex-col h-280'
                 onSubmit={(event) => {
                   event.preventDefault()
                   const formFields = Object.fromEntries(new FormData(event.target))
@@ -198,26 +198,34 @@ function EditNoteContentForm ({ note, editNote, isInEditMode, setIsInEditMode })
                 }}
             >
                 <section className='flex justify-between'>
-                    <button className='text-lg' type='submit'>{'Save'}</button>
                     <button
-                        className='text-lg'
-                        type='button'
-                        onClick={() => {
+                      type='button'
+                      onClick={() => {
                           setIsInEditMode(false)
-                        }}
+                      }}
+                      >
+                      {'Cancel'}
+                    </button>     
+                    <button 
+                        className='bg-ui-blue text-white px-3 py-1 rounded-md' 
+                        type='submit'
                     >
-                        {'Cancel'}
+                        {'Save'}
                     </button>
                 </section>
-                <EditNoteTextArea isInEditMode={isInEditMode} defaultContent={note.content} />
+                <EditNoteTextArea 
+                    isInEditMode={isInEditMode} 
+                    setContentWordCount={setContentWordCount}
+                    defaultContent={note.content} 
+                />
+                <span className='text-end'>{`${contentWordCount}/200`}</span>
             </form>
-        </section>
 
   )
 }
 
 // Component that represents the Text Area inside the content editor form
-function EditNoteTextArea ({ isInEditMode, defaultContent }) {
+function EditNoteTextArea ({ isInEditMode, setContentWordCount, defaultContent }) {
   const editContentInput = useCallback((contentTextArea) => {
     autoFocusInput(contentTextArea, isInEditMode)
   }, [isInEditMode])
@@ -225,10 +233,13 @@ function EditNoteTextArea ({ isInEditMode, defaultContent }) {
   return (
         <textarea
             name='content'
-            className='h-200 p-20 bg-inherit resize-none focus:outline-none'
+            className='flex-1 my-3 bg-inherit resize-none focus:outline-none'
             maxLength={200}
             defaultValue={defaultContent}
             ref={editContentInput}
+            onChange={(event) => {
+                setContentWordCount(event.target.value.length)
+            }}
         />
   )
 }
@@ -238,9 +249,9 @@ function NotOwnedNote ({ note }) {
   return (
         <article
           style={{ backgroundColor: note.color }}
-          className={'flex flex-col p-20 border border-solid border-black rounded font-virgil text-note'}
+          className={'h-280 flex flex-col p-20 border border-solid border-black rounded font-virgil text-note'}
         >
-            <p className='h-200'>{note.content}</p>
+            <p className='flex-1 noteContent'>{note.content}</p>
             <span className='text-lg text-end'>{note.creator}</span>
         </article>
   )

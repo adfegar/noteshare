@@ -5,10 +5,17 @@
 @layer base {
     body{
         background-color: #fff;
-        font-family: 'helvetica'
+        font-family: 'helvetica';
+        scrollbar-width: thin;
+    } 
+    body::-webkit-scrollbar {
+      width: 12px;                   
     }
     .formBox{
         box-shadow: #9adcff 0px 0px 0px 2px inset, rgb(255, 255, 255) 10px -10px 0px -3px, #c1ffd7 10px -10px, rgb(255, 255, 255) 20px -20px 0px -3px, #fff89a 20px -20px, rgb(255, 255, 255) 30px -30px 0px -3px, #ffcf96 30px -30px, rgb(255, 255, 255) 40px -40px 0px -3px, #ff8080 40px -40px;
+    }
+    .noteContent{
+        word-wrap: break-word;
     }
     input {
         @apply outline;
