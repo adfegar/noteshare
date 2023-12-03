@@ -8,8 +8,8 @@ const (
 )
 
 type Token struct {
-	ID         uint   `json:"id" gorm:"primaryKey"`
-	TokenValue string `json:"token" validate:"required"`
-	UserRefer  uint   `json:"user_id" validate:"required"`
-	Kind       TokenKind
+	ID         uint      `json:"id"`
+	TokenValue string    `json:"token" validate:"required,jwt"`
+	UserRefer  uint      `json:"user_id" validate:"required,number"`
+	Kind       TokenKind `validate:"required,number"`
 }

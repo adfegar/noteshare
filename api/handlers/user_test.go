@@ -23,24 +23,24 @@ func TestUsers(t *testing.T) {
 		handler      utils.APIFunc
 	}{
 		// test getting all users
+		{"/api/v1/users", "POST", 201, "",
+			strings.NewReader(`{"username": "test", "email": "test@gmail.com", "password": "testpass"}`),
+			handleCreateUser,
+		},
+		// test adding an incorrect user
+		{"/api/v1/users", "POST", 400, "",
+			strings.NewReader(`{"username": "test"}`),
+			handleCreateUser,
+		},
 		{"/api/v1/users", "GET", 200, "", nil, handleGetUsers},
 		// test getting an specific user
 		{"/api/v1/users/{id}", "GET", 200, "1", nil, handleGetUser},
 		// test getting a not existent user
 		{"/api/v1/users/{id}", "GET", 404, "10000", nil, handleGetUser},
 		// test adding a correct user
-		{"/api/v1/users", "POST", 201, "",
-			strings.NewReader(`{"first_name": "test", "email": "test@gmail.com", "password": "testpass"}`),
-			handleCreateUser,
-		},
-		// test adding an incorrect user
-		{"/api/v1/users", "POST", 400, "",
-			strings.NewReader(`{"first_name": "test"}`),
-			handleCreateUser,
-		},
 		// test updating an existing user
 		{"/api/v1/users/{id}", "PUT", 201, "10",
-			strings.NewReader(`{"first_name": "updatedtest"}`),
+			strings.NewReader(`{"username": "updatedtest"}`),
 			handleUpdateUser,
 		},
 		// test deleting a user

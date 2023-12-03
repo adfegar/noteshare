@@ -21,13 +21,13 @@ func TestAuth(t *testing.T) {
 		handler      utils.APIFunc
 	}{
 		// test registering a correct user
-		{"/api/v1/auth/register", "POST", 201,
-			strings.NewReader(`{"first_name": "test", "email": "testauth@gmail.com", "password": "testpass"}`),
+		{"/api/v1/auth/register", "POST", 200,
+			strings.NewReader(`{"username": "test", "email": "testauth@gmail.com", "password": "testpass"}`),
 			handleRegisterUser,
 		},
 		// test registering an incorrect user
 		{"/api/v1/auth/register", "POST", 400,
-			strings.NewReader(`{"first_name": "test"}`),
+			strings.NewReader(`{"username": "test"}`),
 			handleRegisterUser,
 		},
 		// test authenticating an existing user

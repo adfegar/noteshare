@@ -8,12 +8,12 @@ import (
 )
 
 type UserAuthenticateBody struct {
-	Email    string `json:"email" validate:"required"`
+	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
 }
 
 type RefreshTokenRequest struct {
-	RefreshToken string `json:"refresh_token" validate:"required"`
+	RefreshToken string `json:"refresh_token" validate:"required,jwt"`
 }
 
 // Function that registers a new user to the API, returning access token and refresh token

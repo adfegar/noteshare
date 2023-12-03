@@ -58,7 +58,7 @@ func GetInstance() *Database {
 	defer lock.Unlock()
 
 	if databaseInstance == nil {
-		db, dbErr := sql.Open("libsql", os.Getenv("PROD_DB_STRING"))
+		db, dbErr := sql.Open("libsql", os.Getenv("LOCAL_DB_STRING"))
 		if dbErr != nil {
 			log.Fatal(dbErr.Error())
 		}

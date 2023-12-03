@@ -11,19 +11,19 @@ import (
 )
 
 type UserBody struct {
-	UserName string `json:"username" validate:"required"`
-	Email    string `json:"email" validate:"required"`
-	Password string `json:"password" validate:"required"`
+	UserName string `json:"username" validate:"required,alphanum"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,alphanum"`
 }
 
 type UpdateUserBody struct {
-	UserName string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	UserName string `json:"username" validate:"alphanum"`
+	Email    string `json:"email" validate:"email"`
+	Password string `json:"password" validate:"alphanum"`
 }
 
 type UserRoomBody struct {
-	RoomRefer uint `json:"room_id"`
+	RoomRefer uint `json:"room_id" validate:"required,number"`
 }
 
 var userStorage storage.Storage = &storage.UserStorage{}

@@ -11,12 +11,12 @@ import (
 )
 
 type RoomBody struct {
-	Name    string `json:"name" required:"true"`
-	Creator uint   `json:"creator" required:"true"`
+	Name    string `json:"name" validate:"required,max=20"`
+	Creator uint   `json:"creator" validate:"required,number"`
 }
 
 type UpdateRoomBody struct {
-	Name string `json:"name"`
+	Name string `json:"name" validate:"max=20"`
 }
 
 var roomStorage storage.Storage = &storage.RoomStorage{}
