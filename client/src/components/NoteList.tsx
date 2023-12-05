@@ -1,33 +1,33 @@
-import React, { useState, useContext, useCallback, Dispatch, SetStateAction } from 'react'
+import React, { useState, useContext, useCallback, type Dispatch, type SetStateAction } from 'react'
 import { deleteUserNote, updateUserNote } from '../services/notes'
 import { UserContext } from '../contexts/userDataContext'
-import { Note } from '../@types/note'
+import { type Note } from '../@types/note'
 
 interface NoteListProps {
-    roomNotes: Note[],
-    editNote: (note: Note) => void,
-    deleteNote: (note: Note) => void
+  roomNotes: Note[]
+  editNote: (note: Note) => void
+  deleteNote: (note: Note) => void
 }
 
-export const NoteList:React.FC<NoteListProps> = 
-  ({ 
-        roomNotes, 
-        editNote, 
-        deleteNote 
-    }
+export const NoteList: React.FC<NoteListProps> =
+  ({
+    roomNotes,
+    editNote,
+    deleteNote
+  }
   ) => {
-  return (
+    return (
       <section className='grid grid-cols-auto gap-5 pt-20 px-20 overflow-y-auto'>
       {
-          (roomNotes && roomNotes.length > 0)
+          (roomNotes.length > 0)
             ? roomNotes.map(note =>
-              <Note key={note.id} note={note} editNote={editNote} deleteNote={deleteNote}/>
+              <BasicNote key={note.id} note={note} editNote={editNote} deleteNote={deleteNote}/>
             )
             : <p>{'No notes where found'}</p>
       }
     </section>
-  )
-}
+    )
+  }
 
 export const NoteColors = {
   BLUE: '#9adcff',
@@ -40,40 +40,39 @@ export const NoteColors = {
 }
 
 interface NoteProps {
-    note: Note,
-    editNote: (note: Note) => void,
-    deleteNote: (note: Note) => void
+  note: Note
+  editNote: (note: Note) => void
+  deleteNote: (note: Note) => void
 }
 
 // General note component
-const Note: React.FC<NoteProps> = 
-    ({ 
-        note, 
-        editNote, 
-        deleteNote 
-    }) => {
-  const userDataContext = useContext(UserContext)
-  if (note.creator === userDataContext!.userData.username) {
-    return (
-        <OwnedNote note={note} editNote={editNote} deleteNote={deleteNote} />
-    )
-  } else {
-    return (
-        <NotOwnedNote note={note} />
-    )
-  }
-}
-// Component that represents a note that the user owns
-const OwnedNote: React.FC<NoteProps> = 
+const BasicNote: React.FC<NoteProps> =
     ({
-        note, 
-        editNote, 
-        deleteNote 
-    }) => 
-{
-  const [isInEditMode, setIsInEditMode] = useState(false)
+      note,
+      editNote,
+      deleteNote
+    }) => {
+      const userDataContext = useContext(UserContext)
+      if (note.creator === userDataContext?.userData.username) {
+        return (
+        <OwnedNote note={note} editNote={editNote} deleteNote={deleteNote} />
+        )
+      } else {
+        return (
+        <NotOwnedNote note={note} />
+        )
+      }
+    }
+// Component that represents a note that the user owns
+const OwnedNote: React.FC<NoteProps> =
+    ({
+      note,
+      editNote,
+      deleteNote
+    }) => {
+      const [isInEditMode, setIsInEditMode] = useState(false)
 
-  return (
+      return (
           <article
           style={{ backgroundColor: note.color }}
           className={'h-280 relative flex flex-col p-20 border border-solid border-black rounded font-virgil text-note'}
@@ -94,30 +93,30 @@ const OwnedNote: React.FC<NoteProps> =
                     />
             }
           </article>
-  )
-}
-
-interface EditableNoteBodyProps {
-        note: Note,
-        editNote: (note: Note) => void,
-        deleteNote: (note: Note) => void,
-        setIsInEditMode: Dispatch<SetStateAction<boolean>>
+      )
     }
 
-const EditableNoteBody: React.FC<EditableNoteBodyProps> = 
-    ({ 
-        note, 
-        editNote, 
-        deleteNote, 
-        setIsInEditMode 
+interface EditableNoteBodyProps {
+  note: Note
+  editNote: (note: Note) => void
+  deleteNote: (note: Note) => void
+  setIsInEditMode: Dispatch<SetStateAction<boolean>>
+}
+
+const EditableNoteBody: React.FC<EditableNoteBodyProps> =
+    ({
+      note,
+      editNote,
+      deleteNote,
+      setIsInEditMode
     }) => {
-  const [isInEditColorMode, setIsInEditColorMode] = useState(false)
-  return (
+      const [isInEditColorMode, setIsInEditColorMode] = useState(false)
+      return (
       <>
             <p className='flex-1 noteContent'>{note.content}</p>
             {
                 isInEditColorMode &&
-                    <section 
+                    <section
                         className='grid grid-cols-4 gap-3 bg-color-palette-bg rounded-md w-[220px] h-[120px] p-[15px] absolute top-[140px] left-[52px]'
                     >
                         {
@@ -128,7 +127,7 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
                                     className='rounded-md'
                                     value={color}
                                     onClick={(event) => {
-                                      const target = event.target as HTMLButtonElement 
+                                      const target = event.target as HTMLButtonElement
                                       const newNote = {
                                         content: note.content,
                                         color: target.value
@@ -140,7 +139,7 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
                                           editNote(note)
                                           setIsInEditColorMode(false)
                                         })
-                                        .catch(error => console.error(error))
+                                        .catch(error => { console.error(error) })
                                     }}
                                 />
                             )
@@ -193,7 +192,7 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
                             .then(() => {
                               deleteNote(note)
                             })
-                            .catch(error => console.error(error))
+                            .catch(error => { console.error(error) })
                         }}
                     >
                         <svg className='svg-sm' width="64px" height="64px" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="#000000" stroke="#000000" strokeWidth="20.48">
@@ -216,26 +215,26 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
             </section>
         </>
 
-  )
-}
-
-interface EditNoteContentFormProps {
-        note: Note,
-        editNote: (note: Note) => void,
-        isInEditMode: boolean
-        setIsInEditMode: Dispatch<SetStateAction<boolean>>
+      )
     }
 
+interface EditNoteContentFormProps {
+  note: Note
+  editNote: (note: Note) => void
+  isInEditMode: boolean
+  setIsInEditMode: Dispatch<SetStateAction<boolean>>
+}
+
 // Component that represents the note content editor
-    const EditNoteContentForm: React.FC<EditNoteContentFormProps> = 
-    ({ 
-        note, 
-        editNote, 
-        isInEditMode, 
-        setIsInEditMode 
+const EditNoteContentForm: React.FC<EditNoteContentFormProps> =
+    ({
+      note,
+      editNote,
+      isInEditMode,
+      setIsInEditMode
     }) => {
-    const [contentWordCount, setContentWordCount] = useState<number>(note.content.length)
-  return (
+      const [contentWordCount, setContentWordCount] = useState<number>(note.content.length)
+      return (
             <form
                 className='flex flex-col h-280'
                 onSubmit={(event) => {
@@ -252,55 +251,55 @@ interface EditNoteContentFormProps {
                       editNote(note)
                       setIsInEditMode(false)
                     })
-                    .catch(error => console.error(error))
+                    .catch(error => { console.error(error) })
                 }}
             >
                 <section className='flex justify-between'>
                     <button
                       type='button'
                       onClick={() => {
-                          setIsInEditMode(false)
+                        setIsInEditMode(false)
                       }}
                       >
                       {'Cancel'}
-                    </button>     
-                    <button 
-                        className='bg-ui-blue text-white px-3 py-1 rounded-md' 
+                    </button>
+                    <button
+                        className='bg-ui-blue text-white px-3 py-1 rounded-md'
                         type='submit'
                     >
                         {'Save'}
                     </button>
                 </section>
-                <EditNoteTextArea 
-                    isInEditMode={isInEditMode} 
+                <EditNoteTextArea
+                    isInEditMode={isInEditMode}
                     setContentWordCount={setContentWordCount}
-                    defaultContent={note.content} 
+                    defaultContent={note.content}
                 />
                 <span className='text-end'>{`${contentWordCount}/200`}</span>
             </form>
 
-  )
-}
-
-interface EditNoteTextAreaProps {
-        isInEditMode: boolean,
-        setContentWordCount: Dispatch<SetStateAction<number>>,
-        defaultContent: string
+      )
     }
 
+interface EditNoteTextAreaProps {
+  isInEditMode: boolean
+  setContentWordCount: Dispatch<SetStateAction<number>>
+  defaultContent: string
+}
+
 // Component that represents the Text Area inside the content editor form
-const EditNoteTextArea: React.FC<EditNoteTextAreaProps> = 
-({ 
-    isInEditMode, 
-    setContentWordCount, 
-    defaultContent 
+const EditNoteTextArea: React.FC<EditNoteTextAreaProps> =
+({
+  isInEditMode,
+  setContentWordCount,
+  defaultContent
 }) => {
   const editContentInput = useCallback((contentTextArea: HTMLTextAreaElement) => {
-      if (contentTextArea && isInEditMode) {
-        const lastCharacterPosition = contentTextArea.value.length
-        contentTextArea.setSelectionRange(lastCharacterPosition, lastCharacterPosition)
-        contentTextArea.focus()
-      }
+    if (contentTextArea !== null && isInEditMode) {
+      const lastCharacterPosition = contentTextArea.value.length
+      contentTextArea.setSelectionRange(lastCharacterPosition, lastCharacterPosition)
+      contentTextArea.focus()
+    }
   }, [isInEditMode])
 
   return (
@@ -311,14 +310,14 @@ const EditNoteTextArea: React.FC<EditNoteTextAreaProps> =
             defaultValue={defaultContent}
             ref={editContentInput}
             onChange={(event) => {
-                setContentWordCount(event.target.value.length)
+              setContentWordCount(event.target.value.length)
             }}
         />
   )
 }
 
 interface NotOwnedNoteProps {
-    note: Note
+  note: Note
 }
 
 // Component that represents a Note that the user does not own
@@ -333,4 +332,3 @@ const NotOwnedNote: React.FC<NotOwnedNoteProps> = ({ note }) => {
         </article>
   )
 }
-

@@ -1,17 +1,16 @@
 import { API_PREFIX } from '../consts'
 import { instance } from './interceptors'
-import { User } from '../@types/user'
-import { APIError } from '../@types/api'
+import { type User } from '../@types/user'
+import { type APIError } from '../@types/api'
 
 export async function getUserByEmail (email: string): Promise<User> {
-  const userResult: {data: User|APIError, status: Number}
-    = await instance.get(`${API_PREFIX}/users/${email}`)
+  const userResult: { data: User | APIError, status: number } =
+    await instance.get(`${API_PREFIX}/users/${email}`)
 
   if (userResult.status !== 200) {
-    const error = <APIError> userResult.data
+    const error = userResult.data as APIError
     throw new Error(error.error)
   }
-  const user = <User> userResult.data
+  const user = userResult.data as User
   return user
 }
-

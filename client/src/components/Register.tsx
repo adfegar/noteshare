@@ -6,14 +6,14 @@ import { setUserCookies } from '../utils'
 import { FormTextField } from './FormTextField'
 import { FormPasswordField } from './FormPasswordField'
 import Cookies from 'js-cookie'
-import { RegisterUserRequest } from '../@types/auth'
+import { type RegisterUserRequest } from '../@types/auth'
 
-export const Register: React.FC<{}>= () => {
+export const Register: React.FC = () => {
   const userDataContext = useContext(UserContext)
   const [message, setMessage] = useState<string>()
-  const [authenticated] = useState<string>(Cookies.get('authenticated')!)
+  const [authenticated] = useState<string | undefined>(Cookies.get('authenticated'))
 
-  if (userDataContext?.userData.accessToken && (authenticated === 'true')) {
+  if (userDataContext?.userData.accessToken !== undefined && (authenticated === 'true')) {
     return (<Navigate to="/" replace={true} />)
   } else {
     return (
@@ -30,16 +30,16 @@ export const Register: React.FC<{}>= () => {
 
                           const formFields = Object.fromEntries(new FormData(event.target as HTMLFormElement))
                           const request: RegisterUserRequest = {
-                              username: formFields.username as string,
-                              email: formFields.email as string,
-                              password: formFields.password as string
+                            username: formFields.username as string,
+                            email: formFields.email as string,
+                            password: formFields.password as string
                           }
                           registerUser(request)
                             .then(response => {
-                              const updatedUserData = {...userDataContext!.userData}
+                              const updatedUserData = { ...userDataContext?.userData }
                               updatedUserData.accessToken = response.access_token
                               updatedUserData.refreshToken = response.refresh_token
-                              userDataContext!.setUserData(updatedUserData)
+                              userDataContext?.setUserData(updatedUserData)
                               setUserCookies(request.email, response.access_token, response.refresh_token)
                             })
                             .catch(err => {
@@ -63,4 +63,3 @@ export const Register: React.FC<{}>= () => {
     )
   }
 }
-

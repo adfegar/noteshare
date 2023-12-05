@@ -1,15 +1,19 @@
-import { useState, createContext, ReactNode } from 'react'
-import { UserData, UserDataContext } from '../@types/userData'
+import { useState, createContext, type ReactNode } from 'react'
+import { type UserData, type UserDataContext } from '../@types/userData'
 import Cookies from 'js-cookie'
 
-export const UserContext = createContext<UserDataContext|null>(null)
+export const UserContext = createContext<UserDataContext | null>(null)
 
-export function UserDataProvider ({ children }: {children: ReactNode}) {
+interface UserDataProviderProps {
+  children: ReactNode
+}
+
+export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
   const [userData, setUserData] = useState<UserData>({
-    accessToken: Cookies.get('access_token')!,
-    refreshToken: Cookies.get('refresh_token')!,
-    userId: Cookies.get('user_id')!,
-    username: Cookies.get('username')!
+    accessToken: Cookies.get('access_token'),
+    refreshToken: Cookies.get('refresh_token'),
+    userId: Cookies.get('user_id'),
+    username: Cookies.get('username')
   })
 
   return (
@@ -23,4 +27,3 @@ export function UserDataProvider ({ children }: {children: ReactNode}) {
        </UserContext.Provider>
   )
 }
-

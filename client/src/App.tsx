@@ -6,9 +6,9 @@ import { Sidebar } from './components/Sidebar'
 import { RoomView } from './components/Room'
 import Cookies from 'js-cookie'
 import { useWS } from './hooks/useWs'
-import { Room } from './@types/room'
+import { type Room } from './@types/room'
 
-const App: React.FC<{}> = () => {  
+const App: React.FC = () => {
   const userDataContext = useContext(UserContext)
   const [currentRoom, setCurrentRoom] = useState<Room | undefined>()
   const {
@@ -26,36 +26,36 @@ const App: React.FC<{}> = () => {
   } = useWS()
 
   useEffect(() => {
-    if (!Cookies.get('authenticated')) {
+    if (Cookies.get('authenticated') === undefined) {
       Cookies.set('authenticated', 'true')
     }
   }, [])
   return (
       <>
           {
-            userDataContext!.userData.accessToken !== undefined && (Cookies.get('authenticated') === 'true')
+            userDataContext?.userData.accessToken !== undefined && (Cookies.get('authenticated') === 'true')
               ? <main className='flex h-full'>
                     <Sidebar
                         joinRoom={joinRoom}
-                        lastEditedRoom={lastEditedRoom!}
-                        lastDeletedRoom={lastDeletedRoom!}
-                        currentRoom={currentRoom!}
+                        lastEditedRoom={lastEditedRoom}
+                        lastDeletedRoom={lastDeletedRoom}
+                        currentRoom={currentRoom}
                         currentRoomSetter={setCurrentRoom}
                      />
                      {
                          currentRoom !== undefined &&
                              <RoomView
-                                 lastReceivedNote={lastReceivedNote!}
-                                 lastEditedNote={lastEditedNote!}
-                                 lastDeletedNote={lastDeletedNote!}
-                                 lastEditedRoom={lastEditedRoom!}
-                                 lastDeletedRoom={lastDeletedRoom!}
+                                 lastReceivedNote={lastReceivedNote}
+                                 lastEditedNote={lastEditedNote}
+                                 lastDeletedNote={lastDeletedNote}
+                                 lastEditedRoom={lastEditedRoom}
+                                 lastDeletedRoom={lastDeletedRoom}
                                  sendNote={sendNote}
                                  editNote={editNote}
                                  deleteNote={deleteNote}
                                  editRoom={editRoom}
                                  deleteRoomWS={deleteRoomWS}
-                                 currentRoom={currentRoom!}
+                                 currentRoom={currentRoom}
                                  setCurrentRoom={setCurrentRoom}
                             />
                      }
@@ -67,4 +67,3 @@ const App: React.FC<{}> = () => {
 }
 
 export default App
-

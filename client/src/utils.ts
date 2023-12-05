@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie'
 import { getUserByEmail } from './services/users'
 
-export function setUserCookies (email: string, accessToken: string, refreshToken: string) {
+export function setUserCookies (email: string, accessToken: string, refreshToken: string): void {
   Cookies.set('email', email, { expires: 365 })
   Cookies.set('access_token', accessToken, { expires: 365 })
   Cookies.set('refresh_token', refreshToken, { expires: 365 })
@@ -12,9 +12,10 @@ export function setUserCookies (email: string, accessToken: string, refreshToken
     Cookies.set('authenticated', 'true')
     window.location.reload()
   })
+    .catch(err => { console.error(err) })
 }
 
-export function removeUserCookies () {
+export function removeUserCookies (): void {
   Cookies.remove('email')
   Cookies.remove('access_token')
   Cookies.remove('refresh_token')
@@ -22,12 +23,3 @@ export function removeUserCookies () {
   Cookies.remove('username')
   Cookies.set('authenticated', 'false')
 }
-
-export function autoFocusInput (input: HTMLInputElement, isInEditMode: boolean) {
-  if (input && isInEditMode) {
-    const lastCharacterPosition = input.value.length
-    input.setSelectionRange(lastCharacterPosition, lastCharacterPosition)
-    input.focus()
-  }
-}
-

@@ -12,7 +12,7 @@ instance.interceptors.request.use(
       if (accessToken !== undefined) {
         request.headers.Authorization = `Bearer ${accessToken}`
         checkTokenExp(accessToken)
-            .catch(err => console.error(err))
+          .catch(err => { console.error(err) })
       }
     }
     return request

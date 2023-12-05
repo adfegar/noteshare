@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { getRoomUsers } from '../services/rooms'
-import { User } from '../@types/user'
+import { type User } from '../@types/user'
 
 interface UseRoomUsersResult {
-    roomUsers: User[]
+  roomUsers: User[]
 }
 
 export function useRoomUsers (roomId: number): UseRoomUsersResult {
@@ -22,4 +22,3 @@ export function useRoomUsers (roomId: number): UseRoomUsersResult {
 
   return { roomUsers }
 }
-

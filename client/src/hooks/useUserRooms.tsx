@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { getUserRooms } from '../services/rooms'
-import { Room } from '../@types/room'
+import { type Room } from '../@types/room'
 
 interface UseUserRoomsResult {
-   userRooms: Room[],
-   setUserRooms: React.Dispatch<React.SetStateAction<Room[]>>
+  userRooms: Room[]
+  setUserRooms: React.Dispatch<React.SetStateAction<Room[]>>
 }
 
 export function useUserRooms (userId: number): UseUserRoomsResult {
@@ -27,4 +27,3 @@ export function useUserRooms (userId: number): UseUserRoomsResult {
 
   return { userRooms, setUserRooms }
 }
-

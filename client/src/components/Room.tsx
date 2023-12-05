@@ -22,8 +22,7 @@ interface RoomViewProps {
   setCurrentRoom: Dispatch<SetStateAction<Room | undefined>>
 }
 
-
-export const  RoomView: React.FC<RoomViewProps> =
+export const RoomView: React.FC<RoomViewProps> =
 ({
   lastReceivedNote,
   lastEditedNote,
@@ -90,19 +89,19 @@ export const  RoomView: React.FC<RoomViewProps> =
     }
   }, [lastDeletedRoom])
 
-    return (
+  return userDataContext !== null && (
             <article className='w-full h-full flex flex-col px-20 pt-5'>
                 <section className='flex items-center justify-between p-20'>
                 {
                     !isInRoomEditMode
-                        ? <RoomNameDisplay
+                      ? <RoomNameDisplay
                         currentRoom={currentRoom}
-                        currentUserId={Number(userDataContext!.userData.userId)}
+                        currentUserId={Number(userDataContext.userData.userId)}
                         setIsInRoomEditMode={setIsInRoomEditMode}
                         setCopiedToClipboard={setCopiedToClipboard}
                         deleteRoomWS={deleteRoomWS}
                         />
-                            : <EditableRoomNameDisplay
+                      : <EditableRoomNameDisplay
                             currentRoom={currentRoom}
                             isInRoomEditMode={isInRoomEditMode}
                             setIsInRoomEditMode={setIsInRoomEditMode}
@@ -113,23 +112,24 @@ export const  RoomView: React.FC<RoomViewProps> =
                 <button
                 className='flex content-center p-[10px] text-white rounded-md bg-ui-blue'
                 onClick={() => {
-                    const randomColorIndex = Math.floor(Math.random() * Object.keys(NoteColors).length)
-                    const colorKey = Object.keys(NoteColors)[randomColorIndex]
-                    const noteObject = {
-                        content: '',
-                        color: NoteColors[colorKey as keyof typeof NoteColors],
-                        user_id: Number(userDataContext!.userData.userId),
-                        room_id: currentRoom.id
+                  const randomColorIndex = Math.floor(Math.random() * Object.keys(NoteColors).length)
+                  const colorKey = Object.keys(NoteColors)[randomColorIndex]
+                  const noteObject = {
+                    content: '',
+                    color: NoteColors[colorKey as keyof typeof NoteColors],
+                    user_id: Number(userDataContext.userData.userId),
+                    room_id: currentRoom.id
+                  }
+                  addUserNote(noteObject).then(addNoteResult => {
+                    const noteMessage = {
+                      id: addNoteResult.id,
+                      content: addNoteResult.content,
+                      color: addNoteResult.color,
+                      creator: userDataContext.userData.username as string
                     }
-                    addUserNote(noteObject).then(addNoteResult => {
-                        const noteMessage = {
-                            id: addNoteResult.id,
-                            content: addNoteResult.content,
-                            color: addNoteResult.color,
-                            creator: userDataContext!.userData.username
-                        }
-                        sendNote(noteMessage)
-                    })
+                    sendNote(noteMessage)
+                  })
+                    .catch(err => { console.error(err) })
                 }}
                 >
                 <svg className='max-h-[30px] max-w-[35px] pr-[10px]' width="64px" height="64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
@@ -150,19 +150,18 @@ export const  RoomView: React.FC<RoomViewProps> =
                 roomNotes={roomNotes}
                 />
             </article>
-    )
+  )
 }
 
 interface RoomNameDisplayProps {
-    currentRoom: Room
-    currentUserId: number
-    setIsInRoomEditMode: Dispatch<SetStateAction<boolean>>
-    setCopiedToClipboard: Dispatch<SetStateAction<boolean>>
-    deleteRoomWS: (room: Room) => void
-  }
+  currentRoom: Room
+  currentUserId: number
+  setIsInRoomEditMode: Dispatch<SetStateAction<boolean>>
+  setCopiedToClipboard: Dispatch<SetStateAction<boolean>>
+  deleteRoomWS: (room: Room) => void
+}
 
-
-const RoomNameDisplay:React.FC<RoomNameDisplayProps> = 
+const RoomNameDisplay: React.FC<RoomNameDisplayProps> =
   ({
     currentRoom,
     currentUserId,
@@ -170,7 +169,7 @@ const RoomNameDisplay:React.FC<RoomNameDisplayProps> =
     setCopiedToClipboard,
     deleteRoomWS
   }) => {
-  return (
+    return (
         <section
             className='flex items-center gap-3'
         >
@@ -179,6 +178,7 @@ const RoomNameDisplay:React.FC<RoomNameDisplayProps> =
             <button
                 onClick={() => {
                   navigator.clipboard.writeText(currentRoom.invite)
+                    .catch(err => { console.error(err) })
                   setCopiedToClipboard(true)
                   setTimeout(() => {
                     setCopiedToClipboard(false)
@@ -225,6 +225,7 @@ const RoomNameDisplay:React.FC<RoomNameDisplayProps> =
                         .then(() => {
                           deleteRoomWS(currentRoom)
                         })
+                        .catch(err => { console.error(err) })
                     }}
                     >
                     <svg className='svg-sm' width="64px" height="64px" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="#1c3ffd" stroke="#1c3ffd" strokeWidth="20.48">
@@ -245,26 +246,25 @@ const RoomNameDisplay:React.FC<RoomNameDisplayProps> =
                 }
             </section>
         </section>
-  )
-}
+    )
+  }
 
 interface EditableRoomNameDisplayProps {
 
-    currentRoom: Room
-    isInRoomEditMode: boolean
-    setIsInRoomEditMode: Dispatch<SetStateAction<boolean>>
-    editRoom: (room: Room) => void
-  }
+  currentRoom: Room
+  isInRoomEditMode: boolean
+  setIsInRoomEditMode: Dispatch<SetStateAction<boolean>>
+  editRoom: (room: Room) => void
+}
 
-
-const EditableRoomNameDisplay: React.FC<EditableRoomNameDisplayProps> = 
+const EditableRoomNameDisplay: React.FC<EditableRoomNameDisplayProps> =
   ({
     currentRoom,
     isInRoomEditMode,
     setIsInRoomEditMode,
     editRoom
   }) => {
-  return (
+    return (
     <section>
         <form
             className='flex gap-[10px] items-center'
@@ -282,6 +282,7 @@ const EditableRoomNameDisplay: React.FC<EditableRoomNameDisplayProps> =
                   })
                   setIsInRoomEditMode(false)
                 })
+                .catch(err => { console.error(err) })
             }}
         >
             <EditRoomTextField isInEditMode={isInRoomEditMode} defaultContent={currentRoom.name} />
@@ -338,29 +339,29 @@ const EditableRoomNameDisplay: React.FC<EditableRoomNameDisplayProps> =
             </button>
         </form>
     </section>
-  )
-}
-
-interface EditRoomTextFieldProps {
-    isInEditMode: boolean
-    defaultContent: string
+    )
   }
 
-const EditRoomTextField: React.FC<EditRoomTextFieldProps> = 
+interface EditRoomTextFieldProps {
+  isInEditMode: boolean
+  defaultContent: string
+}
+
+const EditRoomTextField: React.FC<EditRoomTextFieldProps> =
   ({
     isInEditMode,
     defaultContent
   }
-) => {
-  const editRoomNameInput = useCallback((roomNameInput: HTMLInputElement) => {
-    if (roomNameInput && isInEditMode) {
-      const lastCharacterPosition = roomNameInput.value.length
-      roomNameInput.setSelectionRange(lastCharacterPosition, lastCharacterPosition)
-      roomNameInput.focus()
-    }
-  }, [isInEditMode])
+  ) => {
+    const editRoomNameInput = useCallback((roomNameInput: HTMLInputElement) => {
+      if (roomNameInput !== null && isInEditMode) {
+        const lastCharacterPosition = roomNameInput.value.length
+        roomNameInput.setSelectionRange(lastCharacterPosition, lastCharacterPosition)
+        roomNameInput.focus()
+      }
+    }, [isInEditMode])
 
-  return (
+    return (
         <input
             name='roomName'
             type='text'
@@ -369,14 +370,14 @@ const EditRoomTextField: React.FC<EditRoomTextFieldProps> =
             defaultValue={defaultContent}
             ref={editRoomNameInput}
         />
-  )
-}
+    )
+  }
 
 interface CopiedToClipBoardPopUpProps {
-    copiedToClipboard: boolean
+  copiedToClipboard: boolean
 }
 
-const CopiedToClipBoardPopUp:React.FC<CopiedToClipBoardPopUpProps>= ({ copiedToClipboard }) => {
+const CopiedToClipBoardPopUp: React.FC<CopiedToClipBoardPopUpProps> = ({ copiedToClipboard }) => {
   if (copiedToClipboard) {
     return (
           <section

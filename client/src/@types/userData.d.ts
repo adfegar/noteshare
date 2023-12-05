@@ -1,12 +1,11 @@
-
 export interface UserData {
-    accessToken: string|undefined
-    refreshToken: string
-    userId: string
-    username: string 
+  accessToken?: string | undefined
+  refreshToken?: string | undefined
+  userId?: string | undefined
+  username?: string | undefined
 }
 
-export type UserDataContext = {
-    userData: UserData,
-    setUserData: React.Dispatch<React.SetStateAction<UserData>>
+export interface UserDataContext {
+  userData: UserData
+  setUserData: React.Dispatch<React.SetStateAction<UserData>>
 }

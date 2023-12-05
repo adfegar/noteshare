@@ -1,5 +1,5 @@
-interface FormPasswordFieldProps{
-    required: boolean
+interface FormPasswordFieldProps {
+  required: boolean
 }
 
 export const FormPasswordField: React.FC<FormPasswordFieldProps> = ({ required }) => {
@@ -21,4 +21,3 @@ export const FormPasswordField: React.FC<FormPasswordFieldProps> = ({ required }
     </section>
   )
 }
-

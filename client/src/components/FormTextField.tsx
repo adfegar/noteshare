@@ -1,9 +1,9 @@
-interface FormTextFieldProps{
-    name:string
-    required: boolean
+interface FormTextFieldProps {
+  name: string
+  required: boolean
 }
 
-export const FormTextField: React.FC<FormTextFieldProps> = 
+export const FormTextField: React.FC<FormTextFieldProps> =
 ({ name, required }) => {
   return (
     <section className='flex flex-col gap-1'>
@@ -23,4 +23,3 @@ export const FormTextField: React.FC<FormTextFieldProps> =
     </section>
   )
 }
-

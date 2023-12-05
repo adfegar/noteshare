@@ -85,21 +85,20 @@ export const Sidebar: React.FC<SidebarProps> =
 }
 
 interface AddRoomFormProps {
-    userRooms: Room[]
-    setUserRooms: React.Dispatch<React.SetStateAction<Room[]>>
-    joinRoom: (room: Room) => void
-    currentUserId: number
-    setCurrentRoom: React.Dispatch<React.SetStateAction<Room | undefined>>
+  userRooms: Room[]
+  setUserRooms: React.Dispatch<React.SetStateAction<Room[]>>
+  joinRoom: (room: Room) => void
+  currentUserId: number
+  setCurrentRoom: React.Dispatch<React.SetStateAction<Room | undefined>>
 }
 
-
-const AddRoomForm: React.FC<AddRoomFormProps> = 
+const AddRoomForm: React.FC<AddRoomFormProps> =
 ({
-    userRooms,
-    setUserRooms,
-    joinRoom,
-    currentUserId,
-    setCurrentRoom
+  userRooms,
+  setUserRooms,
+  joinRoom,
+  currentUserId,
+  setCurrentRoom
 }) => {
   return (
       <button
@@ -167,21 +166,20 @@ const AddRoomForm: React.FC<AddRoomFormProps> =
 }
 
 interface JoinWithInviteFormProps {
-    userRooms: Room[]
-    setUserRooms: React.Dispatch<React.SetStateAction<Room[]>>
-    joinRoom: (room: Room) => void
-    setCurrentRoom: React.Dispatch<React.SetStateAction<Room | undefined>>
-  }
+  userRooms: Room[]
+  setUserRooms: React.Dispatch<React.SetStateAction<Room[]>>
+  joinRoom: (room: Room) => void
+  setCurrentRoom: React.Dispatch<React.SetStateAction<Room | undefined>>
+}
 
-
-const JoinWithInviteForm: React.FC<JoinWithInviteFormProps> = 
+const JoinWithInviteForm: React.FC<JoinWithInviteFormProps> =
   ({
     userRooms,
     setUserRooms,
     joinRoom,
     setCurrentRoom
   }) => {
-  return (
+    return (
       <section>
         <form
             className='flex'
@@ -210,16 +208,15 @@ const JoinWithInviteForm: React.FC<JoinWithInviteFormProps> =
             />
         </form>
       </section>
-  )
-}
-
-interface JoinRoomButtonProps {
-    room: Room
-    currentRoom: Room | undefined
-    joinRoom: (room: Room) => void
-    currentRoomSetter: React.Dispatch<SetStateAction<Room | undefined>>
+    )
   }
 
+interface JoinRoomButtonProps {
+  room: Room
+  currentRoom: Room | undefined
+  joinRoom: (room: Room) => void
+  currentRoomSetter: React.Dispatch<SetStateAction<Room | undefined>>
+}
 
 const JoinRoomButton: React.FC<JoinRoomButtonProps> =
   ({
@@ -228,7 +225,7 @@ const JoinRoomButton: React.FC<JoinRoomButtonProps> =
     joinRoom,
     currentRoomSetter
   }) => {
-  return (
+    return (
         <a
             style={{ background: (currentRoom?.id === room.id) ? '#4d77ff' : 'inherit' }}
             className='flex gap-3 items-center p-3 text-white rounded-md cursor-pointer'
@@ -267,11 +264,11 @@ const JoinRoomButton: React.FC<JoinRoomButtonProps> =
         </svg>
         <span>{room.name}</span>
         </a>
-  )
-}
+    )
+  }
 
 interface UserProfileProps {
-    username: string | undefined
+  username: string | undefined
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({ username }) => {

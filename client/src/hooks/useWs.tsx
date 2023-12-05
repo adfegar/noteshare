@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import useWebSocket from 'react-use-websocket'
 import { WS_PREFIX } from '../consts'
 import Cookies from 'js-cookie'
-import { Room } from '../@types/room'
-import { Note } from '../@types/note'
+import { type Room } from '../@types/room'
+import { type Note } from '../@types/note'
 
 const WSActions = {
   JoinRoomAction: 'join-room',
@@ -14,7 +14,21 @@ const WSActions = {
   DeleteRoomAction: 'delete-room'
 }
 
-export function useWS () {
+interface UseWSResponse {
+  lastReceivedNote: Note | undefined
+  lastEditedNote: Note | undefined
+  lastDeletedNote: Note | undefined
+  lastEditedRoom: Room | undefined
+  lastDeletedRoom: Room | undefined
+  joinRoom: (room: Room) => void
+  editRoom: (room: Room) => void
+  deleteRoomWS: (room: Room) => void
+  sendNote: (note: Note) => void
+  editNote: (note: Note) => void
+  deleteNote: (note: Note) => void
+}
+
+export function useWS (): UseWSResponse {
   const [lastReceivedNote, setLastReceivedNote] = useState<Note>()
   const [lastEditedNote, setLastEditedNote] = useState<Note>()
   const [lastDeletedNote, setLastDeletedNote] = useState<Note>()
@@ -37,12 +51,12 @@ export function useWS () {
         }
         sendJsonMessage(initMessage)
       },
-      onClose: () => console.log('Disconnected from WS')
+      onClose: () => { console.log('Disconnected from WS') }
     }
   )
   // every time a note is sent, append it to receivedNotes array
-  useEffect(():void => {
-    if (lastMessage) {
+  useEffect((): void => {
+    if (lastMessage !== null) {
       const message = JSON.parse(lastMessage.data)
       if (message.action === WSActions.SendNoteAction) {
         setLastReceivedNote(message.message)
@@ -113,4 +127,3 @@ export function useWS () {
 
   return { lastReceivedNote, lastEditedNote, lastDeletedNote, lastEditedRoom, lastDeletedRoom, joinRoom, editRoom, deleteRoomWS, sendNote, editNote, deleteNote }
 }
-

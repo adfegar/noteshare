@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { getRoomNotes } from '../services/rooms'
-import { Note } from '../@types/note'
+import { type Note } from '../@types/note'
 
 interface UserRoomNotesResult {
-    roomNotes: Note[]
-    setRoomNotes: React.Dispatch<React.SetStateAction<Note[]>>
+  roomNotes: Note[]
+  setRoomNotes: React.Dispatch<React.SetStateAction<Note[]>>
 }
 
 export function useRoomNotes (roomId: number): UserRoomNotesResult {
@@ -25,4 +25,3 @@ export function useRoomNotes (roomId: number): UserRoomNotesResult {
 
   return { roomNotes, setRoomNotes }
 }
-
