@@ -1,23 +1,32 @@
 import { useUserRooms } from '../hooks/useUserRooms'
 import { addRoom, addUserToRoom, getRoomByInviteCode } from '../services/rooms'
-import { useContext, useEffect, useState } from 'react'
-import { UserDataContext } from '../contexts/userDataContext'
+import { type SetStateAction, useContext, useEffect, useState } from 'react'
+import { UserContext } from '../contexts/userDataContext'
 import { useNavigate } from 'react-router-dom'
 import { removeUserCookies } from '../utils'
+import { type Room } from '../@types/room'
 
-export function Sidebar
+interface SidebarProps {
+  joinRoom: (room: Room) => void
+  lastEditedRoom: Room | undefined
+  lastDeletedRoom: Room | undefined
+  currentRoom: Room | undefined
+  currentRoomSetter: React.Dispatch<React.SetStateAction<Room | undefined>>
+}
+
+export const Sidebar: React.FC<SidebarProps> =
 ({
   joinRoom,
   lastEditedRoom,
   lastDeletedRoom,
   currentRoom,
   currentRoomSetter
-}) {
-  const { userData } = useContext(UserDataContext)
-  const { userRooms, setUserRooms } = useUserRooms({ userId: userData.userId })
+}) => {
+  const userDataContext = useContext(UserContext)
+  const { userRooms, setUserRooms } = useUserRooms(Number(userDataContext?.userData.userId))
   // every time a room name is edited, change it in the menu
   useEffect(() => {
-    if (userRooms && lastEditedRoom) {
+    if (userRooms !== undefined && lastEditedRoom !== undefined) {
       const updatedUserRooms = [...userRooms]
 
       for (const room of userRooms) {
@@ -31,7 +40,7 @@ export function Sidebar
 
   // every time a room is deleted, delete it from the menu
   useEffect(() => {
-    if (userRooms && lastDeletedRoom) {
+    if (userRooms !== undefined && lastDeletedRoom !== undefined) {
       const updatedUserRooms = [...userRooms]
       setUserRooms(updatedUserRooms.filter(room => room.id !== lastDeletedRoom.id))
     }
@@ -44,7 +53,7 @@ export function Sidebar
             userRooms={userRooms}
             setUserRooms={setUserRooms}
             joinRoom={joinRoom}
-            currentUserId={userData.userId}
+            currentUserId={Number(userDataContext?.userData.userId)}
             setCurrentRoom={currentRoomSetter}
         />
         <JoinWithInviteForm
@@ -57,7 +66,7 @@ export function Sidebar
 
       <article className='flex flex-col flex-1 overflow-y-auto my-3 py-2 border-y border-white'>
         {
-            userRooms && userRooms.length > 0
+            userRooms.length > 0
               ? userRooms.map(room =>
                 <JoinRoomButton
                   key={room.id}
@@ -70,27 +79,47 @@ export function Sidebar
               : <p>{'No rooms where found'}</p>
         }
       </article>
-        <UserProfile username={userData.username} />
+        <UserProfile username={userDataContext?.userData.username} />
     </nav>
   )
 }
 
-function AddRoomForm ({ userRooms, setUserRooms, joinRoom, currentUserId, setCurrentRoom }) {
+interface AddRoomFormProps {
+    userRooms: Room[]
+    setUserRooms: React.Dispatch<React.SetStateAction<Room[]>>
+    joinRoom: (room: Room) => void
+    currentUserId: number
+    setCurrentRoom: React.Dispatch<React.SetStateAction<Room | undefined>>
+}
+
+
+const AddRoomForm: React.FC<AddRoomFormProps> = 
+({
+    userRooms,
+    setUserRooms,
+    joinRoom,
+    currentUserId,
+    setCurrentRoom
+}) => {
   return (
       <button
         className='flex items-center gap-3 px-3 py-1 min-h-[44px] border rounded-md border-white'
         onClick={() => {
           addRoom({
-            roomName: 'new room',
-            creatorId: currentUserId
+            name: 'new room',
+            creator: currentUserId
           })
             .then(addRoomResult => {
-              addUserToRoom({ roomId: addRoomResult.id })
-              const updatedUserRooms = [...userRooms, addRoomResult]
-              setUserRooms(updatedUserRooms)
-              joinRoom(addRoomResult)
-              setCurrentRoom(addRoomResult)
+              addUserToRoom(addRoomResult.id)
+                .then(() => {
+                  const updatedUserRooms = [...userRooms, addRoomResult]
+                  setUserRooms(updatedUserRooms)
+                  joinRoom(addRoomResult)
+                  setCurrentRoom(addRoomResult)
+                })
+                .catch(err => { console.error(err) })
             })
+            .catch(err => { console.error(err) })
         }}
       >
         <svg className='svg-xsm' viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#ffffff">
@@ -137,23 +166,40 @@ function AddRoomForm ({ userRooms, setUserRooms, joinRoom, currentUserId, setCur
   )
 }
 
-function JoinWithInviteForm ({ userRooms, setUserRooms, joinRoom, setCurrentRoom }) {
+interface JoinWithInviteFormProps {
+    userRooms: Room[]
+    setUserRooms: React.Dispatch<React.SetStateAction<Room[]>>
+    joinRoom: (room: Room) => void
+    setCurrentRoom: React.Dispatch<React.SetStateAction<Room | undefined>>
+  }
+
+
+const JoinWithInviteForm: React.FC<JoinWithInviteFormProps> = 
+  ({
+    userRooms,
+    setUserRooms,
+    joinRoom,
+    setCurrentRoom
+  }) => {
   return (
       <section>
         <form
             className='flex'
             onSubmit={(event) => {
               event.preventDefault()
-              const formFields = Object.fromEntries(new FormData(event.target))
-              getRoomByInviteCode({ inviteCode: formFields.invite }).then(result => {
-                addUserToRoom({ roomId: result.id }).then(() => {
+              const form = event.target as HTMLFormElement
+              const formFields = Object.fromEntries(new FormData(form))
+              getRoomByInviteCode(formFields.invite as string).then(result => {
+                addUserToRoom(result.id).then(() => {
                   const updatedUserRooms = [...userRooms, result]
                   setUserRooms(updatedUserRooms)
                   joinRoom(result)
                   setCurrentRoom(result)
                 })
+                  .catch(err => { console.error(err) })
               })
-              event.target.reset()
+                .catch(err => { console.error(err) })
+              form.reset()
             }}
         >
             <input
@@ -167,7 +213,21 @@ function JoinWithInviteForm ({ userRooms, setUserRooms, joinRoom, setCurrentRoom
   )
 }
 
-function JoinRoomButton ({ room, currentRoom, joinRoom, currentRoomSetter }) {
+interface JoinRoomButtonProps {
+    room: Room
+    currentRoom: Room | undefined
+    joinRoom: (room: Room) => void
+    currentRoomSetter: React.Dispatch<SetStateAction<Room | undefined>>
+  }
+
+
+const JoinRoomButton: React.FC<JoinRoomButtonProps> =
+  ({
+    room,
+    currentRoom,
+    joinRoom,
+    currentRoomSetter
+  }) => {
   return (
         <a
             style={{ background: (currentRoom?.id === room.id) ? '#4d77ff' : 'inherit' }}
@@ -210,7 +270,11 @@ function JoinRoomButton ({ room, currentRoom, joinRoom, currentRoomSetter }) {
   )
 }
 
-function UserProfile ({ username }) {
+interface UserProfileProps {
+    username: string | undefined
+}
+
+const UserProfile: React.FC<UserProfileProps> = ({ username }) => {
   const [showOptions, setShowOptions] = useState(false)
   const navigate = useNavigate()
   return (

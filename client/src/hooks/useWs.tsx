@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import useWebSocket from 'react-use-websocket'
 import { WS_PREFIX } from '../consts'
 import Cookies from 'js-cookie'
+import { Room } from '../@types/room'
+import { Note } from '../@types/note'
 
 const WSActions = {
   JoinRoomAction: 'join-room',
@@ -13,11 +15,11 @@ const WSActions = {
 }
 
 export function useWS () {
-  const [lastReceivedNote, setLastReceivedNote] = useState()
-  const [lastEditedNote, setLastEditedNote] = useState()
-  const [lastDeletedNote, setLastDeletedNote] = useState()
-  const [lastEditedRoom, setLastEditedRoom] = useState()
-  const [lastDeletedRoom, setLastDeletedRoom] = useState()
+  const [lastReceivedNote, setLastReceivedNote] = useState<Note>()
+  const [lastEditedNote, setLastEditedNote] = useState<Note>()
+  const [lastDeletedNote, setLastDeletedNote] = useState<Note>()
+  const [lastEditedRoom, setLastEditedRoom] = useState<Room>()
+  const [lastDeletedRoom, setLastDeletedRoom] = useState<Room>()
   const { sendJsonMessage, lastMessage } = useWebSocket(
     WS_PREFIX,
     {
@@ -29,8 +31,8 @@ export function useWS () {
         const initMessage = {
           action: 'init-client',
           message: {
-            access_token: Cookies.get('access-token'),
-            userId: Number(Cookies.get('userid'))
+            access_token: Cookies.get('access_token'),
+            userId: Number(Cookies.get('user_id'))
           }
         }
         sendJsonMessage(initMessage)
@@ -39,7 +41,7 @@ export function useWS () {
     }
   )
   // every time a note is sent, append it to receivedNotes array
-  useEffect(() => {
+  useEffect(():void => {
     if (lastMessage) {
       const message = JSON.parse(lastMessage.data)
       if (message.action === WSActions.SendNoteAction) {
@@ -57,7 +59,7 @@ export function useWS () {
   }, [lastMessage?.data])
 
   // custom functions to handle message actions
-  function joinRoom (room) {
+  function joinRoom (room: Room): void {
     const roomName = `r_${room.id}_${room.name}`
     const message = {
       action: WSActions.JoinRoomAction,
@@ -69,7 +71,7 @@ export function useWS () {
     sendJsonMessage(message)
   }
 
-  function editRoom (room) {
+  function editRoom (room: Room): void {
     const message = {
       action: WSActions.EditRoomAction,
       message: room
@@ -77,7 +79,7 @@ export function useWS () {
     sendJsonMessage(message)
   }
 
-  function deleteRoomWS (room) {
+  function deleteRoomWS (room: Room): void {
     const message = {
       action: WSActions.DeleteRoomAction,
       message: room
@@ -85,7 +87,7 @@ export function useWS () {
     sendJsonMessage(message)
   }
 
-  function sendNote (note) {
+  function sendNote (note: Note): void {
     const message = {
       action: WSActions.SendNoteAction,
       message: note
@@ -93,7 +95,7 @@ export function useWS () {
     sendJsonMessage(message)
   }
 
-  function editNote (note) {
+  function editNote (note: Note): void {
     const message = {
       action: WSActions.EditNoteAction,
       message: note
@@ -101,7 +103,7 @@ export function useWS () {
     sendJsonMessage(message)
   }
 
-  function deleteNote (note) {
+  function deleteNote (note: Note): void {
     const message = {
       action: WSActions.DeleteNoteAction,
       message: note
@@ -111,3 +113,4 @@ export function useWS () {
 
   return { lastReceivedNote, lastEditedNote, lastDeletedNote, lastEditedRoom, lastDeletedRoom, joinRoom, editRoom, deleteRoomWS, sendNote, editNote, deleteNote }
 }
+

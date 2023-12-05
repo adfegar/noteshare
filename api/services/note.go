@@ -8,7 +8,7 @@ import (
 )
 
 type NoteBody struct {
-	Content   string `json:"content" validate:"required,min=0,max=200"`
+	Content   string `json:"content" validate:"min=0,max=200"`
 	Color     string `json:"color" validate:"required,hexcolor"`
 	UserRefer uint   `json:"user_id" validate:"required,number"`
 	RoomRefer uint   `json:"room_id" validate:"required,number"`

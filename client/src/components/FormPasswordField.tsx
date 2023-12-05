@@ -1,4 +1,8 @@
-export function FormPasswordField ({ required }) {
+interface FormPasswordFieldProps{
+    required: boolean
+}
+
+export const FormPasswordField: React.FC<FormPasswordFieldProps> = ({ required }) => {
   return (
     <section className='flex flex-col gap-1'>
         <section>
@@ -17,3 +21,4 @@ export function FormPasswordField ({ required }) {
     </section>
   )
 }
+

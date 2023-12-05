@@ -1,9 +1,21 @@
-import { useState, useContext, useCallback } from 'react'
+import React, { useState, useContext, useCallback, Dispatch, SetStateAction } from 'react'
 import { deleteUserNote, updateUserNote } from '../services/notes'
-import { UserDataContext } from '../contexts/userDataContext'
-import { autoFocusInput } from '../utils'
+import { UserContext } from '../contexts/userDataContext'
+import { Note } from '../@types/note'
 
-export function NoteList ({ roomNotes, editNote, deleteNote }) {
+interface NoteListProps {
+    roomNotes: Note[],
+    editNote: (note: Note) => void,
+    deleteNote: (note: Note) => void
+}
+
+export const NoteList:React.FC<NoteListProps> = 
+  ({ 
+        roomNotes, 
+        editNote, 
+        deleteNote 
+    }
+  ) => {
   return (
       <section className='grid grid-cols-auto gap-5 pt-20 px-20 overflow-y-auto'>
       {
@@ -27,10 +39,21 @@ export const NoteColors = {
   RED: '#ff8080'
 }
 
+interface NoteProps {
+    note: Note,
+    editNote: (note: Note) => void,
+    deleteNote: (note: Note) => void
+}
+
 // General note component
-function Note ({ note, editNote, deleteNote }) {
-  const { userData } = useContext(UserDataContext)
-  if (note.creator === userData.username) {
+const Note: React.FC<NoteProps> = 
+    ({ 
+        note, 
+        editNote, 
+        deleteNote 
+    }) => {
+  const userDataContext = useContext(UserContext)
+  if (note.creator === userDataContext!.userData.username) {
     return (
         <OwnedNote note={note} editNote={editNote} deleteNote={deleteNote} />
     )
@@ -41,7 +64,13 @@ function Note ({ note, editNote, deleteNote }) {
   }
 }
 // Component that represents a note that the user owns
-function OwnedNote ({ note, editNote, deleteNote }) {
+const OwnedNote: React.FC<NoteProps> = 
+    ({
+        note, 
+        editNote, 
+        deleteNote 
+    }) => 
+{
   const [isInEditMode, setIsInEditMode] = useState(false)
 
   return (
@@ -68,7 +97,20 @@ function OwnedNote ({ note, editNote, deleteNote }) {
   )
 }
 
-function EditableNoteBody ({ note, editNote, deleteNote, setIsInEditMode }) {
+interface EditableNoteBodyProps {
+        note: Note,
+        editNote: (note: Note) => void,
+        deleteNote: (note: Note) => void,
+        setIsInEditMode: Dispatch<SetStateAction<boolean>>
+    }
+
+const EditableNoteBody: React.FC<EditableNoteBodyProps> = 
+    ({ 
+        note, 
+        editNote, 
+        deleteNote, 
+        setIsInEditMode 
+    }) => {
   const [isInEditColorMode, setIsInEditColorMode] = useState(false)
   return (
       <>
@@ -86,8 +128,10 @@ function EditableNoteBody ({ note, editNote, deleteNote, setIsInEditMode }) {
                                     className='rounded-md'
                                     value={color}
                                     onClick={(event) => {
+                                      const target = event.target as HTMLButtonElement 
                                       const newNote = {
-                                        color: event.target.value
+                                        content: note.content,
+                                        color: target.value
                                       }
 
                                       updateUserNote(note.id, newNote)
@@ -145,7 +189,7 @@ function EditableNoteBody ({ note, editNote, deleteNote, setIsInEditMode }) {
                     </button>
                     <button
                         onClick={() => {
-                          deleteUserNote({ noteId: note.id })
+                          deleteUserNote(note.id)
                             .then(() => {
                               deleteNote(note)
                             })
@@ -175,17 +219,31 @@ function EditableNoteBody ({ note, editNote, deleteNote, setIsInEditMode }) {
   )
 }
 
+interface EditNoteContentFormProps {
+        note: Note,
+        editNote: (note: Note) => void,
+        isInEditMode: boolean
+        setIsInEditMode: Dispatch<SetStateAction<boolean>>
+    }
+
 // Component that represents the note content editor
-function EditNoteContentForm ({ note, editNote, isInEditMode, setIsInEditMode }) {
-    const [contentWordCount, setContentWordCount] = useState(note.content.length)
+    const EditNoteContentForm: React.FC<EditNoteContentFormProps> = 
+    ({ 
+        note, 
+        editNote, 
+        isInEditMode, 
+        setIsInEditMode 
+    }) => {
+    const [contentWordCount, setContentWordCount] = useState<number>(note.content.length)
   return (
             <form
                 className='flex flex-col h-280'
                 onSubmit={(event) => {
                   event.preventDefault()
-                  const formFields = Object.fromEntries(new FormData(event.target))
+                  const formFields = Object.fromEntries(new FormData(event.target as HTMLFormElement))
                   const newNote = {
-                    content: formFields.content
+                    content: formFields.content as string,
+                    color: note.color
                   }
 
                   updateUserNote(note.id, newNote)
@@ -224,10 +282,25 @@ function EditNoteContentForm ({ note, editNote, isInEditMode, setIsInEditMode })
   )
 }
 
+interface EditNoteTextAreaProps {
+        isInEditMode: boolean,
+        setContentWordCount: Dispatch<SetStateAction<number>>,
+        defaultContent: string
+    }
+
 // Component that represents the Text Area inside the content editor form
-function EditNoteTextArea ({ isInEditMode, setContentWordCount, defaultContent }) {
-  const editContentInput = useCallback((contentTextArea) => {
-    autoFocusInput(contentTextArea, isInEditMode)
+const EditNoteTextArea: React.FC<EditNoteTextAreaProps> = 
+({ 
+    isInEditMode, 
+    setContentWordCount, 
+    defaultContent 
+}) => {
+  const editContentInput = useCallback((contentTextArea: HTMLTextAreaElement) => {
+      if (contentTextArea && isInEditMode) {
+        const lastCharacterPosition = contentTextArea.value.length
+        contentTextArea.setSelectionRange(lastCharacterPosition, lastCharacterPosition)
+        contentTextArea.focus()
+      }
   }, [isInEditMode])
 
   return (
@@ -244,8 +317,12 @@ function EditNoteTextArea ({ isInEditMode, setContentWordCount, defaultContent }
   )
 }
 
+interface NotOwnedNoteProps {
+    note: Note
+}
+
 // Component that represents a Note that the user does not own
-function NotOwnedNote ({ note }) {
+const NotOwnedNote: React.FC<NotOwnedNoteProps> = ({ note }) => {
   return (
         <article
           style={{ backgroundColor: note.color }}
@@ -256,3 +333,4 @@ function NotOwnedNote ({ note }) {
         </article>
   )
 }
+

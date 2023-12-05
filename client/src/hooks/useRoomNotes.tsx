@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react'
 import { getRoomNotes } from '../services/rooms'
+import { Note } from '../@types/note'
 
-export function useRoomNotes ({ roomId }) {
-  const [roomNotes, setRoomNotes] = useState([])
+interface UserRoomNotesResult {
+    roomNotes: Note[]
+    setRoomNotes: React.Dispatch<React.SetStateAction<Note[]>>
+}
 
-  useEffect(() => {
+export function useRoomNotes (roomId: number): UserRoomNotesResult {
+  const [roomNotes, setRoomNotes] = useState<Note[]>([])
+
+  useEffect((): void => {
     if (roomId) {
-      getRoomNotes({ roomId })
+      getRoomNotes(roomId)
         .then(roomNotesResult => {
           setRoomNotes(roomNotesResult)
         })
@@ -19,3 +25,4 @@ export function useRoomNotes ({ roomId }) {
 
   return { roomNotes, setRoomNotes }
 }
+

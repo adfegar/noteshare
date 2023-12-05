@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react'
 import { getRoomUsers } from '../services/rooms'
+import { User } from '../@types/user'
 
-export function useRoomUsers ({ roomId }) {
-  const [roomUsers, setRoomUsers] = useState([])
+interface UseRoomUsersResult {
+    roomUsers: User[]
+}
+
+export function useRoomUsers (roomId: number): UseRoomUsersResult {
+  const [roomUsers, setRoomUsers] = useState<User[]>([])
 
   useEffect(() => {
-    getRoomUsers({ roomId })
+    getRoomUsers(roomId)
       .then(roomUsers => {
         setRoomUsers(roomUsers)
       })
@@ -17,3 +22,4 @@ export function useRoomUsers ({ roomId }) {
 
   return { roomUsers }
 }
+

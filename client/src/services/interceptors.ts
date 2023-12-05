@@ -7,9 +7,13 @@ export const instance = axios.create()
 instance.interceptors.request.use(
   request => {
     const allowedUrls = /\/api\/v1\/auth\/*/
-    if (!allowedUrls.test(request.url)) {
-      request.headers.Authorization = `Bearer ${Cookies.get('access-token')}`
-      checkTokenExp({ token: Cookies.get('access-token') })
+    if (request.url !== undefined && !allowedUrls.test(request.url)) {
+      const accessToken = Cookies.get('access_token')
+      if (accessToken !== undefined) {
+        request.headers.Authorization = `Bearer ${accessToken}`
+        checkTokenExp(accessToken)
+            .catch(err => console.error(err))
+      }
     }
     return request
   })
@@ -20,8 +24,8 @@ instance.interceptors.response.use(
   },
   error => {
     if (error.request.status === 403) {
-      Cookies.set('authenticated', false)
-      window.location.reload(false)
+      Cookies.set('authenticated', 'false')
+      window.location.reload()
     }
     return error
   }

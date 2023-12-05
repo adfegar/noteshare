@@ -1,18 +1,19 @@
 import { authenticateUser } from '../services/auth'
 import { useState, useContext } from 'react'
-import { UserDataContext } from '../contexts/userDataContext'
+import { UserContext } from '../contexts/userDataContext'
 import { Navigate, Link } from 'react-router-dom'
 import { setUserCookies } from '../utils'
 import { FormTextField } from './FormTextField'
 import { FormPasswordField } from './FormPasswordField'
 import Cookies from 'js-cookie'
+import { AuthenticateUserRequest } from '../@types/auth'
 
-export function Login () {
-  const { userData, setUserData } = useContext(UserDataContext)
-  const [message, setMessage] = useState()
-  const [authenticated] = useState(Cookies.get('authenticated'))
+export const Login: React.FC<{}>= () => {
+  const userDataContext = useContext(UserContext)
+  const [message, setMessage] = useState<string>()
+  const [authenticated] = useState<string>(Cookies.get('authenticated')!)
 
-  if (userData.accessToken && (authenticated === 'true')) {
+  if (userDataContext?.userData.accessToken && (authenticated === 'true')) {
     return (<Navigate to="/" replace={true} />)
   } else {
     return (
@@ -26,14 +27,18 @@ export function Login () {
                         className='flex flex-col gap-4'
                         onSubmit={(event) => {
                           event.preventDefault()
-                          const formFields = Object.fromEntries(new FormData(event.target))
-                          authenticateUser(formFields)
+                          const formFields = Object.fromEntries(new FormData(event.target as HTMLFormElement))
+                          const request: AuthenticateUserRequest = {
+                              email: formFields.email as string,
+                              password: formFields.password as string
+                          }
+                          authenticateUser(request)
                             .then(response => {
-                              setUserData({
-                                accessToken: response.access_token,
-                                refreshToken: response.refresh_token
-                              })
-                              setUserCookies(formFields.email, response.access_token, response.refresh_token)
+                                const updatedUserData = {...userDataContext!.userData}
+                                updatedUserData.accessToken = response.access_token
+                                updatedUserData.refreshToken = response.refresh_token
+                                userDataContext!.setUserData(updatedUserData)                               
+                              setUserCookies(request.email, response.access_token, response.refresh_token)
                             })
                             .catch(err => {
                               setMessage('Incorrect email or password. Please, try again')
@@ -55,3 +60,4 @@ export function Login () {
     )
   }
 }
+

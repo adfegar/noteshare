@@ -1,12 +1,29 @@
 import { NoteColors, NoteList } from './NoteList'
 import { useRoomNotes } from '../hooks/useRoomNotes'
 import { addUserNote } from '../services/notes'
-import { useEffect, useState, useContext, useCallback } from 'react'
+import { useEffect, useState, useContext, useCallback, type Dispatch, type SetStateAction } from 'react'
 import { deleteRoom, updateRoom } from '../services/rooms'
-import { UserDataContext } from '../contexts/userDataContext'
-import { autoFocusInput } from '../utils'
+import { UserContext } from '../contexts/userDataContext'
+import { type Note } from '../@types/note'
+import { type Room } from '../@types/room'
 
-export function Room
+interface RoomViewProps {
+  lastReceivedNote: Note | undefined
+  lastEditedNote: Note | undefined
+  lastDeletedNote: Note | undefined
+  lastEditedRoom: Room | undefined
+  lastDeletedRoom: Room | undefined
+  sendNote: (note: Note) => void
+  editNote: (note: Note) => void
+  deleteNote: (note: Note) => void
+  editRoom: (room: Room) => void
+  deleteRoomWS: (room: Room) => void
+  currentRoom: Room
+  setCurrentRoom: Dispatch<SetStateAction<Room | undefined>>
+}
+
+
+export const  RoomView: React.FC<RoomViewProps> =
 ({
   lastReceivedNote,
   lastEditedNote,
@@ -20,14 +37,14 @@ export function Room
   deleteRoomWS,
   currentRoom,
   setCurrentRoom
-}) {
-  const { userData } = useContext(UserDataContext)
-  const { roomNotes, setRoomNotes } = useRoomNotes({ roomId: currentRoom?.id })
-  const [isInRoomEditMode, setIsInRoomEditMode] = useState(false)
-  const [copiedToClipboard, setCopiedToClipboard] = useState(false)
+}) => {
+  const userDataContext = useContext(UserContext)
+  const { roomNotes, setRoomNotes } = useRoomNotes(currentRoom?.id)
+  const [isInRoomEditMode, setIsInRoomEditMode] = useState<boolean>(false)
+  const [copiedToClipboard, setCopiedToClipboard] = useState<boolean>(false)
   // each time a note is received, add it to the room notes array
   useEffect(() => {
-    if (lastReceivedNote) {
+    if (lastReceivedNote !== undefined) {
       const updatedRoomNotes = [...roomNotes, lastReceivedNote]
       setRoomNotes(updatedRoomNotes)
     }
@@ -35,18 +52,20 @@ export function Room
 
   // each time a note is edited, change it in the room notes array
   useEffect(() => {
-    if (lastEditedNote) {
+    if (lastEditedNote !== undefined) {
       const updatedRoomNotes = [...roomNotes]
       const targetNote = updatedRoomNotes.find(note => note.id === lastEditedNote.id)
-      targetNote.content = lastEditedNote.content
-      targetNote.color = lastEditedNote.color
+      if (targetNote !== undefined) {
+        targetNote.content = lastEditedNote.content
+        targetNote.color = lastEditedNote.color
+      }
       setRoomNotes(updatedRoomNotes)
     }
   }, [lastEditedNote])
 
   // every time a note is deleted in this room, delete it from the room notes array
   useEffect(() => {
-    if (lastDeletedNote) {
+    if (lastDeletedNote !== undefined) {
       const updatedRoomNotes = [...roomNotes]
       setRoomNotes(updatedRoomNotes.filter(note => note.id !== lastDeletedNote.id))
     }
@@ -54,7 +73,7 @@ export function Room
 
   // every time a room name is edited, change it for all users
   useEffect(() => {
-    if (lastEditedRoom && lastEditedRoom.id === currentRoom?.id) {
+    if (lastEditedRoom !== undefined && lastEditedRoom.id === currentRoom?.id) {
       setCurrentRoom({
         id: currentRoom.id,
         name: lastEditedRoom.name,
@@ -66,76 +85,91 @@ export function Room
 
   // when the room is deleted, unset the current room
   useEffect(() => {
-    if (lastDeletedRoom && lastDeletedRoom.id === currentRoom?.id) {
+    if (lastDeletedRoom !== undefined && lastDeletedRoom.id === currentRoom?.id) {
       setCurrentRoom(undefined)
     }
   }, [lastDeletedRoom])
 
-  if (currentRoom) {
     return (
-        <article className='w-full h-full flex flex-col px-20 pt-5'>
-            <section className='flex items-center justify-between p-20'>
+            <article className='w-full h-full flex flex-col px-20 pt-5'>
+                <section className='flex items-center justify-between p-20'>
                 {
                     !isInRoomEditMode
-                      ? <RoomNameDisplay
-                            currentRoom={currentRoom}
-                            currentUserId={Number(userData.userId)}
-                            setIsInRoomEditMode={setIsInRoomEditMode}
-                            setCopiedToClipboard={setCopiedToClipboard}
-                            deleteRoomWS={deleteRoomWS}
+                        ? <RoomNameDisplay
+                        currentRoom={currentRoom}
+                        currentUserId={Number(userDataContext!.userData.userId)}
+                        setIsInRoomEditMode={setIsInRoomEditMode}
+                        setCopiedToClipboard={setCopiedToClipboard}
+                        deleteRoomWS={deleteRoomWS}
                         />
-                      : <EditableRoomNameDisplay
+                            : <EditableRoomNameDisplay
                             currentRoom={currentRoom}
                             isInRoomEditMode={isInRoomEditMode}
                             setIsInRoomEditMode={setIsInRoomEditMode}
                             editRoom={editRoom}
-                        />
+                            />
                 }
                 <CopiedToClipBoardPopUp copiedToClipboard={copiedToClipboard} />
                 <button
-                    className='flex content-center p-[10px] text-white rounded-md bg-ui-blue'
-                    onClick={() => {
-                      const randomColorIndex = Math.floor(Math.random() * Object.keys(NoteColors).length)
-                      const noteObject = {
+                className='flex content-center p-[10px] text-white rounded-md bg-ui-blue'
+                onClick={() => {
+                    const randomColorIndex = Math.floor(Math.random() * Object.keys(NoteColors).length)
+                    const colorKey = Object.keys(NoteColors)[randomColorIndex]
+                    const noteObject = {
                         content: '',
-                        color: NoteColors[Object.keys(NoteColors)[randomColorIndex]],
-                        user_id: Number(userData.userId),
+                        color: NoteColors[colorKey as keyof typeof NoteColors],
+                        user_id: Number(userDataContext!.userData.userId),
                         room_id: currentRoom.id
-                      }
-                      addUserNote(noteObject).then(addNoteResult => {
+                    }
+                    addUserNote(noteObject).then(addNoteResult => {
                         const noteMessage = {
-                          id: addNoteResult.id,
-                          content: addNoteResult.content,
-                          color: addNoteResult.color,
-                          creator: userData.username
+                            id: addNoteResult.id,
+                            content: addNoteResult.content,
+                            color: addNoteResult.color,
+                            creator: userDataContext!.userData.username
                         }
                         sendNote(noteMessage)
-                      })
-                    }}
+                    })
+                }}
                 >
-                        <svg className='max-h-[30px] max-w-[35px] pr-[10px]' width="64px" height="64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                <svg className='max-h-[30px] max-w-[35px] pr-[10px]' width="64px" height="64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
 
-                            <g id="SVGRepo_bgCarrier" strokeWidth="0"/>
+                    <g id="SVGRepo_bgCarrier" strokeWidth="0"/>
 
-                            <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"/>
+                <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"/>
 
-                            <g id="SVGRepo_iconCarrier"> <path d="M20 14V7C20 5.34315 18.6569 4 17 4H12M20 14L13.5 20M20 14H15.5C14.3954 14 13.5 14.8954 13.5 16V20M13.5 20H7C5.34315 20 4 18.6569 4 17V12" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/> <path d="M7 4V7M7 10V7M7 7H4M7 7H10" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/> </g>
+                <g id="SVGRepo_iconCarrier"> <path d="M20 14V7C20 5.34315 18.6569 4 17 4H12M20 14L13.5 20M20 14H15.5C14.3954 14 13.5 14.8954 13.5 16V20M13.5 20H7C5.34315 20 4 18.6569 4 17V12" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/> <path d="M7 4V7M7 10V7M7 7H4M7 7H10" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/> </g>
 
-                        </svg>
-                        <span className='py-[2px] pr-[5px]'>{'New note'}</span>
+                </svg>
+                <span className='py-[2px] pr-[5px]'>{'New note'}</span>
                 </button>
-            </section>
-            <NoteList
+                </section>
+                <NoteList
                 editNote={editNote}
                 deleteNote={deleteNote}
                 roomNotes={roomNotes}
-            />
-        </article>
+                />
+            </article>
     )
-  }
 }
 
-function RoomNameDisplay ({ currentRoom, currentUserId, setIsInRoomEditMode, setCopiedToClipboard, deleteRoomWS }) {
+interface RoomNameDisplayProps {
+    currentRoom: Room
+    currentUserId: number
+    setIsInRoomEditMode: Dispatch<SetStateAction<boolean>>
+    setCopiedToClipboard: Dispatch<SetStateAction<boolean>>
+    deleteRoomWS: (room: Room) => void
+  }
+
+
+const RoomNameDisplay:React.FC<RoomNameDisplayProps> = 
+  ({
+    currentRoom,
+    currentUserId,
+    setIsInRoomEditMode,
+    setCopiedToClipboard,
+    deleteRoomWS
+  }) => {
   return (
         <section
             className='flex items-center gap-3'
@@ -187,7 +221,7 @@ function RoomNameDisplay ({ currentRoom, currentUserId, setIsInRoomEditMode, set
 
                     <button
                     onClick={() => {
-                      deleteRoom({ roomId: currentRoom.id })
+                      deleteRoom(currentRoom.id)
                         .then(() => {
                           deleteRoomWS(currentRoom)
                         })
@@ -214,19 +248,37 @@ function RoomNameDisplay ({ currentRoom, currentUserId, setIsInRoomEditMode, set
   )
 }
 
-function EditableRoomNameDisplay ({ currentRoom, isInRoomEditMode, setIsInRoomEditMode, editRoom }) {
+interface EditableRoomNameDisplayProps {
+
+    currentRoom: Room
+    isInRoomEditMode: boolean
+    setIsInRoomEditMode: Dispatch<SetStateAction<boolean>>
+    editRoom: (room: Room) => void
+  }
+
+
+const EditableRoomNameDisplay: React.FC<EditableRoomNameDisplayProps> = 
+  ({
+    currentRoom,
+    isInRoomEditMode,
+    setIsInRoomEditMode,
+    editRoom
+  }) => {
   return (
     <section>
         <form
             className='flex gap-[10px] items-center'
             onSubmit={(event) => {
               event.preventDefault()
-              const formFields = Object.fromEntries(new FormData(event.target))
-              updateRoom({ roomId: currentRoom.id, newName: formFields.roomName })
+              const formFields = Object.fromEntries(new FormData(event.target as HTMLFormElement))
+              const roomName = formFields.roomName as string
+              updateRoom(currentRoom.id, roomName)
                 .then(() => {
                   editRoom({
                     id: currentRoom.id,
-                    name: formFields.roomName
+                    name: roomName,
+                    invite: currentRoom.invite,
+                    creator: currentRoom.creator
                   })
                   setIsInRoomEditMode(false)
                 })
@@ -289,9 +341,23 @@ function EditableRoomNameDisplay ({ currentRoom, isInRoomEditMode, setIsInRoomEd
   )
 }
 
-function EditRoomTextField ({ isInEditMode, defaultContent }) {
-  const editRoomNameInput = useCallback((roomNameInput) => {
-    autoFocusInput(roomNameInput, isInEditMode)
+interface EditRoomTextFieldProps {
+    isInEditMode: boolean
+    defaultContent: string
+  }
+
+const EditRoomTextField: React.FC<EditRoomTextFieldProps> = 
+  ({
+    isInEditMode,
+    defaultContent
+  }
+) => {
+  const editRoomNameInput = useCallback((roomNameInput: HTMLInputElement) => {
+    if (roomNameInput && isInEditMode) {
+      const lastCharacterPosition = roomNameInput.value.length
+      roomNameInput.setSelectionRange(lastCharacterPosition, lastCharacterPosition)
+      roomNameInput.focus()
+    }
   }, [isInEditMode])
 
   return (
@@ -306,7 +372,11 @@ function EditRoomTextField ({ isInEditMode, defaultContent }) {
   )
 }
 
-function CopiedToClipBoardPopUp ({ copiedToClipboard }) {
+interface CopiedToClipBoardPopUpProps {
+    copiedToClipboard: boolean
+}
+
+const CopiedToClipBoardPopUp:React.FC<CopiedToClipBoardPopUpProps>= ({ copiedToClipboard }) => {
   if (copiedToClipboard) {
     return (
           <section
