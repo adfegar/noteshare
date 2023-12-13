@@ -1,6 +1,6 @@
 import { useUserRooms } from '../hooks/useUserRooms'
 import { addRoom, addUserToRoom, getRoomByInviteCode } from '../services/rooms'
-import { type SetStateAction, useContext, useEffect, useState } from 'react'
+import { type SetStateAction, useContext, useEffect, useState, useCallback } from 'react'
 import { UserContext } from '../contexts/userDataContext'
 import { useNavigate } from 'react-router-dom'
 import { removeUserCookies } from '../utils'
@@ -272,8 +272,15 @@ interface UserProfileProps {
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({ username }) => {
-  const [showOptions, setShowOptions] = useState(false)
+  const [showOptions, setShowOptions] = useState<boolean>(false)
   const navigate = useNavigate()
+  const showOptionsButton = useCallback((showOptionsButton: HTMLButtonElement) => {
+    window.addEventListener('click', (event) => {
+      if (event.target instanceof HTMLElement && event.target !== showOptionsButton) {
+        setShowOptions(false)
+      }
+    })
+  }, [])
   return (
         <article className='pt-1 pb-20 relative'>
             {
@@ -304,6 +311,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ username }) => {
                 onClick={() => {
                   setShowOptions(!showOptions)
                 }}
+                ref={showOptionsButton}
             >
                 <span>{username}</span>
             </button>
