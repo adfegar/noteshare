@@ -70,7 +70,7 @@ const OwnedNote: React.FC<NoteProps> =
       editNote,
       deleteNote
     }) => {
-      const [isInEditMode, setIsInEditMode] = useState(false)
+      const [isInEditMode, setIsInEditMode] = useState<boolean>(false)
 
       return (
           <article
@@ -110,7 +110,14 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
       deleteNote,
       setIsInEditMode
     }) => {
-      const [isInEditColorMode, setIsInEditColorMode] = useState(false)
+      const [isInEditColorMode, setIsInEditColorMode] = useState<boolean>(false)
+      const editColorButton = useCallback((colorButton: HTMLButtonElement) => {
+        window.addEventListener('click', (event) => {
+          if (event.target instanceof HTMLElement && event.target !== colorButton) {
+            setIsInEditColorMode(false)
+          }
+        })
+      }, [])
       return (
       <>
             <p className='flex-1 noteContent'>{note.content}</p>
@@ -141,6 +148,7 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
                                         })
                                         .catch(error => { console.error(error) })
                                     }}
+                                    ref={editColorButton}
                                 />
                             )
                         }
