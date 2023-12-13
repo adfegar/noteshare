@@ -17,7 +17,7 @@ export const NoteList: React.FC<NoteListProps> =
   }
   ) => {
     return (
-      <section className='grid grid-cols-auto gap-5 pt-20 px-20 overflow-y-auto'>
+      <section className='h-full grid grid-cols-auto gap-5 p-20 overflow-y-auto'>
       {
           (roomNotes.length > 0)
             ? roomNotes.map(note =>

@@ -10,6 +10,7 @@ export interface UpdateNoteRequest {
   color: string
 }
 
+// DB Note model
 export interface DBNote {
   id: number
   content: string
@@ -18,6 +19,7 @@ export interface DBNote {
   room_id: number
 }
 
+// Client's note object
 export interface Note {
   id: number
   content: string

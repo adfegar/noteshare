@@ -16,6 +16,7 @@
     }
     .noteContent{
         word-wrap: break-word;
+        white-space: pre-line;
     }
     input {
         @apply outline;
