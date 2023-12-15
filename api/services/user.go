@@ -1,7 +1,6 @@
 package services
 
 import (
-	"database/sql"
 	"errors"
 	"noteshare-api/database"
 	"noteshare-api/models"
@@ -28,8 +27,8 @@ type UserRoomBody struct {
 
 var userStorage storage.Storage = &storage.UserStorage{}
 
-func GetAllUsers() ([]models.User, error) {
-	var users []models.User
+func GetAllUsers() ([]*models.User, error) {
+	var users []*models.User
 	database := database.GetInstance().GetDB()
 
 	results, queryErr := database.Query("SELECT * FROM users;")
@@ -40,20 +39,18 @@ func GetAllUsers() ([]models.User, error) {
 	defer results.Close()
 
 	for results.Next() {
-		var user models.User
+		user, scanErr := userStorage.Scan(results)
 
-		if scanErr := results.Scan(&user.ID, &user.UserName, &user.Email, &user.Password, &user.Role); scanErr != nil {
-			return users, scanErr
+		if scanErr != nil {
+			return nil, scanErr
 		}
-
-		users = append(users, user)
+		users = append(users, user.(*models.User))
 	}
 
 	return users, nil
 }
 
 func GetUserById(id int) (*models.User, error) {
-
 	// don't check the type assertion, since we are sure that the Get method is returning *models.User
 	user, err := userStorage.Get(id)
 
@@ -65,22 +62,28 @@ func GetUserById(id int) (*models.User, error) {
 }
 
 func GetUserByEmail(email string) (*models.User, error) {
-	var user models.User
 	database := database.GetInstance().GetDB()
-	result := database.QueryRow("SELECT * FROM users WHERE email LIKE ? ;", email)
+	result, err := database.Query("SELECT * FROM users WHERE email LIKE ? ;", email)
 
-	if scanErr := result.Scan(&user.ID, &user.UserName, &user.Email, &user.Password, &user.Role); scanErr != nil {
-		if errors.Is(scanErr, sql.ErrNoRows) {
-			return nil, errors.New("user not found")
-		}
-		return nil, scanErr
+	if err != nil {
+		return nil, err
 	}
+	defer result.Close()
 
-	return &user, nil
+	if result.Next() {
+		user, scanErr := userStorage.Scan(result)
+		if scanErr != nil {
+			return nil, scanErr
+		}
+
+		return user.(*models.User), nil
+	} else {
+		return nil, errors.New(storage.UserNotFoundErr)
+	}
 }
 
-func GetRoomUsers(roomId int) ([]models.User, error) {
-	var users []models.User
+func GetRoomUsers(roomId int) ([]*models.User, error) {
+	var users []*models.User
 	database := database.GetInstance().GetDB()
 	result, queryErr := database.Query("SELECT users.* FROM users JOIN users_rooms ON users.id = users_rooms.user_id WHERE users_rooms.room_id = ? ;", roomId)
 
@@ -91,12 +94,12 @@ func GetRoomUsers(roomId int) ([]models.User, error) {
 
 	found := false
 	for result.Next() {
-		var user models.User
+		user, scanErr := userStorage.Scan(result)
 
-		if scanErr := result.Scan(&user.ID, &user.UserName, &user.Email, &user.Password, &user.Role); scanErr != nil {
-			return users, scanErr
+		if scanErr != nil {
+			return nil, scanErr
 		}
-		users = append(users, user)
+		users = append(users, user.(*models.User))
 		found = true
 	}
 

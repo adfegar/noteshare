@@ -44,7 +44,7 @@ func handleGetUsers(res http.ResponseWriter, req *http.Request) error {
 	var responseUsers []ResponseUser = make([]ResponseUser, 0)
 
 	for _, value := range users {
-		responseUsers = append(responseUsers, CreateResponseUser(value))
+		responseUsers = append(responseUsers, CreateResponseUser(*value))
 	}
 
 	return utils.WriteJSON(res, 200, responseUsers)

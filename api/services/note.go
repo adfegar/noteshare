@@ -5,6 +5,7 @@ import (
 	"noteshare-api/database"
 	"noteshare-api/models"
 	"noteshare-api/storage"
+	"time"
 )
 
 type NoteBody struct {
@@ -21,8 +22,8 @@ type UpdateNoteBody struct {
 
 var noteStorage storage.Storage = &storage.NoteStorage{}
 
-func GetAllNotes() ([]models.Note, error) {
-	var notes []models.Note
+func GetAllNotes() ([]*models.Note, error) {
+	var notes []*models.Note
 
 	database := database.GetInstance().GetDB()
 	results, err := database.Query("SELECT * FROM notes;")
@@ -33,15 +34,13 @@ func GetAllNotes() ([]models.Note, error) {
 	defer results.Close()
 
 	for results.Next() {
-		var note models.Note
+		note, err := noteStorage.Scan(results)
 
-		if scanErr := results.Scan(&note.ID, &note.Content, &note.Color, &note.UserRefer, &note.RoomRefer); scanErr != nil {
-			return notes, scanErr
+		if err != nil {
+			return nil, err
 		}
-
-		notes = append(notes, note)
+		notes = append(notes, note.(*models.Note))
 	}
-
 	return notes, nil
 }
 
@@ -55,8 +54,8 @@ func GetNoteById(id int) (*models.Note, error) {
 	return note.(*models.Note), nil
 }
 
-func GetUserNotes(userId int) ([]models.Note, error) {
-	var userNotes []models.Note
+func GetUserNotes(userId int) ([]*models.Note, error) {
+	var userNotes []*models.Note
 
 	db := database.GetInstance().GetDB()
 	results, queryErr := db.Query("SELECT * FROM notes WHERE user_id = ? ;", userId)
@@ -68,13 +67,12 @@ func GetUserNotes(userId int) ([]models.Note, error) {
 
 	found := false
 	for results.Next() {
-		var note models.Note
+		note, err := noteStorage.Scan(results)
 
-		if scanErr := results.Scan(&note.ID, &note.Content, &note.Color, &note.UserRefer, &note.RoomRefer); scanErr != nil {
-			return userNotes, scanErr
+		if err != nil {
+			return nil, err
 		}
-
-		userNotes = append(userNotes, note)
+		userNotes = append(userNotes, note.(*models.Note))
 		found = true
 	}
 
@@ -85,11 +83,11 @@ func GetUserNotes(userId int) ([]models.Note, error) {
 	return userNotes, nil
 }
 
-func GetRoomNotes(roomId int) ([]models.Note, error) {
-	var roomNotes []models.Note
+func GetRoomNotes(roomId int) ([]*models.Note, error) {
+	var roomNotes []*models.Note
 	db := database.GetInstance().GetDB()
 
-	result, err := db.Query("SELECT * FROM notes WHERE room_id = ? ;", roomId)
+	result, err := db.Query("SELECT * FROM notes WHERE room_id = ? ORDER BY last_edited_at DESC;", roomId)
 
 	if err != nil {
 		return nil, err
@@ -99,13 +97,12 @@ func GetRoomNotes(roomId int) ([]models.Note, error) {
 	found := false
 
 	for result.Next() {
-		var note models.Note
+		note, err := noteStorage.Scan(result)
 
-		if scanErr := result.Scan(&note.ID, &note.Content, &note.Color, &note.UserRefer, &note.RoomRefer); scanErr != nil {
-			return nil, scanErr
+		if err != nil {
+			return nil, err
 		}
-
-		roomNotes = append(roomNotes, note)
+		roomNotes = append(roomNotes, note.(*models.Note))
 		found = true
 	}
 
@@ -119,10 +116,12 @@ func GetRoomNotes(roomId int) ([]models.Note, error) {
 func CreateNote(noteBody NoteBody) (*models.Note, error) {
 
 	note := &models.Note{
-		Content:   noteBody.Content,
-		Color:     noteBody.Color,
-		UserRefer: noteBody.UserRefer,
-		RoomRefer: noteBody.RoomRefer,
+		Content:      noteBody.Content,
+		Color:        noteBody.Color,
+		UserRefer:    noteBody.UserRefer,
+		RoomRefer:    noteBody.RoomRefer,
+		CreatedAt:    time.Now(),
+		LastEditedAt: time.Now(),
 	}
 
 	if err := noteStorage.Create(note); err != nil {
@@ -147,6 +146,7 @@ func UpdateNote(id int, noteBody UpdateNoteBody) (*models.Note, error) {
 		note.Color = noteBody.Color
 	}
 
+	note.LastEditedAt = time.Now()
 	updateErr := noteStorage.Update(note)
 
 	return note, updateErr

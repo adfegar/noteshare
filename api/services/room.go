@@ -1,7 +1,6 @@
 package services
 
 import (
-	"database/sql"
 	"errors"
 	"noteshare-api/database"
 	"noteshare-api/models"
@@ -21,8 +20,8 @@ type UpdateRoomBody struct {
 
 var roomStorage storage.Storage = &storage.RoomStorage{}
 
-func GetAllRooms() ([]models.Room, error) {
-	var rooms []models.Room
+func GetAllRooms() ([]*models.Room, error) {
+	var rooms []*models.Room
 
 	database := database.GetInstance().GetDB()
 	results, err := database.Query("SELECT * FROM rooms;")
@@ -33,13 +32,13 @@ func GetAllRooms() ([]models.Room, error) {
 	defer results.Close()
 
 	for results.Next() {
-		var room models.Room
+		room, scanErr := roomStorage.Scan(results)
 
-		if scanErr := results.Scan(&room.ID, &room.Name, &room.Invite, &room.Creator); scanErr != nil {
-			return rooms, scanErr
+		if scanErr != nil {
+			return nil, scanErr
 		}
 
-		rooms = append(rooms, room)
+		rooms = append(rooms, room.(*models.Room))
 	}
 
 	return rooms, nil
@@ -56,23 +55,29 @@ func GetRoomById(id int) (*models.Room, error) {
 }
 
 func GetRoomByInvite(inviteCode string) (*models.Room, error) {
-	var room models.Room
 	database := database.GetInstance().GetDB()
 
-	result := database.QueryRow("SELECT * FROM rooms WHERE invite LIKE ? ;", inviteCode)
+	result, err := database.Query("SELECT * FROM rooms WHERE invite LIKE ? ;", inviteCode)
 
-	if scanErr := result.Scan(&room.ID, &room.Name, &room.Invite, &room.Creator); scanErr != nil {
-		if errors.Is(scanErr, sql.ErrNoRows) {
-			return nil, errors.New("room not found")
-		}
-		return nil, scanErr
+	if err != nil {
+		return nil, err
 	}
 
-	return &room, nil
+	if result.Next() {
+		room, scanErr := roomStorage.Scan(result)
+
+		if scanErr != nil {
+			return nil, scanErr
+		}
+
+		return room.(*models.Room), nil
+	} else {
+		return nil, errors.New(storage.RoomNotFoundErr)
+	}
 }
 
-func GetUserRooms(userId int) ([]models.Room, error) {
-	var rooms []models.Room
+func GetUserRooms(userId int) ([]*models.Room, error) {
+	var rooms []*models.Room
 
 	database := database.GetInstance().GetDB()
 	results, err := database.Query("SELECT rooms.* FROM rooms "+
@@ -85,13 +90,13 @@ func GetUserRooms(userId int) ([]models.Room, error) {
 
 	found := false
 	for results.Next() {
-		var room models.Room
+		room, scanErr := roomStorage.Scan(results)
 
-		if scanErr := results.Scan(&room.ID, &room.Name, &room.Invite, &room.Creator); scanErr != nil {
+		if scanErr != nil {
 			return nil, scanErr
 		}
 
-		rooms = append(rooms, room)
+		rooms = append(rooms, room.(*models.Room))
 		found = true
 	}
 

@@ -1,7 +1,6 @@
 package services
 
 import (
-	"database/sql"
 	"errors"
 	"noteshare-api/database"
 	"noteshare-api/models"
@@ -22,24 +21,29 @@ func GetTokenById(id int) (*models.Token, error) {
 
 // Function that gets a token by its value
 func GetTokenByValue(tokenString string) (*models.Token, error) {
-	var token models.Token
 	database := database.GetInstance().GetDB()
-	result := database.QueryRow("SELECT * FROM tokens WHERE token_value LIKE ? ;", tokenString)
+	result, err := database.Query("SELECT * FROM tokens WHERE token_value LIKE ? ;", tokenString)
 
-	if scanErr := result.Scan(&token.ID, &token.TokenValue, &token.UserRefer, &token.Kind); scanErr != nil {
-
-		if errors.Is(scanErr, sql.ErrNoRows) {
-			return nil, errors.New("token not found")
-		}
-		return nil, scanErr
+	if err != nil {
+		return nil, err
 	}
+	defer result.Close()
 
-	return &token, nil
+	if result.Next() {
+		token, scanErr := tokenStorage.Scan(result)
 
+		if scanErr != nil {
+			return nil, scanErr
+		}
+
+		return token.(*models.Token), nil
+	} else {
+		return nil, errors.New(storage.TokenNotFoundErr)
+	}
 }
 
-func GetUserTokens(userRefer int) ([]models.Token, error) {
-	var userTokens []models.Token
+func GetUserTokens(userRefer int) ([]*models.Token, error) {
+	var userTokens []*models.Token
 	database := database.GetInstance().GetDB()
 	result, queryErr := database.Query("SELECT * FROM tokens WHERE user_id = ? ;", userRefer)
 
@@ -49,36 +53,38 @@ func GetUserTokens(userRefer int) ([]models.Token, error) {
 	defer result.Close()
 
 	for result.Next() {
-		var token models.Token
+		token, scanErr := tokenStorage.Scan(result)
 
-		if scanErr := result.Scan(&token.ID, &token.TokenValue, &token.UserRefer, &token.Kind); scanErr != nil {
-
-			if errors.Is(scanErr, sql.ErrNoRows) {
-				return nil, errors.New("token not found")
-			}
+		if scanErr != nil {
 			return nil, scanErr
 		}
 
-		userTokens = append(userTokens, token)
+		userTokens = append(userTokens, token.(*models.Token))
 	}
 
 	return userTokens, nil
 }
 
 func GetTokenByUserAndKind(userRefer int, kind models.TokenKind) (*models.Token, error) {
-	var token models.Token
 	database := database.GetInstance().GetDB()
-	result := database.QueryRow("SELECT * FROM tokens WHERE user_id = ? AND kind = ? ;", userRefer, kind)
+	result, err := database.Query("SELECT * FROM tokens WHERE user_id = ? AND kind = ? ;", userRefer, kind)
 
-	if scanErr := result.Scan(&token.ID, &token.TokenValue, &token.UserRefer, &token.Kind); scanErr != nil {
-
-		if errors.Is(scanErr, sql.ErrNoRows) {
-			return nil, errors.New("token not found")
-		}
-		return nil, scanErr
+	if err != nil {
+		return nil, err
 	}
+	defer result.Close()
 
-	return &token, nil
+	if result.Next() {
+		token, scanErr := tokenStorage.Scan(result)
+
+		if scanErr != nil {
+			return nil, scanErr
+		}
+
+		return token.(*models.Token), nil
+	} else {
+		return nil, errors.New(storage.TokenNotFoundErr)
+	}
 }
 
 // Function that saves a token to the database

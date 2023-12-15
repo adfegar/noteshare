@@ -9,26 +9,31 @@ import (
 )
 
 const tokenTypeMismatchErr = "type must be *token"
-const tokenNotFoundErr = "token not found"
+const TokenNotFoundErr = "token not found"
 
 type TokenStorage struct{}
 
 func (tokenStorage *TokenStorage) Get(id int) (interface{}, error) {
-	var token models.Token
 	database := database.GetInstance().GetDB()
 
-	result := database.QueryRow("SELECT * from tokens where id = ? ;", id)
+	result, err := database.Query("SELECT * from tokens where id = ? ;", id)
 
-	if scanErr := result.Scan(&token.ID, &token.TokenValue, &token.UserRefer, &token.Kind); scanErr != nil {
+	if err != nil {
+		return nil, err
+	}
+	defer result.Close()
 
-		if errors.Is(scanErr, sql.ErrNoRows) {
-			return nil, errors.New(tokenNotFoundErr)
+	if result.Next() {
+		token, scanErr := tokenStorage.Scan(result)
+
+		if scanErr != nil {
+			return nil, scanErr
 		}
 
-		return nil, scanErr
+		return token.(*models.Token), nil
+	} else {
+		return nil, errors.New(TokenNotFoundErr)
 	}
-
-	return &token, nil
 }
 
 func (tokenStorage *TokenStorage) Create(item interface{}) error {
@@ -78,7 +83,7 @@ func (tokenStorage *TokenStorage) Update(item interface{}) error {
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(tokenNotFoundErr)
+		return errors.New(TokenNotFoundErr)
 	}
 
 	return nil
@@ -100,7 +105,15 @@ func (tokenStorage *TokenStorage) Delete(item interface{}) error {
 	}
 
 	if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
-		return errors.New(tokenNotFoundErr)
+		return errors.New(TokenNotFoundErr)
 	}
 	return nil
+}
+
+func (tokenStorage *TokenStorage) Scan(result *sql.Rows) (interface{}, error) {
+	var token models.Token
+	if scanErr := result.Scan(&token.ID, &token.TokenValue, &token.UserRefer, &token.Kind); scanErr != nil {
+		return nil, scanErr
+	}
+	return &token, nil
 }

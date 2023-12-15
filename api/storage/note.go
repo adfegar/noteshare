@@ -5,6 +5,7 @@ import (
 	"errors"
 	"noteshare-api/database"
 	"noteshare-api/models"
+	"noteshare-api/utils"
 )
 
 const noteTypeMismatchErr = "type must be *note"
@@ -13,22 +14,32 @@ const noteNotFoundErr = "note not found"
 type NoteStorage struct{}
 
 func (noteStorage *NoteStorage) Get(id int) (interface{}, error) {
-	var note models.Note
-
 	database := database.GetInstance().GetDB()
 
-	result := database.QueryRow("SELECT * from notes where id = ? ;", id)
+	result, err := database.Query("SELECT * from notes where id = ? ;", id)
 
-	if scanErr := result.Scan(&note.ID, &note.Content, &note.Color, &note.UserRefer, &note.RoomRefer); scanErr != nil {
+	if err != nil {
+		return nil, err
+	}
+	defer result.Close()
 
-		if errors.Is(scanErr, sql.ErrNoRows) {
-			return nil, errors.New(noteNotFoundErr)
+	if result.Next() {
+
+		note, scanErr := noteStorage.Scan(result)
+
+		if scanErr != nil {
+
+			if errors.Is(scanErr, sql.ErrNoRows) {
+				return nil, errors.New(noteNotFoundErr)
+			}
+
+			return nil, scanErr
 		}
 
-		return nil, scanErr
+		return note.(*models.Note), nil
+	} else {
+		return nil, errors.New(noteNotFoundErr)
 	}
-
-	return &note, nil
 }
 
 func (noteStorage *NoteStorage) Create(item interface{}) error {
@@ -111,4 +122,38 @@ func (noteStorage *NoteStorage) Delete(item interface{}) error {
 	}
 
 	return nil
+}
+
+func (noteStorage *NoteStorage) Scan(result *sql.Rows) (interface{}, error) {
+	var note models.Note
+	var createdAtTimestamp string
+	var lastEditedAtTimestamp string
+	if scanErr := result.Scan(
+		&note.ID,
+		&note.Content,
+		&note.Color,
+		&note.UserRefer,
+		&note.RoomRefer,
+		&createdAtTimestamp,
+		&lastEditedAtTimestamp,
+	); scanErr != nil {
+		return nil, scanErr
+	}
+
+	createdAt, err := utils.ParseTime(createdAtTimestamp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	lastEditedAt, err := utils.ParseTime(lastEditedAtTimestamp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	note.CreatedAt = createdAt
+	note.LastEditedAt = lastEditedAt
+
+	return &note, nil
 }

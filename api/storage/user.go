@@ -10,23 +10,28 @@ import (
 type UserStorage struct{}
 
 const userTypeMismatchErr = "must be type user"
-const userNotFoundErr = "user not found"
+const UserNotFoundErr = "user not found"
 
 func (userStorage *UserStorage) Get(id int) (interface{}, error) {
-	var user models.User
 	database := database.GetInstance().GetDB()
 
-	result := database.QueryRow("SELECT * FROM users where id = ? ;", id)
+	result, err := database.Query("SELECT * FROM users where id = ? ;", id)
 
-	if scanErr := result.Scan(&user.ID, &user.UserName, &user.Email, &user.Password, &user.Role); scanErr != nil {
-
-		if errors.Is(scanErr, sql.ErrNoRows) {
-			return nil, errors.New(userNotFoundErr)
-		}
-		return nil, scanErr
+	if err != nil {
+		return nil, err
 	}
+	defer result.Close()
 
-	return &user, nil
+	if result.Next() {
+		user, scanErr := userStorage.Scan(result)
+		if scanErr != nil {
+			return nil, scanErr
+		}
+
+		return user.(*models.User), nil
+	} else {
+		return nil, errors.New(UserNotFoundErr)
+	}
 }
 
 func (userStorage *UserStorage) Create(item interface{}) error {
@@ -70,7 +75,7 @@ func (userStorage *UserStorage) Update(item interface{}) error {
 	}
 
 	if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
-		return errors.New(userNotFoundErr)
+		return errors.New(UserNotFoundErr)
 	}
 
 	return nil
@@ -91,7 +96,16 @@ func (userStorage *UserStorage) Delete(item interface{}) error {
 	}
 
 	if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
-		return errors.New(userNotFoundErr)
+		return errors.New(UserNotFoundErr)
 	}
 	return nil
+}
+
+func (userStorage *UserStorage) Scan(result *sql.Rows) (interface{}, error) {
+	var user models.User
+
+	if scanErr := result.Scan(&user.ID, &user.UserName, &user.Email, &user.Password, &user.Role); scanErr != nil {
+		return nil, scanErr
+	}
+	return &user, nil
 }

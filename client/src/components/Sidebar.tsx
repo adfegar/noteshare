@@ -1,6 +1,6 @@
 import { useUserRooms } from '../hooks/useUserRooms'
 import { addRoom, addUserToRoom, getRoomByInviteCode } from '../services/rooms'
-import { type SetStateAction, useContext, useEffect, useState, useCallback } from 'react'
+import { type SetStateAction, useContext, useEffect, useState, useRef } from 'react'
 import { UserContext } from '../contexts/userDataContext'
 import { useNavigate } from 'react-router-dom'
 import { removeUserCookies } from '../utils'
@@ -274,18 +274,26 @@ interface UserProfileProps {
 const UserProfile: React.FC<UserProfileProps> = ({ username }) => {
   const [showOptions, setShowOptions] = useState<boolean>(false)
   const navigate = useNavigate()
-  const showOptionsButton = useCallback((showOptionsButton: HTMLButtonElement) => {
-    window.addEventListener('click', (event) => {
-      if (event.target instanceof HTMLElement && event.target !== showOptionsButton) {
-        setShowOptions(false)
-      }
-    })
-  }, [])
+  const showOptionsButton = useRef<HTMLButtonElement | null>(null)
+  const optionsMenu = useRef<HTMLElement | null>(null)
+
+  window.addEventListener('click', (event) => {
+    if (
+      event.target instanceof HTMLElement &&
+      event.target !== showOptionsButton.current &&
+      event.target !== optionsMenu.current
+    ) {
+      setShowOptions(false)
+    }
+  })
   return (
         <article className='pt-1 pb-20 relative'>
             {
                 showOptions &&
-                    <section className='absolute bottom-[75px] w-full p-3 bg-[#0F0F0F] rounded-md'>
+                    <section
+                        className='absolute bottom-[75px] w-full p-3 bg-[#0F0F0F] rounded-md'
+                        ref={optionsMenu}
+                    >
                         <button
                             className='flex items-center gap-3 w-full'
                             onClick={() => {
@@ -313,7 +321,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ username }) => {
                 }}
                 ref={showOptionsButton}
             >
-                <span>{username}</span>
+                {username}
             </button>
         </article>
   )

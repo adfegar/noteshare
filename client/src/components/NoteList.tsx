@@ -1,4 +1,4 @@
-import React, { useState, useContext, useCallback, type Dispatch, type SetStateAction } from 'react'
+import React, { useState, useContext, useCallback, type Dispatch, type SetStateAction, useRef, type RefObject } from 'react'
 import { deleteUserNote, updateUserNote } from '../services/notes'
 import { UserContext } from '../contexts/userDataContext'
 import { type Note } from '../@types/note'
@@ -111,13 +111,20 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
       setIsInEditMode
     }) => {
       const [isInEditColorMode, setIsInEditColorMode] = useState<boolean>(false)
-      const editColorButton = useCallback((colorButton: HTMLButtonElement) => {
-        window.addEventListener('click', (event) => {
-          if (event.target instanceof HTMLElement && event.target !== colorButton) {
-            setIsInEditColorMode(false)
-          }
-        })
-      }, [])
+      const editColorButton = useRef<HTMLElement | null>(null)
+      const editColorPallete = useRef<HTMLButtonElement | null>(null)
+
+      // add a window listener to close edit color popup when clicking out of area
+      window.addEventListener('click', (event) => {
+        if (
+          event.target instanceof HTMLElement &&
+          event.target !== editColorPallete.current &&
+          event.target !== editColorButton.current
+        ) {
+          setIsInEditColorMode(false)
+        }
+      })
+
       return (
       <>
             <p className='flex-1 noteContent'>{note.content}</p>
@@ -125,6 +132,7 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
                 isInEditColorMode &&
                     <section
                         className='grid grid-cols-4 gap-3 bg-color-palette-bg rounded-md w-[220px] h-[120px] p-[15px] absolute top-[140px] left-[52px]'
+                        ref={editColorPallete}
                     >
                         {
                             Object.values(NoteColors).map(color =>
@@ -148,7 +156,6 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
                                         })
                                         .catch(error => { console.error(error) })
                                     }}
-                                    ref={editColorButton}
                                 />
                             )
                         }
@@ -160,6 +167,7 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
                         onClick={() => {
                           setIsInEditColorMode(!isInEditColorMode)
                         }}
+                        ref={editColorButton as RefObject<HTMLButtonElement>}
                     >
                         <svg className='svg-sm' width="64px" height="64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
@@ -262,28 +270,52 @@ const EditNoteContentForm: React.FC<EditNoteContentFormProps> =
                     .catch(error => { console.error(error) })
                 }}
             >
-                <section className='flex justify-between'>
-                    <button
-                      type='button'
-                      onClick={() => {
-                        setIsInEditMode(false)
-                      }}
-                      >
-                      {'Cancel'}
-                    </button>
-                    <button
-                        className='bg-ui-blue text-white px-3 py-1 rounded-md'
-                        type='submit'
-                    >
-                        {'Save'}
-                    </button>
-                </section>
                 <EditNoteTextArea
                     isInEditMode={isInEditMode}
                     setContentWordCount={setContentWordCount}
                     defaultContent={note.content}
                 />
-                <span className='text-end'>{`${contentWordCount}/200`}</span>
+                <section className='flex justify-between items-center'>
+                    <article className='flex gap-3'>
+                        <button
+                            type='submit'
+                        >
+                            <svg className='svg-sm' fill="#000000" width="64px" height="64px" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                              <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+                              <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
+                              <g id="SVGRepo_iconCarrier">
+                                <path d="M26 0H6a6 6 0 0 0-6 6v20a6 6 0 0 0 6 6h20a6 6 0 0 0 6-6V6a6 6 0 0 0-6-6zm-6 2v3a1 1 0 1 0 2 0V2h1v7H9V2zm10 24a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4h1v8a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V2h1a4 4 0 0 1 4 4zM24 14H8a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V15a1 1 0 0 0-1-1zm-1 12H9V16h14zM12 20h8a1 1 0 0 0 0-2h-8a1 1 0 0 0 0 2zM12 24h8a1 1 0 0 0 0-2h-8a1 1 0 0 0 0 2z"></path>
+                              </g>
+                            </svg>
+                        </button>
+                        <button
+                            type='button'
+                            onClick={() => {
+                              setIsInEditMode(false)
+                            }}
+                        >
+
+                            <svg
+                              className='svg-sm'
+                              fill="#000000"
+                              width="64px"
+                              height="64px"
+                              viewBox="0 0 1024 1024"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+                              <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
+                              <g id="SVGRepo_iconCarrier">
+                                <path
+                                  d="M512.481 421.906L850.682 84.621c25.023-24.964 65.545-24.917 90.51 0.105s24.917 65.545-0.105 90.51L603.03 512.377 940.94 850c25.003 24.984 25.017 65.507 0.033 90.51s-65.507 25.017-90.51-0.033L512.397 602.764 174.215 940.03c-25.023 24.964-65.545 24.917-90.51-0.105s-24.917-65.545 0.105-90.51l338.038-337.122L84.14 174.872c-25.003-24.984-25.017-65.507-0.033-90.51s65.507-25.017 90.51-0.033L512.48 421.906z"
+                                  style={{ fill: '#000000' }}
+                                ></path>
+                              </g>
+                            </svg>
+                        </button>
+                    </article>
+                    <span>{`${contentWordCount}/200`}</span>
+                </section>
             </form>
 
       )
@@ -313,7 +345,7 @@ const EditNoteTextArea: React.FC<EditNoteTextAreaProps> =
   return (
         <textarea
             name='content'
-            className='flex-1 my-3 bg-inherit resize-none focus:outline-none'
+            className='flex-1 bg-inherit resize-none focus:outline-none'
             maxLength={200}
             defaultValue={defaultContent}
             ref={editContentInput}

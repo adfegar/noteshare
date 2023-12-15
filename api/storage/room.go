@@ -8,27 +8,30 @@ import (
 )
 
 const roomTypeMismatchErr = "type must be *note"
-const roomNotFoundErr = "note not found"
+const RoomNotFoundErr = "note not found"
 
 type RoomStorage struct{}
 
 func (roomStorage *RoomStorage) Get(id int) (interface{}, error) {
-	var room models.Room
-
 	database := database.GetInstance().GetDB()
 
-	result := database.QueryRow("SELECT * from rooms where id = ? ;", id)
+	result, err := database.Query("SELECT * from rooms where id = ? ;", id)
 
-	if scanErr := result.Scan(&room.ID, &room.Name, &room.Invite, &room.Creator); scanErr != nil {
-
-		if errors.Is(scanErr, sql.ErrNoRows) {
-			return nil, errors.New(roomNotFoundErr)
-		}
-
-		return nil, scanErr
+	if err != nil {
+		return nil, err
 	}
 
-	return &room, nil
+	if result.Next() {
+		room, scanErr := roomStorage.Scan(result)
+
+		if scanErr != nil {
+			return nil, scanErr
+		}
+
+		return room.(*models.Room), nil
+	} else {
+		return nil, errors.New(RoomNotFoundErr)
+	}
 }
 
 func (roomStorage *RoomStorage) Create(item interface{}) error {
@@ -77,7 +80,7 @@ func (roomStorage *RoomStorage) Update(item interface{}) error {
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(roomNotFoundErr)
+		return errors.New(RoomNotFoundErr)
 	}
 
 	return nil
@@ -104,8 +107,18 @@ func (roomStorage *RoomStorage) Delete(item interface{}) error {
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(roomNotFoundErr)
+		return errors.New(RoomNotFoundErr)
 	}
 
 	return nil
+}
+
+func (roomStorage *RoomStorage) Scan(result *sql.Rows) (interface{}, error) {
+	var room models.Room
+
+	if scanErr := result.Scan(&room.ID, &room.Name, &room.Invite, &room.Creator); scanErr != nil {
+		return nil, scanErr
+	}
+
+	return &room, nil
 }

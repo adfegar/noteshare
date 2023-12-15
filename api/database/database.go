@@ -21,7 +21,7 @@ const (
 		"CONSTRAINT `fk_users_tokens` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE);"
 
 	createNotesTableQuery = "CREATE TABLE IF NOT EXISTS `notes`" +
-		"(`id` integer,`content` text, `color` text, `user_id` integer, `room_id` integer," +
+		"(`id` integer,`content` text, `color` text, `user_id` integer, `room_id` integer, `created_at` timestamp, `last_edited_at` timestamp," +
 		"PRIMARY KEY (`id`)," +
 		"CONSTRAINT `fk_users_notes` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE," +
 		"CONSTRAINT `fk_rooms_notes` FOREIGN KEY (`room_id`) REFERENCES `rooms`(`id`) ON DELETE CASCADE ON UPDATE CASCADE);"

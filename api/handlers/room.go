@@ -65,7 +65,7 @@ func handleGetRoomUsers(res http.ResponseWriter, req *http.Request) error {
 	var responseUsers []ResponseUser
 
 	for _, user := range users {
-		responseUsers = append(responseUsers, CreateResponseUser(user))
+		responseUsers = append(responseUsers, CreateResponseUser(*user))
 	}
 
 	return utils.WriteJSON(res, 200, responseUsers)
