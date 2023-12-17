@@ -50,8 +50,9 @@ func (noteStorage *NoteStorage) Create(item interface{}) error {
 	}
 
 	database := database.GetInstance().GetDB()
-	result, err := database.Exec("INSERT INTO notes (content,color, user_id, room_id) VALUES (?, ?, ?, ?);",
-		note.Content, note.Color, note.UserRefer, note.RoomRefer)
+	result, err := database.Exec("INSERT INTO notes"+
+		"(content, color, user_id, room_id, created_at, last_edited_at) VALUES (?, ?, ?, ?, ?, ?);",
+		note.Content, note.Color, note.UserRefer, note.RoomRefer, note.CreatedAt, note.LastEditedAt)
 
 	if err != nil {
 		return err
@@ -77,8 +78,8 @@ func (noteStorage *NoteStorage) Update(item interface{}) error {
 	}
 
 	database := database.GetInstance().GetDB()
-	result, err := database.Exec("UPDATE notes SET content = ?, color = ? WHERE id = ? ;",
-		note.Content, note.Color, note.ID)
+	result, err := database.Exec("UPDATE notes SET content = ?, color = ?, last_edited_at = ? WHERE id = ? ;",
+		note.Content, note.Color, note.LastEditedAt, note.ID)
 
 	if err != nil {
 		return err
@@ -128,6 +129,7 @@ func (noteStorage *NoteStorage) Scan(result *sql.Rows) (interface{}, error) {
 	var note models.Note
 	var createdAtTimestamp string
 	var lastEditedAtTimestamp string
+
 	if scanErr := result.Scan(
 		&note.ID,
 		&note.Content,
