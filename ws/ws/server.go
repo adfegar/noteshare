@@ -1,8 +1,14 @@
 package ws
 
 import (
+	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
+	"encoding/base64"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/websocket"
 )
@@ -63,6 +69,64 @@ func (server *WsServer) createRoom(id uint, name string) *Room {
 	server.Rooms[room] = true
 
 	return room
+}
+
+func (server *WsServer) encryptMessage(message Message) []byte {
+	messageBytes := message.encode()
+	block, err := aes.NewCipher([]byte(os.Getenv("ENCRYPTION_KEY")))
+
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Error when creating block: %s", err.Error()))
+	}
+
+	blockSize := block.BlockSize()
+	messageBytes = PKCS5Padding(messageBytes, blockSize)
+	nonce := []byte("1234567812345678")
+	aesCBC := cipher.NewCBCEncrypter(block, nonce)
+	encryptedMessage := make([]byte, len(messageBytes))
+	aesCBC.CryptBlocks(encryptedMessage, messageBytes)
+
+	return []byte(base64.StdEncoding.EncodeToString(encryptedMessage))
+}
+
+func (server *WsServer) decryptMessage(encryptedMessage string) *Message {
+	encryptedMessageBytes, err := base64.StdEncoding.DecodeString(encryptedMessage)
+
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Error when creating decoding hex: %s", err.Error()))
+	}
+
+	block, err := aes.NewCipher([]byte(os.Getenv("ENCRYPTION_KEY")))
+
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Error when creating AES cipher: %s", err.Error()))
+	}
+
+	nonce := []byte("1234567812345678")
+	aesCBC := cipher.NewCBCDecrypter(block, nonce)
+	decryptedMessageBytes := make([]byte, len(encryptedMessageBytes))
+	aesCBC.CryptBlocks(decryptedMessageBytes, encryptedMessageBytes)
+	decryptedMessageBytes = PKCS5UnPadding(decryptedMessageBytes)
+
+	message, err := unMarshalMessage(decryptedMessageBytes)
+
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Error when unmarshaling message: %s", err.Error()))
+	}
+
+	return message
+}
+
+func PKCS5Padding(ciphertext []byte, blockSize int) []byte {
+	padding := blockSize - len(ciphertext)%blockSize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(ciphertext, padtext...)
+}
+
+func PKCS5UnPadding(paddedBytes []byte) []byte {
+	length := len(paddedBytes)
+	unpadding := int(paddedBytes[length-1])
+	return paddedBytes[:(length - unpadding)]
 }
 
 func (server *WsServer) findRoomById(id uint) *Room {

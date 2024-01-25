@@ -10,14 +10,14 @@ type Room struct {
 	Clients map[*Client]bool
 	Join    chan *Client
 	Leave   chan *Client
-	Forward chan *Message
+	Forward chan []byte
 }
 
 func NewRoom(id uint, name string) *Room {
 	return &Room{
 		ID:      id,
 		Name:    name,
-		Forward: make(chan *Message),
+		Forward: make(chan []byte),
 		Join:    make(chan *Client),
 		Leave:   make(chan *Client),
 		Clients: make(map[*Client]bool),
@@ -34,19 +34,9 @@ func (room *Room) Run() {
 			log.Println("Client " + client.ID.String() + " leaves " + room.Name)
 			delete(room.Clients, client)
 		case msg := <-room.Forward:
-			room.handleSendMessage(msg)
-		}
-	}
-}
-
-func (room *Room) handleSendMessage(message *Message) {
-	for client := range room.Clients {
-		if message.Action == SendNoteAction || message.Action == EditNoteAction || message.Action == DeleteNoteAction {
-			if client.CurrentRoom.ID == room.ID {
-				client.Receive <- message.encode()
+			for client := range room.Clients {
+				client.Receive <- msg
 			}
-		} else {
-			client.Receive <- message.encode()
 		}
 	}
 }

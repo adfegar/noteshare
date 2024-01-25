@@ -36,9 +36,9 @@ func NewClient(server *WsServer, socket *websocket.Conn) *Client {
 func (client *Client) read() {
 	defer client.Socket.Close()
 	for {
-		_, messageBytes, err := client.Socket.ReadMessage()
+		_, encryptedMessage, err := client.Socket.ReadMessage()
 		log.Println(client.ID.String() + " Reading...")
-		log.Println(string(messageBytes))
+		log.Println(string(encryptedMessage))
 
 		if err != nil && websocket.IsCloseError(err, 1001) {
 			log.Println("Socket closed. Disconnecting client...")
@@ -46,26 +46,18 @@ func (client *Client) read() {
 			break
 		}
 
-		message, unMarshalErr := unMarshalMessage(messageBytes)
-
-		if unMarshalErr == nil {
-
-			switch message.Action {
-			case InitClientAction:
-				client.init(message.Message.(*models.UserData))
-			case JoinRoomAction:
-				client.joinRoom(message.Message.(*models.RoomMessage))
-			case LeaveRoomAction:
-				client.leaveRoom(client.CurrentRoom)
-			case SendNoteAction, EditNoteAction, DeleteNoteAction, EditRoomAction, DeleteRoomAction:
-				client.sendMessage(message)
-			default:
-				log.Println("action not supported")
-				client.disconnect()
-				break
-			}
-		} else {
-			log.Println("unmarshal error on client read: " + unMarshalErr.Error())
+		message := client.Server.decryptMessage(string(encryptedMessage))
+		switch message.Action {
+		case InitClientAction:
+			client.init(message.Message.(*models.UserData))
+		case JoinRoomAction:
+			client.joinRoom(message.Message.(*models.RoomMessage))
+		case LeaveRoomAction:
+			client.leaveRoom(client.CurrentRoom)
+		case SendNoteAction, EditNoteAction, DeleteNoteAction, EditRoomAction, DeleteRoomAction:
+			client.sendMessage(message)
+		default:
+			log.Println("action not supported")
 			client.disconnect()
 			break
 		}
@@ -142,8 +134,16 @@ func (client *Client) leaveRoom(room *Room) {
 }
 
 func (client *Client) sendMessage(message *Message) {
-	if client.CurrentRoom != nil {
-		client.CurrentRoom.Forward <- message
+	encryptedMessage := client.Server.encryptMessage(*message)
+
+	if message.Action == SendNoteAction || message.Action == EditNoteAction || message.Action == DeleteNoteAction {
+		if client.CurrentRoom != nil {
+			client.CurrentRoom.Forward <- encryptedMessage
+		}
+	} else {
+		for room := range client.Rooms {
+			room.Forward <- encryptedMessage
+		}
 	}
 }
 
