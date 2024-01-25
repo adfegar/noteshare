@@ -6,7 +6,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"io"
-	"os"
 )
 
 type UserRole int
@@ -24,10 +23,11 @@ type User struct {
 	Role     UserRole `json:"role"`
 }
 
+var key []byte = make([]byte, 32)
+
 // Function that encodes user's password using AES encryption.
 func (user *User) EncodePassword(password string) error {
-	key := getPasswordKey()
-	cipherBlock, cipherErr := aes.NewCipher([]byte(key))
+	cipherBlock, cipherErr := aes.NewCipher(key)
 
 	if cipherErr != nil {
 		return cipherErr
@@ -52,9 +52,8 @@ func (user *User) EncodePassword(password string) error {
 
 // Function that decodes user's password using AES decryption and compares it to the input password.
 func (user User) ComparePassword(password string) error {
-	key := getPasswordKey()
 
-	cipherBlock, cipherErr := aes.NewCipher([]byte(key))
+	cipherBlock, cipherErr := aes.NewCipher(key)
 
 	if cipherErr != nil {
 		return cipherErr
@@ -80,8 +79,4 @@ func (user User) ComparePassword(password string) error {
 	}
 
 	return nil
-}
-
-func getPasswordKey() string {
-	return os.Getenv("USER_PASSWORD_KEY")
 }
