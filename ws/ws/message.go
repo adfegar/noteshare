@@ -3,6 +3,7 @@ package ws
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"noteshare-ws/models"
 
@@ -32,7 +33,7 @@ func (message Message) encode() []byte {
 	json, err := json.Marshal(&message)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Sprintf("Error when marshaling message: %s", err.Error()))
 	}
 
 	return json

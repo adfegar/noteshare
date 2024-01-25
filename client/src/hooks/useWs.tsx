@@ -4,8 +4,11 @@ import { WS_PREFIX } from '../consts'
 import Cookies from 'js-cookie'
 import { type Room } from '../@types/room'
 import { type Note } from '../@types/note'
+import { type Message } from '../@types/message'
+import CryptoJS from 'crypto-js'
 
 const WSActions = {
+  HandshakeAction: 'handshake',
   JoinRoomAction: 'join-room',
   SendNoteAction: 'send-note',
   EditNoteAction: 'edit-note',
@@ -34,7 +37,8 @@ export function useWS (): UseWSResponse {
   const [lastDeletedNote, setLastDeletedNote] = useState<Note>()
   const [lastEditedRoom, setLastEditedRoom] = useState<Room>()
   const [lastDeletedRoom, setLastDeletedRoom] = useState<Room>()
-  const { sendJsonMessage, lastMessage } = useWebSocket(
+
+  const { sendMessage, lastMessage } = useWebSocket(
     WS_PREFIX,
     {
       share: true,
@@ -42,14 +46,15 @@ export function useWS (): UseWSResponse {
       onOpen: () => {
         console.log('connected to WS')
 
-        const initMessage = {
+        const initMessage: Message = {
           action: 'init-client',
           message: {
             access_token: Cookies.get('access_token'),
             userId: Number(Cookies.get('user_id'))
           }
         }
-        sendJsonMessage(initMessage)
+
+        sendMessage(encryptMessage(initMessage))
       },
       onClose: () => { console.log('Disconnected from WS') }
     }
@@ -57,7 +62,9 @@ export function useWS (): UseWSResponse {
   // every time a note is sent, append it to receivedNotes array
   useEffect((): void => {
     if (lastMessage !== null) {
-      const message = JSON.parse(lastMessage.data)
+      const encryptedMessage = lastMessage.data
+
+      const message = decryptMessage(encryptedMessage)
       if (message.action === WSActions.SendNoteAction) {
         setLastReceivedNote(message.message)
       } else if (message.action === WSActions.EditNoteAction) {
@@ -75,14 +82,14 @@ export function useWS (): UseWSResponse {
   // custom functions to handle message actions
   function joinRoom (room: Room): void {
     const roomName = `r_${room.id}_${room.name}`
-    const message = {
+    const message: Message = {
       action: WSActions.JoinRoomAction,
       message: {
         id: room.id,
         name: roomName
       }
     }
-    sendJsonMessage(message)
+    sendMessage(encryptMessage(message))
   }
 
   function editRoom (room: Room): void {
@@ -90,7 +97,7 @@ export function useWS (): UseWSResponse {
       action: WSActions.EditRoomAction,
       message: room
     }
-    sendJsonMessage(message)
+    sendMessage(encryptMessage(message))
   }
 
   function deleteRoomWS (room: Room): void {
@@ -98,23 +105,23 @@ export function useWS (): UseWSResponse {
       action: WSActions.DeleteRoomAction,
       message: room
     }
-    sendJsonMessage(message)
+    sendMessage(encryptMessage(message))
   }
 
   function sendNote (note: Note): void {
-    const message = {
+    const message: Message = {
       action: WSActions.SendNoteAction,
       message: note
     }
-    sendJsonMessage(message)
+    sendMessage(encryptMessage(message))
   }
 
   function editNote (note: Note): void {
-    const message = {
+    const message: Message = {
       action: WSActions.EditNoteAction,
       message: note
     }
-    sendJsonMessage(message)
+    sendMessage(encryptMessage(message))
   }
 
   function deleteNote (note: Note): void {
@@ -122,7 +129,28 @@ export function useWS (): UseWSResponse {
       action: WSActions.DeleteNoteAction,
       message: note
     }
-    sendJsonMessage(message)
+    sendMessage(encryptMessage(message))
+  }
+
+  function encryptMessage (message: Message): string {
+    const key = CryptoJS.enc.Utf8.parse(import.meta.env.VITE_ENCRYPTION_KEY)
+    const nonce = CryptoJS.enc.Utf8.parse('1234567812345678')
+    const encryptedMessage = CryptoJS.AES.encrypt(JSON.stringify(message), key, {
+      iv: nonce,
+      padding: CryptoJS.pad.Pkcs7
+    })
+    return encryptedMessage.toString()
+  }
+
+  function decryptMessage (encryptedMessage: string): Message {
+    const key = CryptoJS.enc.Utf8.parse(import.meta.env.VITE_ENCRYPTION_KEY)
+    const nonce = CryptoJS.enc.Utf8.parse('1234567812345678')
+    const decryptedMessage = CryptoJS.AES.decrypt(encryptedMessage.toString(), key, {
+      iv: nonce,
+      padding: CryptoJS.pad.Pkcs7
+    })
+
+    return JSON.parse(decryptedMessage.toString(CryptoJS.enc.Utf8)) as Message
   }
 
   return { lastReceivedNote, lastEditedNote, lastDeletedNote, lastEditedRoom, lastDeletedRoom, joinRoom, editRoom, deleteRoomWS, sendNote, editNote, deleteNote }
