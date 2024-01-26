@@ -105,8 +105,11 @@ export async function getRoomNotes (roomId: number): Promise<Note[]> {
           id: roomNote.id,
           content: roomNote.content,
           color: roomNote.color,
-          creator: creator.username
+          creator: creator.username,
+          created_at: new Date(roomNote.created_at),
+          edited_at: new Date(roomNote.edited_at)
         }
+        console.log(note.edited_at.getDate())
         resultNotes.push(note)
       }
     })
