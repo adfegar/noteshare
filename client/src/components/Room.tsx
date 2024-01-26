@@ -44,7 +44,7 @@ export const RoomView: React.FC<RoomViewProps> =
   // each time a note is received, add it to the room notes array
   useEffect(() => {
     if (lastReceivedNote !== undefined) {
-      const updatedRoomNotes = [...roomNotes, lastReceivedNote]
+      const updatedRoomNotes = [lastReceivedNote, ...roomNotes]
       setRoomNotes(updatedRoomNotes)
     }
   }, [lastReceivedNote])

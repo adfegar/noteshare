@@ -113,15 +113,22 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
       const [isInEditColorMode, setIsInEditColorMode] = useState<boolean>(false)
       const editColorButton = useRef<HTMLElement | null>(null)
       const editColorPallete = useRef<HTMLButtonElement | null>(null)
+      const [showInfoPanel, setShowInfoPanel] = useState<boolean>(false)
+      const infoPanel = useRef<HTMLElement | null>(null)
+      const showInfoPanelButton = useRef<HTMLButtonElement | null>(null)
 
       // add a window listener to close edit color popup when clicking out of area
       window.addEventListener('click', (event) => {
-        if (
-          event.target instanceof HTMLElement &&
-          event.target !== editColorPallete.current &&
-          event.target !== editColorButton.current
-        ) {
+        const isColorPalleteClicked = editColorPallete.current != null && editColorPallete.current.contains(event.target as Node)
+        const isEditColorButtonClicked = editColorButton.current != null && editColorButton.current.contains(event.target as Node)
+        const isInfoPanelClicked = infoPanel.current != null && infoPanel.current.contains(event.target as Node)
+        const isShowInfoPanelButtonClicked = showInfoPanelButton.current != null && showInfoPanelButton.current.contains(event.target as Node)
+
+        if (!isColorPalleteClicked && !isEditColorButtonClicked) {
           setIsInEditColorMode(false)
+        }
+        if (!isInfoPanelClicked && !isShowInfoPanelButtonClicked) {
+          setShowInfoPanel(false)
         }
       })
 
@@ -129,9 +136,25 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
       <>
             <p className='flex-1 noteContent'>{note.content}</p>
             {
+                // INFO PANEL
+                    showInfoPanel &&
+                    <section
+                        className='bg-[#0F0F0F] text-white rounded-md p-[15px] absolute top-[180px] left-[52px]'
+                        ref={infoPanel as RefObject<HTMLElement>}
+                    >
+                        <p>
+                            {`Created at: ${note.created_at.getDate()}/${note.created_at.getMonth()}/${note.created_at.getFullYear()}`}
+                        </p>
+                        <p>
+                            {`Edited at: ${note.edited_at.getDate()}/${note.edited_at.getMonth()}/${note.edited_at.getFullYear()}`}
+                        </p>
+                    </section>
+                }
+            {
+                // COLOR PALETTE
                 isInEditColorMode &&
                     <section
-                        className='grid grid-cols-4 gap-3 bg-color-palette-bg rounded-md w-[220px] h-[120px] p-[15px] absolute top-[140px] left-[52px]'
+                        className='grid grid-cols-4 gap-3 bg-color-palette-bg rounded-md w-[220px] h-[120px] p-[15px] absolute top-[140px] left-[82px]'
                         ref={editColorPallete}
                     >
                         {
@@ -163,6 +186,20 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
             }
             <section className='flex justify-between'>
                 <section className='flex gap-2'>
+                    <button
+                        onClick={() => {
+                          setShowInfoPanel(!showInfoPanel)
+                        }}
+                        ref={showInfoPanelButton as RefObject<HTMLButtonElement>}
+                    >
+                    <svg fill="#000000"className='svg-sm' width="64px" height="64px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                    <g id="SVGRepo_bgCarrier" strokeWidth="10"></g>
+                    <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
+                    <g id="SVGRepo_iconCarrier">
+                      <path d="M18 23l-1-0v-8.938c0-0.011-0.003-0.021-0.003-0.031s0.003-0.020 0.003-0.031c0-0.552-0.448-1-1-1h-2c-0.552 0-1 0.448-1 1s0.448 1 1 1h1v8h-1c-0.552 0-1 0.448-1 1s0.448 1 1 1h4c0.552 0 1-0.448 1-1s-0.448-1-1-1zM16 11c1.105 0 2-0.896 2-2s-0.895-2-2-2-2 0.896-2 2 0.896 2 2 2zM16-0c-8.836 0-16 7.163-16 16s7.163 16 16 16c8.837 0 16-7.163 16-16s-7.163-16-16-16zM16 30.031c-7.72 0-14-6.312-14-14.032s6.28-14 14-14 14 6.28 14 14-6.28 14.032-14 14.032z"></path>
+                    </g>
+                      </svg>
+                    </button>
                     <button
                         onClick={() => {
                           setIsInEditColorMode(!isInEditColorMode)
@@ -362,13 +399,57 @@ interface NotOwnedNoteProps {
 
 // Component that represents a Note that the user does not own
 const NotOwnedNote: React.FC<NotOwnedNoteProps> = ({ note }) => {
+  const [showInfoPanel, setShowInfoPanel] = useState<boolean>(false)
+  const infoPanel = useRef<HTMLElement | null>(null)
+  const showInfoPanelButton = useRef<HTMLButtonElement | null>(null)
+
+  // add a window listener to close edit color popup when clicking out of area
+  window.addEventListener('click', (event) => {
+    const isInfoPanelClicked = infoPanel.current != null && infoPanel.current.contains(event.target as Node)
+    const isShowInfoPanelButtonClicked = showInfoPanelButton.current != null && showInfoPanelButton.current.contains(event.target as Node)
+
+    if (!isInfoPanelClicked && !isShowInfoPanelButtonClicked) {
+      setShowInfoPanel(false)
+    }
+  })
+
   return (
         <article
           style={{ backgroundColor: note.color }}
-          className={'h-280 flex flex-col p-20 border border-solid border-black rounded font-virgil text-note'}
+          className={'h-280 flex flex-col p-20 border border-solid border-black rounded font-virgil text-note relative'}
         >
             <p className='flex-1 noteContent'>{note.content}</p>
-            <span className='text-lg text-end'>{note.creator}</span>
+            {
+                    showInfoPanel &&
+                    <section
+                        className='bg-[#0F0F0F] text-white rounded-md p-[15px] absolute top-[180px] left-[52px]'
+                        ref={infoPanel as RefObject<HTMLElement>}
+                    >
+                        <p>
+                            {`Created at: ${note.created_at.getDate()}/${note.created_at.getMonth()}/${note.created_at.getFullYear()}`}
+                        </p>
+                        <p>
+                            {`Edited at: ${note.edited_at.getDate()}/${note.edited_at.getMonth()}/${note.edited_at.getFullYear()}`}
+                        </p>
+                    </section>
+                }
+            <section className='flex justify-between'>
+                <button
+                    onClick={() => {
+                      setShowInfoPanel(!showInfoPanel)
+                    }}
+                    ref={showInfoPanelButton as RefObject<HTMLButtonElement>}
+                >
+                <svg fill="#000000"className='svg-sm' width="64px" height="64px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                <g id="SVGRepo_bgCarrier" strokeWidth="10"></g>
+                <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
+                <g id="SVGRepo_iconCarrier">
+                  <path d="M18 23l-1-0v-8.938c0-0.011-0.003-0.021-0.003-0.031s0.003-0.020 0.003-0.031c0-0.552-0.448-1-1-1h-2c-0.552 0-1 0.448-1 1s0.448 1 1 1h1v8h-1c-0.552 0-1 0.448-1 1s0.448 1 1 1h4c0.552 0 1-0.448 1-1s-0.448-1-1-1zM16 11c1.105 0 2-0.896 2-2s-0.895-2-2-2-2 0.896-2 2 0.896 2 2 2zM16-0c-8.836 0-16 7.163-16 16s7.163 16 16 16c8.837 0 16-7.163 16-16s-7.163-16-16-16zM16 30.031c-7.72 0-14-6.312-14-14.032s6.28-14 14-14 14 6.28 14 14-6.28 14.032-14 14.032z"></path>
+                </g>
+                  </svg>
+                </button>
+                <span className='text-lg'>{note.creator}</span>
+            </section>
         </article>
   )
 }

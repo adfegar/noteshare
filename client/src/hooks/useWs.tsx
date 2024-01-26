@@ -113,6 +113,7 @@ export function useWS (): UseWSResponse {
       action: WSActions.SendNoteAction,
       message: note
     }
+    console.log(message)
     sendMessage(encryptMessage(message))
   }
 

@@ -5,6 +5,7 @@ import { type User } from '../@types/user'
 import { type AddRoomRequest, type Room } from '../@types/room'
 import { type Note, type DBNote } from '../@types/note'
 import { type APIError } from '../@types/api'
+import { parseStringDate } from '../utils'
 
 export async function addRoom (room: AddRoomRequest): Promise<Room> {
   const addRoomResult: { data: Room | APIError, status: number } =
@@ -106,10 +107,9 @@ export async function getRoomNotes (roomId: number): Promise<Note[]> {
           content: roomNote.content,
           color: roomNote.color,
           creator: creator.username,
-          created_at: new Date(roomNote.created_at),
-          edited_at: new Date(roomNote.edited_at)
+          created_at: parseStringDate(roomNote.created_at),
+          edited_at: parseStringDate(roomNote.edited_at)
         }
-        console.log(note.edited_at.getDate())
         resultNotes.push(note)
       }
     })
