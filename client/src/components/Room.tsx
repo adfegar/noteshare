@@ -69,10 +69,9 @@ export const RoomView: React.FC<RoomViewProps> =
         targetNote.content = lastEditedNote.content
         targetNote.color = lastEditedNote.color
         targetNote.edited_at = parseStringDate(lastEditedNote.edited_at)
-        updatedRoomNotes.splice(targetNoteIndex, 1)
-
-        setRoomNotes([targetNote, ...updatedRoomNotes])
       }
+      updatedRoomNotes.splice(targetNoteIndex, 1)
+      setRoomNotes([targetNote, ...updatedRoomNotes])
     }
   }, [lastEditedNote])
 
