@@ -61,15 +61,18 @@ export const RoomView: React.FC<RoomViewProps> =
   // each time a note is edited, change it in the room notes array
   useEffect(() => {
     if (lastEditedNote !== undefined) {
-      console.log(lastEditedNote.edited_at)
       const updatedRoomNotes = [...roomNotes]
-      const targetNote = updatedRoomNotes.find(note => note.id === lastEditedNote.id)
+      const targetNoteIndex = updatedRoomNotes.findIndex(note => note.id === lastEditedNote.id)
+      const targetNote = updatedRoomNotes[targetNoteIndex]
+
       if (targetNote !== undefined) {
         targetNote.content = lastEditedNote.content
         targetNote.color = lastEditedNote.color
         targetNote.edited_at = parseStringDate(lastEditedNote.edited_at)
+        updatedRoomNotes.splice(targetNoteIndex, 1)
+
+        setRoomNotes([targetNote, ...updatedRoomNotes])
       }
-      setRoomNotes(updatedRoomNotes)
     }
   }, [lastEditedNote])
 
