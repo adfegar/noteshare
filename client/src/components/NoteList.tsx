@@ -1,11 +1,35 @@
 import React, { useState, useContext, useCallback, type Dispatch, type SetStateAction, useRef, type RefObject } from 'react'
 import { deleteUserNote, updateUserNote } from '../services/notes'
 import { UserContext } from '../contexts/userDataContext'
-import { type Note } from '../@types/note'
+import { type NoteMessage, type Note } from '../@types/note'
+
+function formatInfo (date: Date): string {
+  const currentDate = new Date()
+
+  if ((currentDate.getDate() === date.getDate() && currentDate.getMonth() === date.getMonth() && currentDate.getFullYear() === date.getFullYear())) {
+    if (currentDate.getMinutes() === date.getMinutes() && currentDate.getHours() === date.getHours()) {
+      return 'just now'
+    } else if (currentDate.getMinutes() !== date.getMinutes() && currentDate.getHours() === date.getHours()) {
+      return `${currentDate.getMinutes() - date.getMinutes()} minutes ago`
+    } else if (currentDate.getHours() !== date.getHours()) {
+      return `${currentDate.getHours() - date.getHours()} hours ago`
+    }
+  } else {
+    if ((currentDate.getDate() !== date.getDate() && currentDate.getMonth() === date.getMonth() && currentDate.getFullYear() === date.getFullYear())) {
+      return `${currentDate.getDate() - date.getDate()} hours ago`
+    } else if (currentDate.getMonth() !== date.getMonth() && currentDate.getFullYear() === date.getFullYear()) {
+      return `${currentDate.getMonth() - date.getMonth()} months ago`
+    } else if (currentDate.getFullYear() !== date.getFullYear()) {
+      return `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`
+    }
+  }
+
+  return ''
+}
 
 interface NoteListProps {
   roomNotes: Note[]
-  editNote: (note: Note) => void
+  editNote: (note: NoteMessage) => void
   deleteNote: (note: Note) => void
 }
 
@@ -41,7 +65,7 @@ export const NoteColors = {
 
 interface NoteProps {
   note: Note
-  editNote: (note: Note) => void
+  editNote: (note: NoteMessage) => void
   deleteNote: (note: Note) => void
 }
 
@@ -98,7 +122,7 @@ const OwnedNote: React.FC<NoteProps> =
 
 interface EditableNoteBodyProps {
   note: Note
-  editNote: (note: Note) => void
+  editNote: (note: NoteMessage) => void
   deleteNote: (note: Note) => void
   setIsInEditMode: Dispatch<SetStateAction<boolean>>
 }
@@ -116,6 +140,7 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
       const [showInfoPanel, setShowInfoPanel] = useState<boolean>(false)
       const infoPanel = useRef<HTMLElement | null>(null)
       const showInfoPanelButton = useRef<HTMLButtonElement | null>(null)
+      const userDataContext = useContext(UserContext)
 
       // add a window listener to close edit color popup when clicking out of area
       window.addEventListener('click', (event) => {
@@ -133,20 +158,21 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
       })
 
       return (
-      <>
+        userDataContext !== null &&
+        <>
             <p className='flex-1 noteContent'>{note.content}</p>
             {
                 // INFO PANEL
                     showInfoPanel &&
                     <section
-                        className='bg-[#0F0F0F] text-white rounded-md p-[15px] absolute top-[180px] left-[52px]'
+                        className='infoPanel bg-[#0F0F0F] text-white rounded-md p-[15px] absolute top-[180px] left-[52px]'
                         ref={infoPanel as RefObject<HTMLElement>}
                     >
                         <p>
-                            {`Created at: ${note.created_at.getDate()}/${note.created_at.getMonth()}/${note.created_at.getFullYear()}`}
+                            {`Created ${formatInfo(note.created_at)}`}
                         </p>
                         <p>
-                            {`Edited at: ${note.edited_at.getDate()}/${note.edited_at.getMonth()}/${note.edited_at.getFullYear()}`}
+                            {`Edited ${formatInfo(note.edited_at)}`}
                         </p>
                     </section>
                 }
@@ -172,9 +198,16 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
                                       }
 
                                       updateUserNote(note.id, newNote)
-                                        .then(() => {
-                                          note.color = newNote.color
-                                          editNote(note)
+                                        .then((updateNoteResult) => {
+                                          const noteMessage = {
+                                            id: updateNoteResult.id,
+                                            content: updateNoteResult.content,
+                                            color: updateNoteResult.color,
+                                            creator: userDataContext.userData.username as string,
+                                            created_at: updateNoteResult.created_at.toString(),
+                                            edited_at: updateNoteResult.edited_at.toString()
+                                          }
+                                          editNote(noteMessage)
                                           setIsInEditColorMode(false)
                                         })
                                         .catch(error => { console.error(error) })
@@ -273,7 +306,7 @@ const EditableNoteBody: React.FC<EditableNoteBodyProps> =
 
 interface EditNoteContentFormProps {
   note: Note
-  editNote: (note: Note) => void
+  editNote: (note: NoteMessage) => void
   isInEditMode: boolean
   setIsInEditMode: Dispatch<SetStateAction<boolean>>
 }
@@ -287,7 +320,9 @@ const EditNoteContentForm: React.FC<EditNoteContentFormProps> =
       setIsInEditMode
     }) => {
       const [contentWordCount, setContentWordCount] = useState<number>(note.content.length)
+      const userDataContext = useContext(UserContext)
       return (
+        userDataContext !== null &&
             <form
                 className='flex flex-col h-280'
                 onSubmit={(event) => {
@@ -299,9 +334,16 @@ const EditNoteContentForm: React.FC<EditNoteContentFormProps> =
                   }
 
                   updateUserNote(note.id, newNote)
-                    .then(() => {
-                      note.content = newNote.content
-                      editNote(note)
+                    .then((updateNoteResult) => {
+                      const noteMessage = {
+                        id: updateNoteResult.id,
+                        content: updateNoteResult.content,
+                        color: updateNoteResult.color,
+                        creator: userDataContext.userData.username as string,
+                        created_at: updateNoteResult.created_at.toString(),
+                        edited_at: updateNoteResult.edited_at.toString()
+                      }
+                      editNote(noteMessage)
                       setIsInEditMode(false)
                     })
                     .catch(error => { console.error(error) })
@@ -422,14 +464,14 @@ const NotOwnedNote: React.FC<NotOwnedNoteProps> = ({ note }) => {
             {
                     showInfoPanel &&
                     <section
-                        className='bg-[#0F0F0F] text-white rounded-md p-[15px] absolute top-[180px] left-[52px]'
+                        className='infoPanel bg-[#0F0F0F] text-white rounded-md p-[15px] absolute top-[180px] left-[52px]'
                         ref={infoPanel as RefObject<HTMLElement>}
                     >
                         <p>
-                            {`Created at: ${note.created_at.getDate()}/${note.created_at.getMonth()}/${note.created_at.getFullYear()}`}
+                            {`Created ${formatInfo(note.created_at)}`}
                         </p>
                         <p>
-                            {`Edited at: ${note.edited_at.getDate()}/${note.edited_at.getMonth()}/${note.edited_at.getFullYear()}`}
+                            {`Edited ${formatInfo(note.edited_at)}`}
                         </p>
                     </section>
                 }

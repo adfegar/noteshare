@@ -31,5 +31,5 @@ export function parseStringDate (dateTimeString: string): Date {
   const [year, month, day] = dateString.split('-')
   const [hour, minutes, seconds] = timeString.split(':')
 
-  return new Date(Number(year), Number(month), Number(day), Number(hour), Number(minutes), Number(seconds))
+  return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minutes), Number(seconds))
 }

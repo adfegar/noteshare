@@ -30,3 +30,12 @@ export interface Note {
   created_at: Date
   edited_at: Date
 }
+
+export interface NoteMessage {
+  id: number
+  content: string
+  color: string
+  creator: string
+  created_at: string
+  edited_at: string
+}
