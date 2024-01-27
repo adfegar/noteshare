@@ -59,7 +59,7 @@ func unMarshalMessage(data []byte) (*Message, error) {
 		case SendNoteAction, EditNoteAction, DeleteNoteAction:
 			var note *models.Note
 			noteUnMarshalErr := json.Unmarshal(messageBytes, &note)
-
+			log.Println(note.CreatedAt)
 			if noteUnMarshalErr != nil {
 				return nil, noteUnMarshalErr
 			}

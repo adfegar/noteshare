@@ -18,6 +18,10 @@
         word-wrap: break-word;
         white-space: pre-line;
     }
+    .infoPanel {
+        font-family: 'helvetica';
+        font-weight: bold;
+    }
     input {
         @apply outline;
         @apply outline-1;

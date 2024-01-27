@@ -3,7 +3,7 @@ import useWebSocket from 'react-use-websocket'
 import { WS_PREFIX } from '../consts'
 import Cookies from 'js-cookie'
 import { type Room } from '../@types/room'
-import { type Note } from '../@types/note'
+import { type NoteMessage, type Note } from '../@types/note'
 import { type Message } from '../@types/message'
 import CryptoJS from 'crypto-js'
 
@@ -26,7 +26,7 @@ interface UseWSResponse {
   joinRoom: (room: Room) => void
   editRoom: (room: Room) => void
   deleteRoomWS: (room: Room) => void
-  sendNote: (note: Note) => void
+  sendNote: (note: NoteMessage) => void
   editNote: (note: Note) => void
   deleteNote: (note: Note) => void
 }
@@ -108,11 +108,12 @@ export function useWS (): UseWSResponse {
     sendMessage(encryptMessage(message))
   }
 
-  function sendNote (note: Note): void {
+  function sendNote (note: NoteMessage): void {
     const message: Message = {
       action: WSActions.SendNoteAction,
       message: note
     }
+    console.log(message)
     sendMessage(encryptMessage(message))
   }
 

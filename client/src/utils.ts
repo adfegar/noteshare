@@ -23,3 +23,13 @@ export function removeUserCookies (): void {
   Cookies.remove('username')
   Cookies.set('authenticated', 'false')
 }
+
+export function parseStringDate (dateTimeString: string): Date {
+  const dateString = dateTimeString.substring(0, dateTimeString.indexOf('T'))
+  const timeString = dateTimeString.substring(dateTimeString.indexOf('T') + 1, dateTimeString.indexOf('.'))
+
+  const [year, month, day] = dateString.split('-')
+  const [hour, minutes, seconds] = timeString.split(':')
+
+  return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minutes), Number(seconds))
+}
