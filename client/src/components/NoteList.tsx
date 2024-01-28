@@ -153,7 +153,6 @@ const NoteComponentBody: React.FC<NoteBodyProps> =
       }
 
       return (
-        userDataContext !== null &&
         <>
             <p className='flex-1 noteContent'>{note.content}</p>
             {
@@ -194,16 +193,18 @@ const NoteComponentBody: React.FC<NoteBodyProps> =
 
                                       updateUserNote(note.id, newNote)
                                         .then((updateNoteResult) => {
-                                          const noteMessage = {
-                                            id: updateNoteResult.id,
-                                            content: updateNoteResult.content,
-                                            color: updateNoteResult.color,
-                                            creator: userDataContext.userData.username as string,
-                                            created_at: updateNoteResult.created_at.toString(),
-                                            edited_at: updateNoteResult.edited_at.toString()
+                                          if (userDataContext !== null) {
+                                            const noteMessage = {
+                                              id: updateNoteResult.id,
+                                              content: updateNoteResult.content,
+                                              color: updateNoteResult.color,
+                                              creator: userDataContext.userData.username as string,
+                                              created_at: updateNoteResult.created_at.toString(),
+                                              edited_at: updateNoteResult.edited_at.toString()
+                                            }
+                                            editNote(noteMessage)
+                                            setIsInEditColorMode(false)
                                           }
-                                          editNote(noteMessage)
-                                          setIsInEditColorMode(false)
                                         })
                                         .catch(error => { console.error(error) })
                                     }}
@@ -322,7 +323,6 @@ const EditNoteComponentBody: React.FC<EditNoteContentBodyProps> =
       const [contentWordCount, setContentWordCount] = useState<number>(note.content.length)
       const userDataContext = useContext(UserContext)
       return (
-        userDataContext !== null &&
             <form
                 className='flex flex-col h-280'
                 onSubmit={(event) => {
@@ -335,16 +335,18 @@ const EditNoteComponentBody: React.FC<EditNoteContentBodyProps> =
 
                   updateUserNote(note.id, newNote)
                     .then((updateNoteResult) => {
-                      const noteMessage = {
-                        id: updateNoteResult.id,
-                        content: updateNoteResult.content,
-                        color: updateNoteResult.color,
-                        creator: userDataContext.userData.username as string,
-                        created_at: updateNoteResult.created_at.toString(),
-                        edited_at: updateNoteResult.edited_at.toString()
+                      if (userDataContext !== null) {
+                        const noteMessage = {
+                          id: updateNoteResult.id,
+                          content: updateNoteResult.content,
+                          color: updateNoteResult.color,
+                          creator: userDataContext.userData.username as string,
+                          created_at: updateNoteResult.created_at.toString(),
+                          edited_at: updateNoteResult.edited_at.toString()
+                        }
+                        editNote(noteMessage)
+                        setIsInEditMode(false)
                       }
-                      editNote(noteMessage)
-                      setIsInEditMode(false)
                     })
                     .catch(error => { console.error(error) })
                 }}

@@ -102,14 +102,14 @@ export const RoomView: React.FC<RoomViewProps> =
     }
   }, [lastDeletedRoom])
 
-  return userDataContext !== null && (
+  return (
             <article className='w-full h-full flex flex-col px-20 pt-5'>
                 <section className='flex items-center justify-between p-20'>
                 {
                     !isInRoomEditMode
                       ? <RoomNameDisplay
                         currentRoom={currentRoom}
-                        currentUserId={Number(userDataContext.userData.userId)}
+                        currentUserId={Number(userDataContext?.userData.userId)}
                         setIsInRoomEditMode={setIsInRoomEditMode}
                         setCopiedToClipboard={setCopiedToClipboard}
                         deleteRoomWS={deleteRoomWS}
@@ -123,29 +123,31 @@ export const RoomView: React.FC<RoomViewProps> =
                 }
                 <CopiedToClipBoardPopUp copiedToClipboard={copiedToClipboard} />
                 <button
-                className='flex content-center p-[10px] text-white rounded-md bg-ui-blue'
-                onClick={() => {
-                  const randomColorIndex = Math.floor(Math.random() * Object.keys(NoteColors).length)
-                  const colorKey = Object.keys(NoteColors)[randomColorIndex]
-                  const noteObject = {
-                    content: '',
-                    color: NoteColors[colorKey as keyof typeof NoteColors],
-                    user_id: Number(userDataContext.userData.userId),
-                    room_id: currentRoom.id
-                  }
-                  addUserNote(noteObject).then(addNoteResult => {
-                    const noteMessage = {
-                      id: addNoteResult.id,
-                      content: addNoteResult.content,
-                      color: addNoteResult.color,
-                      creator: userDataContext.userData.username as string,
-                      created_at: addNoteResult.created_at.toString(),
-                      edited_at: addNoteResult.edited_at.toString()
-                    }
-                    sendNote(noteMessage)
-                  })
-                    .catch(err => { console.error(err) })
-                }}
+                    className='flex content-center p-[10px] text-white rounded-md bg-ui-blue'
+                    onClick={() => {
+                      if (userDataContext !== null) {
+                        const randomColorIndex = Math.floor(Math.random() * Object.keys(NoteColors).length)
+                        const colorKey = Object.keys(NoteColors)[randomColorIndex]
+                        const noteObject = {
+                          content: '',
+                          color: NoteColors[colorKey as keyof typeof NoteColors],
+                          user_id: Number(userDataContext.userData.userId),
+                          room_id: currentRoom.id
+                        }
+                        addUserNote(noteObject).then(addNoteResult => {
+                          const noteMessage = {
+                            id: addNoteResult.id,
+                            content: addNoteResult.content,
+                            color: addNoteResult.color,
+                            creator: userDataContext.userData.username as string,
+                            created_at: addNoteResult.created_at.toString(),
+                            edited_at: addNoteResult.edited_at.toString()
+                          }
+                          sendNote(noteMessage)
+                        })
+                          .catch(err => { console.error(err) })
+                      }
+                    }}
                 >
                 <svg className='max-h-[30px] max-w-[35px] pr-[10px]' width="64px" height="64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
 
@@ -393,13 +395,15 @@ interface CopiedToClipBoardPopUpProps {
 }
 
 const CopiedToClipBoardPopUp: React.FC<CopiedToClipBoardPopUpProps> = ({ copiedToClipboard }) => {
-  if (copiedToClipboard) {
-    return (
+  return (
+    copiedToClipboard
+      ? (
           <section
-          className='px-4 py-3 text-white bg-ui-blue border border-[#1c3ffd] rounded-md transition duration-150 property-all ease-in-out'
+            className='px-4 py-3 text-white bg-ui-blue border border-[#1c3ffd] rounded-md transition duration-150 property-all ease-in-out'
           >
-          <span>{'Invite copied to clipboard!'}</span>
+            <span>{'Invite copied to clipboard!'}</span>
           </section>
-    )
-  }
+        )
+      : null
+  )
 }
