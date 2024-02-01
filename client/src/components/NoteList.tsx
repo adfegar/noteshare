@@ -130,21 +130,27 @@ const NoteComponentBody: React.FC<NoteBodyProps> =
 
       function formatInfo (date: Date): string {
         const currentDate = new Date()
+        const currentDateUTC = new Date(Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(),
+          currentDate.getUTCDate(), currentDate.getUTCHours(), currentDate.getUTCMinutes(), currentDate.getUTCSeconds()))
+        console.log(date)
 
-        if ((currentDate.getDate() === date.getDate() && currentDate.getMonth() === date.getMonth() && currentDate.getFullYear() === date.getFullYear())) {
-          if (currentDate.getMinutes() === date.getMinutes() && currentDate.getHours() === date.getHours()) {
+        if ((currentDateUTC.getDate() === date.getDate() && currentDateUTC.getMonth() === date.getMonth() && currentDateUTC.getFullYear() === date.getFullYear())) {
+          if (currentDateUTC.getMinutes() === date.getMinutes() && currentDateUTC.getHours() === date.getHours()) {
             return 'just now'
-          } else if (currentDate.getMinutes() !== date.getMinutes() && currentDate.getHours() === date.getHours()) {
-            return `${currentDate.getMinutes() - date.getMinutes()} minutes ago`
-          } else if (currentDate.getHours() !== date.getHours()) {
-            return `${currentDate.getHours() - date.getHours()} hours ago`
+          } else if (currentDateUTC.getMinutes() !== date.getMinutes() && currentDateUTC.getHours() === date.getHours()) {
+            return `${currentDateUTC.getMinutes() - date.getMinutes()} minutes ago`
+          } else if ((currentDateUTC.getHours() - date.getHours() === 1) &&
+            ((60 - date.getMinutes()) + currentDateUTC.getMinutes() < 60)) {
+            return `${((60 - date.getMinutes()) + currentDateUTC.getMinutes())} minutes ago`
+          } else {
+            return `${currentDateUTC.getHours() - date.getHours()} hours ago`
           }
         } else {
-          if ((currentDate.getDate() !== date.getDate() && currentDate.getMonth() === date.getMonth() && currentDate.getFullYear() === date.getFullYear())) {
-            return `${currentDate.getDate() - date.getDate()} hours ago`
-          } else if (currentDate.getMonth() !== date.getMonth() && currentDate.getFullYear() === date.getFullYear()) {
-            return `${currentDate.getMonth() - date.getMonth()} months ago`
-          } else if (currentDate.getFullYear() !== date.getFullYear()) {
+          if ((currentDateUTC.getDate() !== date.getDate() && currentDateUTC.getMonth() === date.getMonth() && currentDateUTC.getFullYear() === date.getFullYear())) {
+            return `${currentDateUTC.getDate() - date.getDate()} days ago`
+          } else if (currentDateUTC.getMonth() !== date.getMonth() && currentDateUTC.getFullYear() === date.getFullYear()) {
+            return `${currentDateUTC.getMonth() - date.getMonth()} months ago`
+          } else if (currentDateUTC.getFullYear() !== date.getFullYear()) {
             return `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`
           }
         }

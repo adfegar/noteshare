@@ -120,8 +120,8 @@ func CreateNote(noteBody NoteBody) (*models.Note, error) {
 		Color:        noteBody.Color,
 		UserRefer:    noteBody.UserRefer,
 		RoomRefer:    noteBody.RoomRefer,
-		CreatedAt:    time.Now(),
-		LastEditedAt: time.Now(),
+		CreatedAt:    time.Now().UTC(),
+		LastEditedAt: time.Now().UTC(),
 	}
 
 	if err := noteStorage.Create(note); err != nil {
@@ -146,7 +146,7 @@ func UpdateNote(id int, noteBody UpdateNoteBody) (*models.Note, error) {
 		note.Color = noteBody.Color
 	}
 
-	note.LastEditedAt = time.Now()
+	note.LastEditedAt = time.Now().UTC()
 	updateErr := noteStorage.Update(note)
 
 	return note, updateErr
