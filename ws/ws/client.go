@@ -83,7 +83,7 @@ func (client *Client) init(userData *models.UserData) {
 	// make a request to API to get the user rooms
 	apiRequest, reqErr := http.NewRequest(
 		"GET",
-		fmt.Sprintf("%s/users/%d/rooms", os.Getenv("LOCAL_API_URL"), userData.UserId),
+		fmt.Sprintf("%s/users/%d/rooms", os.Getenv("PROD_API_URL"), userData.UserId),
 		nil,
 	)
 
