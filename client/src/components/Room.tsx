@@ -4,19 +4,19 @@ import { addUserNote } from '../services/notes'
 import { useEffect, useState, useContext, useCallback, type Dispatch, type SetStateAction } from 'react'
 import { deleteRoom, updateRoom } from '../services/rooms'
 import { UserContext } from '../contexts/userDataContext'
-import { type NoteMessage, type Note } from '../@types/note'
+import { type NoteMessage, type Note, type NoteIDMessage } from '../@types/note'
 import { type Room } from '../@types/room'
-import { parseStringDate } from '../utils'
+import { parseStringDate, sendNotification } from '../utils'
 
 interface RoomViewProps {
   lastReceivedNote: NoteMessage | undefined
   lastEditedNote: NoteMessage | undefined
-  lastDeletedNote: NoteMessage | undefined
+  lastDeletedNote: NoteIDMessage | undefined
   lastEditedRoom: Room | undefined
   lastDeletedRoom: Room | undefined
   sendNote: (note: NoteMessage) => void
   editNote: (note: NoteMessage) => void
-  deleteNote: (note: Note) => void
+  deleteNote: (note: NoteIDMessage) => void
   editRoom: (room: Room) => void
   deleteRoomWS: (room: Room) => void
   currentRoom: Room
@@ -44,7 +44,7 @@ export const RoomView: React.FC<RoomViewProps> =
   const [copiedToClipboard, setCopiedToClipboard] = useState<boolean>(false)
   // each time a note is received, add it to the room notes array
   useEffect(() => {
-    if (lastReceivedNote !== undefined) {
+    if (lastReceivedNote !== undefined && (lastReceivedNote.room_id === currentRoom?.id)) {
       const lastNote: Note = {
         id: lastReceivedNote.id,
         content: lastReceivedNote.content,
@@ -55,12 +55,16 @@ export const RoomView: React.FC<RoomViewProps> =
       }
       const updatedRoomNotes = [lastNote, ...roomNotes]
       setRoomNotes(updatedRoomNotes)
+
+      if (userDataContext?.userData.username !== lastReceivedNote.creator) {
+        sendNotification('New note', `${lastReceivedNote.creator} sent a note!`)
+      }
     }
   }, [lastReceivedNote])
 
   // each time a note is edited, change it in the room notes array
   useEffect(() => {
-    if (lastEditedNote !== undefined) {
+    if ((lastEditedNote !== undefined && currentRoom !== undefined) && (lastEditedNote.room_id === currentRoom.id)) {
       const updatedRoomNotes = [...roomNotes]
       const targetNoteIndex = updatedRoomNotes.findIndex(note => note.id === lastEditedNote.id)
       const targetNote = updatedRoomNotes[targetNoteIndex]
@@ -73,14 +77,26 @@ export const RoomView: React.FC<RoomViewProps> =
 
         setRoomNotes([targetNote, ...updatedRoomNotes])
       }
+
+      if (userDataContext?.userData.username !== lastEditedNote.creator) {
+        sendNotification('Note edited', `${lastEditedNote.creator} edited a note!`)
+      }
     }
   }, [lastEditedNote])
 
   // every time a note is deleted in this room, delete it from the room notes array
   useEffect(() => {
-    if (lastDeletedNote !== undefined) {
+    if (lastDeletedNote !== undefined && (lastDeletedNote.room_id === currentRoom.id)) {
       const updatedRoomNotes = [...roomNotes]
-      setRoomNotes(updatedRoomNotes.filter(note => note.id !== lastDeletedNote.id))
+      const deletedNoteIndex = updatedRoomNotes.findIndex(note => note.id === lastDeletedNote.note_id)
+      const deletedNote = updatedRoomNotes.at(deletedNoteIndex)
+
+      if (deletedNote !== undefined && userDataContext?.userData.username !== deletedNote.creator) {
+        sendNotification('Note deleted', `${deletedNote?.creator} deleted a note!`)
+      }
+
+      updatedRoomNotes.splice(deletedNoteIndex, 1)
+      setRoomNotes(updatedRoomNotes)
     }
   }, [lastDeletedNote])
 
@@ -140,6 +156,7 @@ export const RoomView: React.FC<RoomViewProps> =
                       content: addNoteResult.content,
                       color: addNoteResult.color,
                       creator: userDataContext.userData.username as string,
+                      room_id: addNoteResult.room_id,
                       created_at: addNoteResult.created_at.toString(),
                       edited_at: addNoteResult.edited_at.toString()
                     }
@@ -161,9 +178,10 @@ export const RoomView: React.FC<RoomViewProps> =
                 </button>
                 </section>
                 <NoteList
+                    roomNotes={roomNotes}
+                    currentRoomID={currentRoom.id}
                     editNote={editNote}
                     deleteNote={deleteNote}
-                    roomNotes={roomNotes}
                 />
             </article>
   )

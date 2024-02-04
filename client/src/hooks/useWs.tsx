@@ -3,7 +3,7 @@ import useWebSocket from 'react-use-websocket'
 import { WS_PREFIX } from '../consts'
 import Cookies from 'js-cookie'
 import { type Room } from '../@types/room'
-import { type NoteMessage, type Note } from '../@types/note'
+import { type NoteMessage, type NoteIDMessage } from '../@types/note'
 import { type Message } from '../@types/message'
 import CryptoJS from 'crypto-js'
 
@@ -18,23 +18,24 @@ const WSActions = {
 }
 
 interface UseWSResponse {
-  lastReceivedNote: Note | undefined
-  lastEditedNote: Note | undefined
-  lastDeletedNote: Note | undefined
+  lastReceivedNote: NoteMessage | undefined
+  lastEditedNote: NoteMessage | undefined
+  lastDeletedNote: NoteIDMessage | undefined
   lastEditedRoom: Room | undefined
   lastDeletedRoom: Room | undefined
   joinRoom: (room: Room) => void
   editRoom: (room: Room) => void
   deleteRoomWS: (room: Room) => void
   sendNote: (note: NoteMessage) => void
-  editNote: (note: Note) => void
-  deleteNote: (note: Note) => void
+  editNote: (note: NoteMessage) => void
+  deleteNote: (note: NoteIDMessage) => void
+  resetVariables: () => void
 }
 
 export function useWS (): UseWSResponse {
-  const [lastReceivedNote, setLastReceivedNote] = useState<Note>()
-  const [lastEditedNote, setLastEditedNote] = useState<Note>()
-  const [lastDeletedNote, setLastDeletedNote] = useState<Note>()
+  const [lastReceivedNote, setLastReceivedNote] = useState<NoteMessage>()
+  const [lastEditedNote, setLastEditedNote] = useState<NoteMessage>()
+  const [lastDeletedNote, setLastDeletedNote] = useState<NoteIDMessage>()
   const [lastEditedRoom, setLastEditedRoom] = useState<Room>()
   const [lastDeletedRoom, setLastDeletedRoom] = useState<Room>()
 
@@ -117,7 +118,7 @@ export function useWS (): UseWSResponse {
     sendMessage(encryptMessage(message))
   }
 
-  function editNote (note: Note): void {
+  function editNote (note: NoteMessage): void {
     const message: Message = {
       action: WSActions.EditNoteAction,
       message: note
@@ -125,12 +126,20 @@ export function useWS (): UseWSResponse {
     sendMessage(encryptMessage(message))
   }
 
-  function deleteNote (note: Note): void {
+  function deleteNote (note: NoteIDMessage): void {
     const message = {
       action: WSActions.DeleteNoteAction,
       message: note
     }
     sendMessage(encryptMessage(message))
+  }
+
+  function resetStates (): void {
+    setLastReceivedNote(undefined)
+    setLastEditedNote(undefined)
+    setLastDeletedNote(undefined)
+    setLastEditedRoom(undefined)
+    setLastDeletedRoom(undefined)
   }
 
   function encryptMessage (message: Message): string {
@@ -154,5 +163,5 @@ export function useWS (): UseWSResponse {
     return JSON.parse(decryptedMessage.toString(CryptoJS.enc.Utf8)) as Message
   }
 
-  return { lastReceivedNote, lastEditedNote, lastDeletedNote, lastEditedRoom, lastDeletedRoom, joinRoom, editRoom, deleteRoomWS, sendNote, editNote, deleteNote }
+  return { lastReceivedNote, lastEditedNote, lastDeletedNote, lastEditedRoom, lastDeletedRoom, joinRoom, editRoom, deleteRoomWS, sendNote, editNote, deleteNote, resetVariables: resetStates }
 }

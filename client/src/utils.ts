@@ -33,3 +33,15 @@ export function parseStringDate (dateTimeString: string): Date {
 
   return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minutes), Number(seconds)))
 }
+
+export function sendNotification (title: string, message: string): void {
+  if (Notification.permission === 'granted') {
+    const notification = new Notification(title, { body: message })
+
+    notification.addEventListener('click', () => {
+      notification.close()
+    })
+  } else if (Notification.permission === 'default') {
+    Notification.requestPermission().then().catch(err => { console.error(err) })
+  }
+}

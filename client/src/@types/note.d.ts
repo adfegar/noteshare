@@ -36,6 +36,12 @@ export interface NoteMessage {
   content: string
   color: string
   creator: string
+  room_id: number
   created_at: string
   edited_at: string
+}
+
+export interface NoteIDMessage {
+  note_id: number
+  room_id: number
 }

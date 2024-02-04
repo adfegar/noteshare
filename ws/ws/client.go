@@ -136,14 +136,8 @@ func (client *Client) leaveRoom(room *Room) {
 func (client *Client) sendMessage(message *Message) {
 	encryptedMessage := client.Server.encryptMessage(*message)
 
-	if message.Action == SendNoteAction || message.Action == EditNoteAction || message.Action == DeleteNoteAction {
-		if client.CurrentRoom != nil {
-			client.CurrentRoom.Forward <- encryptedMessage
-		}
-	} else {
-		for room := range client.Rooms {
-			room.Forward <- encryptedMessage
-		}
+	for room := range client.Rooms {
+		room.Forward <- encryptedMessage
 	}
 }
 

@@ -1,17 +1,19 @@
 import React, { useState, useContext, useCallback, type Dispatch, type SetStateAction, useRef, type RefObject } from 'react'
 import { deleteUserNote, updateUserNote } from '../services/notes'
 import { UserContext } from '../contexts/userDataContext'
-import { type NoteMessage, type Note } from '../@types/note'
+import { type NoteMessage, type Note, type NoteIDMessage } from '../@types/note'
 
 interface NoteListProps {
   roomNotes: Note[]
+  currentRoomID: number
   editNote: (note: NoteMessage) => void
-  deleteNote: (note: Note) => void
+  deleteNote: (note: NoteIDMessage) => void
 }
 
 export const NoteList: React.FC<NoteListProps> =
   ({
     roomNotes,
+    currentRoomID,
     editNote,
     deleteNote
   }
@@ -25,6 +27,7 @@ export const NoteList: React.FC<NoteListProps> =
               <NoteComponent
                 key={note.id}
                 note={note}
+                currentRoomID={currentRoomID}
                 owned={note.creator === userDataContext?.userData.username}
                 editNote={editNote}
                 deleteNote={deleteNote}
@@ -48,15 +51,17 @@ export const NoteColors = {
 
 interface NoteProps {
   note: Note
+  currentRoomID: number
   owned: boolean
   editNote: (note: NoteMessage) => void
-  deleteNote: (note: Note) => void
+  deleteNote: (note: NoteIDMessage) => void
 }
 
 // General note component
 const NoteComponent: React.FC<NoteProps> =
     ({
       note,
+      currentRoomID,
       owned,
       editNote,
       deleteNote
@@ -78,6 +83,7 @@ const NoteComponent: React.FC<NoteProps> =
                     />
                   : <NoteComponentBody
                         note={note}
+                        currentRoomID={currentRoomID}
                         owned={owned}
                         editNote={editNote}
                         deleteNote={deleteNote}
@@ -90,9 +96,10 @@ const NoteComponent: React.FC<NoteProps> =
 
 interface NoteBodyProps {
   note: Note
+  currentRoomID: number
   owned: boolean
   editNote: (note: NoteMessage) => void
-  deleteNote: (note: Note) => void
+  deleteNote: (note: NoteIDMessage) => void
   setIsInEditMode: Dispatch<SetStateAction<boolean>>
 }
 
@@ -100,6 +107,7 @@ interface NoteBodyProps {
 const NoteComponentBody: React.FC<NoteBodyProps> =
     ({
       note,
+      currentRoomID,
       owned,
       editNote,
       deleteNote,
@@ -109,22 +117,15 @@ const NoteComponentBody: React.FC<NoteBodyProps> =
       const editColorButton = useRef<HTMLElement | null>(null)
       const editColorPallete = useRef<HTMLButtonElement | null>(null)
       const [showInfoPanel, setShowInfoPanel] = useState<boolean>(false)
-      const infoPanel = useRef<HTMLElement | null>(null)
-      const showInfoPanelButton = useRef<HTMLButtonElement | null>(null)
       const userDataContext = useContext(UserContext)
 
       // add a window listener to close edit color popup when clicking out of area
       window.addEventListener('click', (event) => {
         const isColorPalleteClicked = editColorPallete.current != null && editColorPallete.current.contains(event.target as Node)
         const isEditColorButtonClicked = editColorButton.current != null && editColorButton.current.contains(event.target as Node)
-        const isInfoPanelClicked = infoPanel.current != null && infoPanel.current.contains(event.target as Node)
-        const isShowInfoPanelButtonClicked = showInfoPanelButton.current != null && showInfoPanelButton.current.contains(event.target as Node)
 
         if (!isColorPalleteClicked && !isEditColorButtonClicked) {
           setIsInEditColorMode(false)
-        }
-        if (!isInfoPanelClicked && !isShowInfoPanelButtonClicked) {
-          setShowInfoPanel(false)
         }
       })
 
@@ -132,30 +133,52 @@ const NoteComponentBody: React.FC<NoteBodyProps> =
         const currentDate = new Date()
         const currentDateUTC = new Date(Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(),
           currentDate.getUTCDate(), currentDate.getUTCHours(), currentDate.getUTCMinutes(), currentDate.getUTCSeconds()))
-        console.log(date)
 
         if ((currentDateUTC.getDate() === date.getDate() && currentDateUTC.getMonth() === date.getMonth() && currentDateUTC.getFullYear() === date.getFullYear())) {
-          if (currentDateUTC.getMinutes() === date.getMinutes() && currentDateUTC.getHours() === date.getHours()) {
+          if (currentDateUTC.getHours() === date.getHours() && currentDateUTC.getMinutes() === date.getMinutes()) {
             return 'just now'
-          } else if (currentDateUTC.getMinutes() !== date.getMinutes() && currentDateUTC.getHours() === date.getHours()) {
-            return `${currentDateUTC.getMinutes() - date.getMinutes()} minutes ago`
-          } else if ((currentDateUTC.getHours() - date.getHours() === 1) &&
-            ((60 - date.getMinutes()) + currentDateUTC.getMinutes() < 60)) {
-            return `${((60 - date.getMinutes()) + currentDateUTC.getMinutes())} minutes ago`
-          } else {
-            return `${currentDateUTC.getHours() - date.getHours()} hours ago`
           }
-        } else {
-          if ((currentDateUTC.getDate() !== date.getDate() && currentDateUTC.getMonth() === date.getMonth() && currentDateUTC.getFullYear() === date.getFullYear())) {
-            return `${currentDateUTC.getDate() - date.getDate()} days ago`
-          } else if (currentDateUTC.getMonth() !== date.getMonth() && currentDateUTC.getFullYear() === date.getFullYear()) {
-            return `${currentDateUTC.getMonth() - date.getMonth()} months ago`
-          } else if (currentDateUTC.getFullYear() !== date.getFullYear()) {
-            return `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`
+          return `at ${formatDateNumber(date.getHours())}:${formatDateNumber(date.getMinutes())}`
+        } else if (currentDateUTC.getFullYear() === date.getFullYear()) {
+          let dayDifference: number
+
+          if (currentDateUTC.getMonth() === date.getMonth()) {
+            dayDifference = currentDateUTC.getDate() - date.getDate()
+          } else {
+            const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+            dayDifference = (daysInMonth - date.getDate()) + currentDateUTC.getDate()
+          }
+
+          if (dayDifference === 1) {
+            return 'yesterday'
+          } else if (dayDifference < 7) {
+            const weekDayPrefix = 'on'
+            switch (date.getDay()) {
+              case 0:
+                return `${weekDayPrefix} Sunday`
+              case 1:
+                return `${weekDayPrefix} Monday`
+              case 2:
+                return `${weekDayPrefix} Tuesday`
+              case 3:
+                return `${weekDayPrefix} Wednesday`
+              case 4:
+                return `${weekDayPrefix} Thursday`
+              case 5:
+                return `${weekDayPrefix} Friday`
+              case 6:
+                return `${weekDayPrefix} Saturday`
+            }
           }
         }
 
-        return ''
+        return `on ${formatDateNumber(date.getDate())}/${formatDateNumber(date.getMonth() + 1)}/${date.getFullYear()}`
+      }
+
+      function formatDateNumber (number: number): string {
+        return (number < 9)
+          ? `0${number}`
+          : number.toString()
       }
 
       return (
@@ -166,8 +189,7 @@ const NoteComponentBody: React.FC<NoteBodyProps> =
                 // INFO PANEL
                 showInfoPanel &&
                 <section
-                    className='infoPanel bg-[#0F0F0F] text-white rounded-md p-[15px] absolute top-[180px] left-[52px]'
-                    ref={infoPanel as RefObject<HTMLElement>}
+                    className='infoPanel bg-[#0F0F0F] text-white rounded-md p-[15px] absolute top-[180px] left-[52px] z-10'
                 >
                     <p>
                         {`Created ${formatInfo(note.created_at)}`}
@@ -205,6 +227,7 @@ const NoteComponentBody: React.FC<NoteBodyProps> =
                                             content: updateNoteResult.content,
                                             color: updateNoteResult.color,
                                             creator: userDataContext.userData.username as string,
+                                            room_id: updateNoteResult.room_id,
                                             created_at: updateNoteResult.created_at.toString(),
                                             edited_at: updateNoteResult.edited_at.toString()
                                           }
@@ -221,10 +244,12 @@ const NoteComponentBody: React.FC<NoteBodyProps> =
                     <section className='flex justify-between'>
                         <section className='flex gap-2'>
                         <button
-                            onClick={() => {
-                              setShowInfoPanel(!showInfoPanel)
+                            onPointerOver={() => {
+                              setShowInfoPanel(true)
                             }}
-                            ref={showInfoPanelButton as RefObject<HTMLButtonElement>}
+                            onPointerOut={() => {
+                              setShowInfoPanel(false)
+                            }}
                         >
                         <svg fill="#000000"className='svg-sm' width="64px" height="64px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
                         <g id="SVGRepo_bgCarrier" strokeWidth="10"></g>
@@ -281,7 +306,11 @@ const NoteComponentBody: React.FC<NoteBodyProps> =
                                     onClick={() => {
                                       deleteUserNote(note.id)
                                         .then(() => {
-                                          deleteNote(note)
+                                          const noteIDMessage = {
+                                            note_id: note.id,
+                                            room_id: currentRoomID
+                                          }
+                                          deleteNote(noteIDMessage)
                                         })
                                         .catch(error => { console.error(error) })
                                     }}
@@ -346,6 +375,7 @@ const EditNoteComponentBody: React.FC<EditNoteContentBodyProps> =
                         content: updateNoteResult.content,
                         color: updateNoteResult.color,
                         creator: userDataContext.userData.username as string,
+                        room_id: updateNoteResult.room_id,
                         created_at: updateNoteResult.created_at.toString(),
                         edited_at: updateNoteResult.edited_at.toString()
                       }
