@@ -78,9 +78,6 @@ export const RoomView: React.FC<RoomViewProps> =
         setRoomNotes([targetNote, ...updatedRoomNotes])
       }
 
-      if (userDataContext?.userData.username !== lastEditedNote.creator) {
-        sendNotification('Note edited', `${lastEditedNote.creator} edited a note!`)
-      }
     }
   }, [lastEditedNote])
 
@@ -119,14 +116,14 @@ export const RoomView: React.FC<RoomViewProps> =
     }
   }, [lastDeletedRoom])
 
-  return userDataContext !== null && (
+  return (
             <article className='w-full h-full flex flex-col px-20 pt-5'>
                 <section className='flex items-center justify-between p-20'>
                 {
                     !isInRoomEditMode
                       ? <RoomNameDisplay
                         currentRoom={currentRoom}
-                        currentUserId={Number(userDataContext.userData.userId)}
+                        currentUserId={Number(userDataContext?.userData.userId)}
                         setIsInRoomEditMode={setIsInRoomEditMode}
                         setCopiedToClipboard={setCopiedToClipboard}
                         deleteRoomWS={deleteRoomWS}
@@ -412,13 +409,15 @@ interface CopiedToClipBoardPopUpProps {
 }
 
 const CopiedToClipBoardPopUp: React.FC<CopiedToClipBoardPopUpProps> = ({ copiedToClipboard }) => {
-  if (copiedToClipboard) {
-    return (
+  return (
+    copiedToClipboard
+      ? (
           <section
-          className='px-4 py-3 text-white bg-ui-blue border border-[#1c3ffd] rounded-md transition duration-150 property-all ease-in-out'
+            className='px-4 py-3 text-white bg-ui-blue border border-[#1c3ffd] rounded-md transition duration-150 property-all ease-in-out'
           >
-          <span>{'Invite copied to clipboard!'}</span>
+            <span>{'Invite copied to clipboard!'}</span>
           </section>
-    )
-  }
+        )
+      : null
+  )
 }

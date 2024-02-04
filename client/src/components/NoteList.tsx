@@ -182,7 +182,6 @@ const NoteComponentBody: React.FC<NoteBodyProps> =
       }
 
       return (
-        userDataContext !== null &&
         <>
             <p className='flex-1 noteContent'>{note.content}</p>
             {
@@ -357,7 +356,6 @@ const EditNoteComponentBody: React.FC<EditNoteContentBodyProps> =
       const [contentWordCount, setContentWordCount] = useState<number>(note.content.length)
       const userDataContext = useContext(UserContext)
       return (
-        userDataContext !== null &&
             <form
                 className='flex flex-col h-280'
                 onSubmit={(event) => {
@@ -368,7 +366,7 @@ const EditNoteComponentBody: React.FC<EditNoteContentBodyProps> =
                     color: note.color
                   }
 
-                  updateUserNote(note.id, newNote)
+                   updateUserNote(note.id, newNote)
                     .then((updateNoteResult) => {
                       const noteMessage = {
                         id: updateNoteResult.id,

@@ -11,7 +11,7 @@ export function useRoomNotes (roomId: number): UserRoomNotesResult {
   const [roomNotes, setRoomNotes] = useState<Note[]>([])
 
   useEffect((): void => {
-    if (roomId) {
+    if (roomId !== 0) {
       getRoomNotes(roomId)
         .then(roomNotesResult => {
           setRoomNotes(roomNotesResult)
