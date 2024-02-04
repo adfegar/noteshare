@@ -56,10 +56,10 @@ func unMarshalMessage(data []byte) (*Message, error) {
 		newValidator := validator.New()
 
 		switch message.Action {
-		case SendNoteAction, EditNoteAction, DeleteNoteAction:
+		case SendNoteAction, EditNoteAction:
 			var note *models.Note
 			noteUnMarshalErr := json.Unmarshal(messageBytes, &note)
-			log.Println(note.CreatedAt)
+
 			if noteUnMarshalErr != nil {
 				return nil, noteUnMarshalErr
 			}
@@ -67,6 +67,20 @@ func unMarshalMessage(data []byte) (*Message, error) {
 				return nil, noteValidationErr
 			}
 			message.Message = note
+
+		case DeleteNoteAction:
+			var noteIDMessage *models.NoteIDMessage
+			noteIDMessageUnmarshalErr := json.Unmarshal(messageBytes, &noteIDMessage)
+
+			if noteIDMessageUnmarshalErr != nil {
+				return nil, noteIDMessageUnmarshalErr
+			}
+
+			if noteValidationErr := newValidator.Struct(noteIDMessage); noteValidationErr != nil {
+				return nil, noteValidationErr
+			}
+
+			message.Message = noteIDMessage
 
 		case JoinRoomAction, LeaveRoomAction, EditRoomAction, DeleteRoomAction:
 			var room *models.RoomMessage

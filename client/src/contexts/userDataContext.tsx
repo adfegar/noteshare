@@ -12,7 +12,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const [userData, setUserData] = useState<UserData>({
     accessToken: Cookies.get('access_token'),
     refreshToken: Cookies.get('refresh_token'),
-    userId: Cookies.get('user_id'),
+    userId: Number(Cookies.get('user_id')),
     username: Cookies.get('username')
   })
 

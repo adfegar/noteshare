@@ -3,7 +3,7 @@ import useWebSocket from 'react-use-websocket'
 import { WS_PREFIX } from '../consts'
 import Cookies from 'js-cookie'
 import { type Room } from '../@types/room'
-import { type Note, type NoteMessage } from '../@types/note'
+import { type NoteMessage, type NoteIDMessage } from '../@types/note'
 import { type Message } from '../@types/message'
 import CryptoJS from 'crypto-js'
 
@@ -20,7 +20,7 @@ const WSActions = {
 interface UseWSResponse {
   lastReceivedNote: NoteMessage | undefined
   lastEditedNote: NoteMessage | undefined
-  lastDeletedNote: NoteMessage | undefined
+  lastDeletedNote: NoteIDMessage | undefined
   lastEditedRoom: Room | undefined
   lastDeletedRoom: Room | undefined
   joinRoom: (room: Room) => void
@@ -28,13 +28,14 @@ interface UseWSResponse {
   deleteRoomWS: (room: Room) => void
   sendNote: (note: NoteMessage) => void
   editNote: (note: NoteMessage) => void
-  deleteNote: (note: Note) => void
+  deleteNote: (note: NoteIDMessage) => void
+  resetVariables: () => void
 }
 
 export function useWS (): UseWSResponse {
   const [lastReceivedNote, setLastReceivedNote] = useState<NoteMessage>()
   const [lastEditedNote, setLastEditedNote] = useState<NoteMessage>()
-  const [lastDeletedNote, setLastDeletedNote] = useState<NoteMessage>()
+  const [lastDeletedNote, setLastDeletedNote] = useState<NoteIDMessage>()
   const [lastEditedRoom, setLastEditedRoom] = useState<Room>()
   const [lastDeletedRoom, setLastDeletedRoom] = useState<Room>()
 
@@ -125,12 +126,20 @@ export function useWS (): UseWSResponse {
     sendMessage(encryptMessage(message))
   }
 
-  function deleteNote (note: Note): void {
+  function deleteNote (note: NoteIDMessage): void {
     const message = {
       action: WSActions.DeleteNoteAction,
       message: note
     }
     sendMessage(encryptMessage(message))
+  }
+
+  function resetStates (): void {
+    setLastReceivedNote(undefined)
+    setLastEditedNote(undefined)
+    setLastDeletedNote(undefined)
+    setLastEditedRoom(undefined)
+    setLastDeletedRoom(undefined)
   }
 
   function encryptMessage (message: Message): string {
@@ -154,5 +163,5 @@ export function useWS (): UseWSResponse {
     return JSON.parse(decryptedMessage.toString(CryptoJS.enc.Utf8)) as Message
   }
 
-  return { lastReceivedNote, lastEditedNote, lastDeletedNote, lastEditedRoom, lastDeletedRoom, joinRoom, editRoom, deleteRoomWS, sendNote, editNote, deleteNote }
+  return { lastReceivedNote, lastEditedNote, lastDeletedNote, lastEditedRoom, lastDeletedRoom, joinRoom, editRoom, deleteRoomWS, sendNote, editNote, deleteNote, resetVariables: resetStates }
 }

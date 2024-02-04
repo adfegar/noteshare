@@ -22,7 +22,8 @@ const App: React.FC = () => {
     deleteNote,
     joinRoom,
     editRoom,
-    deleteRoomWS
+    deleteRoomWS,
+    resetVariables
   } = useWS()
 
   useEffect(() => {
@@ -37,6 +38,9 @@ const App: React.FC = () => {
               ? <main className='flex h-full'>
                     <Sidebar
                         joinRoom={joinRoom}
+                        resetVariables={resetVariables}
+                        lastReceivedNote={lastReceivedNote}
+                        lastEditedNote={lastEditedNote}
                         lastEditedRoom={lastEditedRoom}
                         lastDeletedRoom={lastDeletedRoom}
                         currentRoom={currentRoom}
