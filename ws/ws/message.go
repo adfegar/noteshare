@@ -21,6 +21,7 @@ const (
 	DeleteRoomAction = "delete-room"
 	UserJoinedAction = "user-join"
 	UserLeftAction   = "user-left"
+	ConnectAction    = "connect"
 	DisconnectAction = "disconnect"
 )
 
@@ -107,6 +108,19 @@ func unMarshalMessage(data []byte) (*Message, error) {
 				return nil, userDataValidationErr
 			}
 			message.Message = userData
+
+		case ConnectAction, DisconnectAction:
+			var connectionMessage *models.ConnectionMessage
+			connectionMessageUnmarshalErr := json.Unmarshal(messageBytes, &connectionMessage)
+
+			if connectionMessage != nil {
+				return nil, connectionMessageUnmarshalErr
+			}
+
+			if connectionMessageValidationErr := newValidator.Struct(connectionMessage); connectionMessageValidationErr != nil {
+				return nil, connectionMessageValidationErr
+			}
+			message.Message = connectionMessage
 
 		default:
 			return nil, errors.New("action not supported")

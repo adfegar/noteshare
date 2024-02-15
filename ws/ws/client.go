@@ -56,6 +56,8 @@ func (client *Client) read() {
 			client.leaveRoom(client.CurrentRoom)
 		case SendNoteAction, EditNoteAction, DeleteNoteAction, EditRoomAction, DeleteRoomAction:
 			client.sendMessage(message)
+		case ConnectAction, DisconnectAction:
+			client.sendMessage(message)
 		default:
 			log.Println("action not supported")
 			client.disconnect()
@@ -116,6 +118,16 @@ func (client *Client) init(userData *models.UserData) {
 		serverRoom.Join <- client
 		client.Rooms[serverRoom] = true
 	}
+
+	connectionMessage := &models.ConnectionMessage{
+		UserID: userData.UserId,
+	}
+	message := &Message{
+		Action:  "connect",
+		Message: connectionMessage,
+	}
+
+	client.sendMessage(message)
 }
 
 func (client *Client) joinRoom(requestRoom *models.RoomMessage) {

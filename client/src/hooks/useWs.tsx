@@ -5,6 +5,7 @@ import Cookies from 'js-cookie'
 import { type Room } from '../@types/room'
 import { type NoteMessage, type NoteIDMessage } from '../@types/note'
 import { type Message } from '../@types/message'
+import { type User } from '../@types/user'
 import CryptoJS from 'crypto-js'
 
 const WSActions = {
@@ -14,7 +15,9 @@ const WSActions = {
   EditNoteAction: 'edit-note',
   DeleteNoteAction: 'delete-note',
   EditRoomAction: 'edit-room',
-  DeleteRoomAction: 'delete-room'
+  DeleteRoomAction: 'delete-room',
+  ConnectAction: 'connect',
+  DisconnectAction: 'disconnect'
 }
 
 interface UseWSResponse {
@@ -23,13 +26,14 @@ interface UseWSResponse {
   lastDeletedNote: NoteIDMessage | undefined
   lastEditedRoom: Room | undefined
   lastDeletedRoom: Room | undefined
+  lastUserConnected: User | undefined
   joinRoom: (room: Room) => void
   editRoom: (room: Room) => void
   deleteRoomWS: (room: Room) => void
   sendNote: (note: NoteMessage) => void
   editNote: (note: NoteMessage) => void
   deleteNote: (note: NoteIDMessage) => void
-  resetVariables: () => void
+  resetStates: () => void
 }
 
 export function useWS (): UseWSResponse {
@@ -38,6 +42,7 @@ export function useWS (): UseWSResponse {
   const [lastDeletedNote, setLastDeletedNote] = useState<NoteIDMessage>()
   const [lastEditedRoom, setLastEditedRoom] = useState<Room>()
   const [lastDeletedRoom, setLastDeletedRoom] = useState<Room>()
+  const [lastUserConnected, setLastUserConnected] = useState<number>()
 
   const { sendMessage, lastMessage } = useWebSocket(
     WS_PREFIX,
@@ -76,6 +81,8 @@ export function useWS (): UseWSResponse {
         setLastEditedRoom(message.message)
       } else if (message.action === WSActions.DeleteRoomAction) {
         setLastDeletedRoom(message.message)
+      } else if (message.action === WSActions.ConnectAction) {
+        setLastUserConnected(message.message.user_id)
       }
     }
   }, [lastMessage?.data])
@@ -163,5 +170,19 @@ export function useWS (): UseWSResponse {
     return JSON.parse(decryptedMessage.toString(CryptoJS.enc.Utf8)) as Message
   }
 
-  return { lastReceivedNote, lastEditedNote, lastDeletedNote, lastEditedRoom, lastDeletedRoom, joinRoom, editRoom, deleteRoomWS, sendNote, editNote, deleteNote, resetVariables: resetStates }
+  return {
+    lastReceivedNote,
+    lastEditedNote,
+    lastDeletedNote,
+    lastEditedRoom,
+    lastDeletedRoom,
+    lastUserConnected,
+    joinRoom,
+    editRoom,
+    deleteRoomWS,
+    sendNote,
+    editNote,
+    deleteNote,
+    resetStates
+  }
 }

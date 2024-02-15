@@ -221,17 +221,19 @@ const NoteComponentBody: React.FC<NoteBodyProps> =
 
                                       updateUserNote(note.id, newNote)
                                         .then((updateNoteResult) => {
-                                          const noteMessage = {
-                                            id: updateNoteResult.id,
-                                            content: updateNoteResult.content,
-                                            color: updateNoteResult.color,
-                                            creator: userDataContext.userData.username as string,
-                                            room_id: updateNoteResult.room_id,
-                                            created_at: updateNoteResult.created_at.toString(),
-                                            edited_at: updateNoteResult.edited_at.toString()
+                                          if (userDataContext !== null) {
+                                            const noteMessage = {
+                                              id: updateNoteResult.id,
+                                              content: updateNoteResult.content,
+                                              color: updateNoteResult.color,
+                                              creator: userDataContext.userData.username as string,
+                                              room_id: updateNoteResult.room_id,
+                                              created_at: updateNoteResult.created_at.toString(),
+                                              edited_at: updateNoteResult.edited_at.toString()
+                                            }
+                                            editNote(noteMessage)
+                                            setIsInEditColorMode(false)
                                           }
-                                          editNote(noteMessage)
-                                          setIsInEditColorMode(false)
                                         })
                                         .catch(error => { console.error(error) })
                                     }}
@@ -366,19 +368,21 @@ const EditNoteComponentBody: React.FC<EditNoteContentBodyProps> =
                     color: note.color
                   }
 
-                   updateUserNote(note.id, newNote)
+                  updateUserNote(note.id, newNote)
                     .then((updateNoteResult) => {
-                      const noteMessage = {
-                        id: updateNoteResult.id,
-                        content: updateNoteResult.content,
-                        color: updateNoteResult.color,
-                        creator: userDataContext.userData.username as string,
-                        room_id: updateNoteResult.room_id,
-                        created_at: updateNoteResult.created_at.toString(),
-                        edited_at: updateNoteResult.edited_at.toString()
+                      if (userDataContext !== null) {
+                        const noteMessage = {
+                          id: updateNoteResult.id,
+                          content: updateNoteResult.content,
+                          color: updateNoteResult.color,
+                          creator: userDataContext.userData.username as string,
+                          room_id: updateNoteResult.room_id,
+                          created_at: updateNoteResult.created_at.toString(),
+                          edited_at: updateNoteResult.edited_at.toString()
+                        }
+                        editNote(noteMessage)
+                        setIsInEditMode(false)
                       }
-                      editNote(noteMessage)
-                      setIsInEditMode(false)
                     })
                     .catch(error => { console.error(error) })
                 }}

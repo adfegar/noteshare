@@ -76,8 +76,11 @@ export const RoomView: React.FC<RoomViewProps> =
         updatedRoomNotes.splice(targetNoteIndex, 1)
 
         setRoomNotes([targetNote, ...updatedRoomNotes])
-      }
 
+        if (userDataContext?.userData.username !== lastEditedNote.creator) {
+          sendNotification('Note edited', `${lastEditedNote.creator} edited a note!`)
+        }
+      }
     }
   }, [lastEditedNote])
 
@@ -139,27 +142,29 @@ export const RoomView: React.FC<RoomViewProps> =
                 <button
                 className='flex content-center p-[10px] text-white rounded-md bg-ui-blue'
                 onClick={() => {
-                  const randomColorIndex = Math.floor(Math.random() * Object.keys(NoteColors).length)
-                  const colorKey = Object.keys(NoteColors)[randomColorIndex]
-                  const noteObject = {
-                    content: '',
-                    color: NoteColors[colorKey as keyof typeof NoteColors],
-                    user_id: Number(userDataContext.userData.userId),
-                    room_id: currentRoom.id
-                  }
-                  addUserNote(noteObject).then(addNoteResult => {
-                    const noteMessage = {
-                      id: addNoteResult.id,
-                      content: addNoteResult.content,
-                      color: addNoteResult.color,
-                      creator: userDataContext.userData.username as string,
-                      room_id: addNoteResult.room_id,
-                      created_at: addNoteResult.created_at.toString(),
-                      edited_at: addNoteResult.edited_at.toString()
+                  if (userDataContext !== null) {
+                    const randomColorIndex = Math.floor(Math.random() * Object.keys(NoteColors).length)
+                    const colorKey = Object.keys(NoteColors)[randomColorIndex]
+                    const noteObject = {
+                      content: '',
+                      color: NoteColors[colorKey as keyof typeof NoteColors],
+                      user_id: Number(userDataContext.userData.userId),
+                      room_id: currentRoom.id
                     }
-                    sendNote(noteMessage)
-                  })
-                    .catch(err => { console.error(err) })
+                    addUserNote(noteObject).then(addNoteResult => {
+                      const noteMessage = {
+                        id: addNoteResult.id,
+                        content: addNoteResult.content,
+                        color: addNoteResult.color,
+                        creator: userDataContext.userData.username as string,
+                        room_id: addNoteResult.room_id,
+                        created_at: addNoteResult.created_at.toString(),
+                        edited_at: addNoteResult.edited_at.toString()
+                      }
+                      sendNote(noteMessage)
+                    })
+                      .catch(err => { console.error(err) })
+                  }
                 }}
                 >
                 <svg className='max-h-[30px] max-w-[35px] pr-[10px]' width="64px" height="64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
