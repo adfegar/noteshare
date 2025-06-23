@@ -1,2 +1,3 @@
 # noteshare
-![Sin título-2023-10-19-1049](https://github.com/adfer-dev/noteshare/assets/48715769/60089e85-d09f-4070-bf1a-1c618f2e8769)
+![image](https://github.com/user-attachments/assets/0ef0bcb0-5eba-4a29-a710-a1c3e78e223d)
+
